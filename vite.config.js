@@ -11,8 +11,19 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        host: '0.0.0.0',
+        port: 5173,
+        cors: true,
+        hmr: {
+            host: 'local.zen.inc',
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
     },
+    // server: {
+    //     watch: {
+    //         ignored: ['**/storage/framework/views/**'],
+    //     },
+    // },
 });
