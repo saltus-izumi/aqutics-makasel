@@ -9,7 +9,7 @@ Route::get('/', function () {
 });
 
 Route::prefix('admin')->name('admin.')->middleware('web')->group(function () {
-    Route::get('login', [AdminAuth::class, 'create'])->middleware('guest:admin')->name('login');
+    Route::get('login', [AdminAuth::class, 'index'])->middleware('guest:admin')->name('login');
     Route::post('login', [AdminAuth::class, 'store'])->middleware('guest:admin')->name('login.store');
     Route::post('logout', [AdminAuth::class, 'destroy'])->middleware('auth:admin')->name('logout');
 

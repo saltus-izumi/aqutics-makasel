@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController
 {
-    public function create()
+    public function index()
     {
         return view('admin.login');
     }
