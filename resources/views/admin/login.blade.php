@@ -6,15 +6,15 @@
                 <div class="tw:text-[4.6rem] tw:font-bold tw:text-center">Log</div>
                 <div class="tw:mb-[21px]">
                     ID
-                    <x-form.input class="tw:h-[63px] tw:bg-[#cfe2f3] tw:text-xl" />
+                    <x-form.input name="user_account" class="tw:h-[63px] tw:bg-[#cfe2f3] tw:text-xl" />
                 </div>
                 <div class="tw:mb-[21px]">
                     PASS
-                    <x-form.input class="tw:h-[63px] tw:bg-[#cfe2f3] tw:text-xl" />
+                    <x-form.input name="user_password" class="tw:h-[63px] tw:bg-[#cfe2f3] tw:text-xl" />
                 </div>
                 <div class="tw:mb-[21px]">
                     <div class="tw:flex">
-                        <x-form.checkbox name="">IDを記録する</x-form.checkbox>
+                        <x-form.checkbox name="remember">IDとPASSを記憶する</x-form.checkbox>
                     </div>
                     <x-button.blue type="submit" class="tw:text-[1.8rem] tw:w-full tw:h-[63px]">ログイン</x-button.blue>
                 </div>

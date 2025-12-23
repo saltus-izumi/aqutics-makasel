@@ -15,11 +15,11 @@ class AuthController
     {
         $credentials = $request->validate([
             'user_account' => ['required'],
-            'password' => ['required'],
+            'user_password' => ['required'],
         ]);
 
         if (Auth::guard('admin')->attempt(
-            ['user_account' => $credentials['user_account'], 'password' => $credentials['password']],
+            ['user_account' => $credentials['user_account'], 'password' => $credentials['user_password']],
             $request->boolean('remember')
         )) {
             // セッション固定化対策（公式推奨）
