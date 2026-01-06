@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController as AdminAuth;
 use App\Http\Controllers\Owner\AuthController as OwnerAuth;
 
+use App\Http\Controllers\Admin\OperationController as AdminOperation;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -15,6 +17,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('auth:admin')->group(function () {
         Route::get('/', fn () => view('admin.dashboard'))->name('dashboard');
+
+        Route::prefix('operation')->name('operation.')->group(function () {
+            Route::get('/', [AdminOperation::class, 'index'])->name('login');
+        });
     });
 });
 
