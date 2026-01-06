@@ -1,11 +1,16 @@
 <?php
 namespace App\Http\Controllers\Admin;
 
+use App\Services\SsoTokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController
 {
+    public function __construct(
+        protected SsoTokenService $ssoTokenService
+    ) {}
+
     public function index()
     {
         return view('admin.login');
@@ -25,7 +30,13 @@ class AuthController
             // セッション固定化対策（公式推奨）
             $request->session()->regenerate();
 
-            return redirect()->intended(route('admin.dashboard'));
+            // SSOトークンを生成してCake側にリダイレクト
+            $user = Auth::guard('admin')->user();
+            $rawToken = $this->ssoTokenService->createToken($user->id);
+            $baseUrl = $request->getSchemeAndHttpHost();
+            $ssoUrl = $this->ssoTokenService->buildSsoLoginUrl($baseUrl, $rawToken);
+
+            return redirect()->away($ssoUrl);
         }
 
         return back()->withErrors([
@@ -39,6 +50,11 @@ class AuthController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login');
+        // Cake側もログアウトさせる（その後Laravelのログイン画面に戻る）
+        $baseUrl = $request->getSchemeAndHttpHost();
+        $laravelLoginUrl = route('admin.login');
+        $ssoLogoutUrl = $baseUrl . '/app/admin/users/sso-logout?redirect=' . urlencode($laravelLoginUrl);
+
+        return redirect()->away($ssoLogoutUrl);
     }
 }

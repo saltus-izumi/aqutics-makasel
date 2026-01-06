@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // CakePHPとのSSO連携用
+    'cake' => [
+        'security_salt' => env('CAKE_SECURITY_SALT'),
+    ],
+
 ];

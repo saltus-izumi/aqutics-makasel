@@ -7,10 +7,12 @@
                 <div class="tw:mb-[21px]">
                     ID
                     <x-form.input name="user_account" class="tw:h-[63px] tw:bg-[#cfe2f3] tw:text-xl" />
+                    <x-form.error-message>{{ $errors->first('user_account') }}</x-form.error-message>
                 </div>
                 <div class="tw:mb-[21px]">
                     PASS
-                    <x-form.input name="user_password" class="tw:h-[63px] tw:bg-[#cfe2f3] tw:text-xl" />
+                    <x-form.input type="password" name="user_password" class="tw:h-[63px] tw:bg-[#cfe2f3] tw:text-xl" />
+                    <x-form.error-message>{{ $errors->first('user_password') }}</x-form.error-message>
                 </div>
                 <div class="tw:mb-[21px]">
                     <div class="tw:flex">
