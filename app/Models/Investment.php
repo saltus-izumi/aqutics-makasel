@@ -18,6 +18,14 @@ class Investment extends Model
     }
 
     /**
+     * この物件が持つ部屋（InvestmentRoom）を取得
+     */
+    public function investmentRooms()
+    {
+        return $this->hasMany(InvestmentRoom::class, 'investment_id');
+    }
+
+    /**
      * オーナーに紐づく物件のオプションを取得（Owner→Landlord→Investment）
      *
      * @param int|string $ownerId
