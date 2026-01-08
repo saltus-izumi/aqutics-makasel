@@ -32,4 +32,8 @@
     body {
         @apply tw:text-base;
     }
+
+    [x-cloak] {
+        display: none !important;
+    }
 }

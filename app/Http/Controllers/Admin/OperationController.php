@@ -11,4 +11,9 @@ class OperationController
         return view('admin.operation.index');
     }
 
+    public function create()
+    {
+        return view('admin.operation.create');
+    }
+
 }
