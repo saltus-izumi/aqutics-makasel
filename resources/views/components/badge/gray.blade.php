@@ -1,0 +1,1 @@
+<x-badge.badge {{ $attributes->merge(['class' => 'tw-bg-gray-500']) }} >{{ $slot }}</x-badge.badge>

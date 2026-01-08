@@ -1,0 +1,194 @@
+@props([
+    'name' => '',
+    'value' => '',
+    'empty' => '',
+    'options' => [],
+    'placeholder' => '選択してください',
+    'is_error' => false,
+    'disabled' => false,
+])
+
+@php
+    // optionsをJavaScript用にフラット化（group対応）
+    $flatOptions = [];
+    foreach ($options as $key => $item) {
+        if (is_array($item)) {
+            foreach ($item as $key2 => $item2) {
+                $flatOptions[] = [
+                    'value' => (string) $key2,
+                    'label' => $item2,
+                    'group' => $key,
+                ];
+            }
+        } else {
+            $flatOptions[] = [
+                'value' => (string) $key,
+                'label' => $item,
+                'group' => null,
+            ];
+        }
+    }
+@endphp
+
+<div
+    x-data="selectSearch2({
+        options: {{ json_encode($flatOptions) }},
+        value: '{{ $value }}',
+        placeholder: '{{ $placeholder }}',
+        emptyLabel: '{{ $empty }}',
+    })"
+    x-on:click.outside="close()"
+    x-on:keydown.escape.window="close()"
+    @class([
+        'tw:relative',
+        'tw:w-full' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:w-'),
+        $attributes->get('class'),
+    ])
+    {{ $attributes->except('class') }}
+>
+    <input type="hidden" name="{{ $name }}" x-model="selectedValue" @disabled($disabled)>
+
+    <button
+        type="button"
+        x-ref="button"
+        x-on:click="toggle()"
+        @disabled($disabled)
+        class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }} {{ $disabled ? 'tw:opacity-50 tw:cursor-not-allowed' : '' }}"
+    >
+        <span x-text="selectedLabel || placeholder" x-bind:class="selectedLabel ? '' : 'tw:text-gray-400'"></span>
+        <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <div
+        x-show="isOpen"
+        x-transition:enter="tw:transition tw:ease-out tw:duration-100"
+        x-transition:enter-start="tw:opacity-0 tw:scale-95"
+        x-transition:enter-end="tw:opacity-100 tw:scale-100"
+        x-transition:leave="tw:transition tw:ease-in tw:duration-75"
+        x-transition:leave-start="tw:opacity-100 tw:scale-100"
+        x-transition:leave-end="tw:opacity-0 tw:scale-95"
+        class="tw:absolute tw:z-50 tw:mt-1 tw:w-full tw:bg-white tw:border tw:border-gray-300 tw:rounded tw:shadow-lg"
+        x-cloak
+    >
+        <div class="tw:p-2 tw:border-b tw:border-gray-200">
+            <input
+                type="text"
+                x-ref="search"
+                x-model="search"
+                placeholder="検索..."
+                class="tw:w-full tw:px-3 tw:py-2 tw:border tw:border-gray-300 tw:rounded focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500"
+            >
+        </div>
+
+        <ul class="tw:max-h-60 tw:overflow-auto tw:py-1">
+            <template x-if="emptyLabel">
+                <li
+                    x-on:click="select('', emptyLabel)"
+                    x-on:mouseenter="hoveredIndex = -1"
+                    x-on:mouseleave="hoveredIndex = null"
+                    x-bind:class="hoveredIndex === -1 ? 'tw:bg-blue-100' : ''"
+                    class="tw:px-3 tw:py-2 tw:cursor-pointer hover:tw:bg-gray-100"
+                >
+                    <span x-text="emptyLabel"></span>
+                </li>
+            </template>
+
+            <template x-for="(item, index) in filteredOptions" :key="item.value">
+                <li>
+                    <template x-if="item.group && (index === 0 || filteredOptions[index - 1]?.group !== item.group)">
+                        <div class="tw:px-3 tw:py-2 tw:font-bold tw:text-gray-700 tw:bg-gray-50" x-text="item.group"></div>
+                    </template>
+
+                    <div
+                        x-on:click="select(item.value, item.label)"
+                        x-on:mouseenter="hoveredIndex = index"
+                        x-on:mouseleave="hoveredIndex = null"
+                        x-bind:class="[
+                            hoveredIndex === index ? 'tw:bg-blue-100' : '',
+                            item.group ? 'tw:pl-6' : 'tw:pl-3'
+                        ]"
+                        class="tw:pr-3 tw:py-2 tw:cursor-pointer hover:tw:bg-gray-100"
+                    >
+                        <span x-text="item.label"></span>
+                    </div>
+                </li>
+            </template>
+
+            <template x-if="filteredOptions.length === 0 && search">
+                <li class="tw:px-3 tw:py-2 tw:text-gray-500">該当なし</li>
+            </template>
+        </ul>
+    </div>
+</div>
+
+@once
+    @push('scripts')
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('selectSearch2', (config = {}) => ({
+                    options: config.options ?? [],
+                    selectedValue: config.value ?? '',
+                    selectedLabel: '',
+                    placeholder: config.placeholder ?? '選択してください',
+                    emptyLabel: config.emptyLabel ?? '',
+                    isOpen: false,
+                    search: '',
+                    hoveredIndex: null,
+
+                    init() {
+                        this.updateLabelFromValue();
+                        this.$watch('options', () => {
+                            this.updateLabelFromValue();
+                        });
+                    },
+
+                    updateLabelFromValue() {
+                        if (!this.selectedValue) {
+                            this.selectedLabel = '';
+                            return;
+                        }
+                        const found = this.options.find(o => o.value === this.selectedValue);
+                        this.selectedLabel = found ? found.label : '';
+                    },
+
+                    get filteredOptions() {
+                        if (!this.search) {
+                            return this.options;
+                        }
+                        const query = this.search.toLowerCase();
+                        return this.options.filter(o => {
+                            return o.label.toLowerCase().includes(query) ||
+                                (o.group && o.group.toLowerCase().includes(query));
+                        });
+                    },
+
+                    toggle() {
+                        this.isOpen ? this.close() : this.open();
+                    },
+
+                    open() {
+                        this.isOpen = true;
+                        this.search = '';
+                        this.$nextTick(() => {
+                            this.$refs.search?.focus();
+                        });
+                    },
+
+                    close() {
+                        this.isOpen = false;
+                        this.search = '';
+                    },
+
+                    select(value, label) {
+                        this.selectedValue = value;
+                        this.selectedLabel = value ? label : '';
+                        this.close();
+                        this.$refs.button?.focus();
+                    },
+                }));
+            });
+        </script>
+    @endpush
+@endonce

@@ -24,14 +24,18 @@ class AppServiceProvider extends ServiceProvider
         $prefix = env('APP_DIR', null); // ← ここをサブディレクトリ名に合わせる（例: live, makasel など）
 
         if ($prefix) {
+            // スクリプトルートをサブディレクトリに設定
             Livewire::setScriptRoute(function ($handle) use ($prefix) {
-                return Route::get("/{$prefix}/livewire/livewire.js", $handle);
+                return Route::get("/{$prefix}/livewire/livewire.js", $handle)
+                    ->name("{$prefix}.livewire.js");
+            });
+
+            // updateルートをサブディレクトリに設定
+            // ルート名を 'livewire.update' で終わるようにする必要がある
+            Livewire::setUpdateRoute(function ($handle) use ($prefix) {
+                return Route::post("/{$prefix}/livewire/update", $handle)
+                    ->name("{$prefix}.livewire.update");
             });
         }
-
-        // // ついでに update もサブディレクトリ配下に寄せたい場合（環境によって必要）
-        // Livewire::setUpdateRoute(function ($handle) use ($prefix) {
-        //     return Route::post("/{$prefix}/livewire/update", $handle);
-        // });
     }
 }

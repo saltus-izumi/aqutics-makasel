@@ -1,5 +1,6 @@
-@import 'tailwindcss' prefix(tw);
 @import './fontawesome.min.css';
+@import 'tom-select/dist/css/tom-select.css';
+@import 'tailwindcss' prefix(tw);
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -21,6 +22,7 @@
     --color-pm_gray_002: #efefef;
     --color-pm_pink_001: #f4cccc;
     --color-pm_blue_001: #4a86e8;
+    --color-pm_red_001: #ff0000;
 
 }
 

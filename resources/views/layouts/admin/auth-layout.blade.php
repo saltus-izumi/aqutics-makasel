@@ -7,6 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
@@ -115,6 +116,20 @@
     </div>
     @livewireScripts
     <script>
+        // Livewireのエンドポイントをサブディレクトリに対応（fetchを上書き）
+        (function() {
+            const appDir = '{{ env('APP_DIR', '') }}';
+            if (appDir) {
+                const originalFetch = window.fetch;
+                window.fetch = function(url, options) {
+                    if (typeof url === 'string' && url === '/livewire/update') {
+                        url = '/' + appDir + '/livewire/update';
+                    }
+                    return originalFetch.call(this, url, options);
+                };
+            }
+        })();
+
         function menu() {
             return {
                 float: false,
@@ -125,5 +140,6 @@
             }
         }
     </script>
+    @stack('scripts')
 </body>
 </html>
