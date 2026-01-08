@@ -32,21 +32,31 @@
 
 <div
     x-data="selectSearch2({
+        name: {{ json_encode($name) }},
         options: {{ json_encode($flatOptions) }},
         value: '{{ $value }}',
         placeholder: '{{ $placeholder }}',
         emptyLabel: '{{ $empty }}',
     })"
+    wire:ignore
     x-on:click.outside="close()"
     x-on:keydown.escape.window="close()"
+    x-on:select-search2-options.window="handleOptionsUpdate($event)"
     @class([
         'tw:relative',
         'tw:w-full' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:w-'),
         $attributes->get('class'),
     ])
-    {{ $attributes->except('class') }}
+    {{ $attributes->except('class')->whereDoesntStartWith('wire:model') }}
 >
-    <input type="hidden" name="{{ $name }}" x-model="selectedValue" @disabled($disabled)>
+    <input
+        type="hidden"
+        name="{{ $name }}"
+        x-ref="hiddenInput"
+        x-model="selectedValue"
+        {{ $attributes->whereStartsWith('wire:model') }}
+        @disabled($disabled)
+    >
 
     <button
         type="button"
@@ -128,6 +138,7 @@
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('selectSearch2', (config = {}) => ({
+                    name: config.name ?? '',
                     options: config.options ?? [],
                     selectedValue: config.value ?? '',
                     selectedLabel: '',
@@ -142,6 +153,71 @@
                         this.$watch('options', () => {
                             this.updateLabelFromValue();
                         });
+                    },
+
+                    handleOptionsUpdate(event) {
+                        const detail = event?.detail ?? {};
+                        if (detail.name && this.name && detail.name !== this.name) {
+                            return;
+                        }
+                        this.setOptions(detail.options ?? [], detail.value);
+                    },
+
+                    normalizeOptions(options) {
+                        if (Array.isArray(options)) {
+                            if (options.length === 0) {
+                                return [];
+                            }
+                            if (options[0] && Object.prototype.hasOwnProperty.call(options[0], 'value')) {
+                                return options.map((item) => ({
+                                    value: String(item.value ?? ''),
+                                    label: item.label ?? '',
+                                    group: item.group ?? null,
+                                }));
+                            }
+                        }
+                        if (options && typeof options === 'object') {
+                            const normalized = [];
+                            Object.entries(options).forEach(([key, value]) => {
+                                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                                    Object.entries(value).forEach(([childKey, childValue]) => {
+                                        normalized.push({
+                                            value: String(childKey),
+                                            label: childValue,
+                                            group: key,
+                                        });
+                                    });
+                                } else {
+                                    normalized.push({
+                                        value: String(key),
+                                        label: value,
+                                        group: null,
+                                    });
+                                }
+                            });
+                            return normalized;
+                        }
+                        return [];
+                    },
+
+                    setOptions(options, value = null) {
+                        this.options = this.normalizeOptions(options);
+                        if (value !== null && value !== undefined) {
+                            this.selectedValue = String(value);
+                        } else if (!this.options.some(o => o.value === this.selectedValue)) {
+                            this.selectedValue = '';
+                        }
+                        this.updateLabelFromValue();
+                        this.dispatchInput();
+                    },
+
+                    dispatchInput() {
+                        const input = this.$refs.hiddenInput;
+                        if (!input) {
+                            return;
+                        }
+                        input.value = this.selectedValue ?? '';
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
                     },
 
                     updateLabelFromValue() {
@@ -186,6 +262,7 @@
                         this.selectedLabel = value ? label : '';
                         this.close();
                         this.$refs.button?.focus();
+                        this.dispatchInput();
                     },
                 }));
             });

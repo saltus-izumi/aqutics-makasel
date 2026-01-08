@@ -40,7 +40,12 @@ class Create extends Component
         }
 
         // Alpine.jsにオプション更新を通知
-        $this->dispatch('update-select-options', name: 'investment_id', options: $this->investmentOptions);
+        // $this->dispatch('update-select-options', name: 'investment_id', options: $this->investmentOptions);
+        $this->dispatch('select-search2-options',
+            name: 'investment_id',
+            options: $this->investmentOptions,
+            value: '',
+        );
     }
 
     // 物件選択時のイベントハンドラ
