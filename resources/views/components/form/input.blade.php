@@ -7,7 +7,7 @@
 ])
 <input type="{{ $type }}" name="{{ $name }}"
     @class([
-        'tw:input tw:input-bordered tw:h-[1.8em] tw:px-[4px] tw:w-full tw:rounded-md',
+        'tw:border tw:border-gray-300 tw:py-2 tw:px-3 tw:w-full tw:rounded-md',
         'tw:bg-white' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:bg-'),
         'tw:read-only:bg-gray-100',
         'tw:inline-block' => $after_label,

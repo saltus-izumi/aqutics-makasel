@@ -9,7 +9,7 @@
             $class = 'tw:px-[8px] tw:py-[2px] tw:min-w-[50px] tw:rounded-md ';
             break;
         default:
-            $class = 'tw:px-[8px] tw:py-[4px] tw:min-w-[100px] tw:rounded-md tw-text-center tw-border-none tw-outline-none ';
+            $class = 'tw:px-[30px] tw:h-[42px] tw:min-w-[100px] tw:rounded-sm tw-text-center tw-border-none tw-outline-none ';
     }
 @endphp
 <button type="{{ $type }}" {{ $attributes->merge(['class' => $class . ' tw-text-center tw-border-none tw-outline-none tw-bg-inherit disabled:tw-bg-gray-300 tw:cursor-pointer']) }}>{{ $slot }}</button>

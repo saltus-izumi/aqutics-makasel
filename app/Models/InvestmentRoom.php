@@ -11,7 +11,7 @@ class InvestmentRoom extends Model
      */
     public function investment()
     {
-        return $this->belongsTo(Investment::class, 'investment_id');
+        return $this->belongsTo(Investment::class);
     }
 
     /**
@@ -29,7 +29,7 @@ class InvestmentRoom extends Model
         $options = [];
         if ($investmentRooms) {
             foreach ($investmentRooms as $investmentRoom) {
-                $options[$investmentRoom->investment_room_id] = $investmentRoom->investment_room_number;
+                $options[$investmentRoom->id] = $investmentRoom->investment_room_number;
             }
         }
 

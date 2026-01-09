@@ -9,6 +9,7 @@ use App\Models\Owner;
 use App\Models\OperationKind;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
+use App\Models\OperationTemplate;
 
 class Create extends Component
 {
@@ -23,6 +24,8 @@ class Create extends Component
     public $investment_id = '';
     public $investment_room_id = '';
     public $operation_template_id = '';
+    public $template = '';
+    public $title = '';
 
     public function mount()
     {
@@ -33,7 +36,7 @@ class Create extends Component
     }
 
     // オペレーション選択時のイベントハンドラ（wire:model.liveから自動呼び出し）
-    public function updatedOperationKind($value)
+    public function updatedOperationKindId($value)
     {
         Log::info('updatedOperationKind called', ['value' => $value]);
 
@@ -41,13 +44,13 @@ class Create extends Component
 
         if ($value) {
             // オーナーに紐づく物件オプションを取得
-            $this->operationTemplateOptions = Investment::getOptionsByOwner($value);
+            $this->operationTemplateOptions = OperationTemplate::getOptionsByOperationGroupId($value);
         } else {
             $this->operationTemplateOptions = [];
         }
 
         // Alpine.jsにオプション更新を通知
-        $this->dispatch('select-search2-options',
+        $this->dispatch('select-search-options',
             name: 'operation_template_id',
             options: $this->operationTemplateOptions,
             value: '',
@@ -69,11 +72,19 @@ class Create extends Component
         }
 
         // Alpine.jsにオプション更新を通知
-        $this->dispatch('select-search2-options',
+        $this->dispatch('select-search-options',
             name: 'investment_id',
             options: $this->investmentOptions,
             value: '',
         );
+
+        $this->investmentRoomOptions = [];
+        $this->dispatch('select-search-options',
+            name: 'investment_room_id',
+            options: $this->investmentRoomOptions,
+            value: '',
+        );
+
     }
 
     // 物件選択時のイベントハンドラ
@@ -91,13 +102,29 @@ class Create extends Component
         }
 
         // Alpine.jsにオプション更新を通知
-        $this->dispatch('select-search2-options',
+        $this->dispatch('select-search-options',
             name: 'investment_room_id',
             options: $this->investmentRoomOptions,
             value: '',
         );
-
     }
+
+    // カテゴリ時のイベントハンドラ
+    public function updatedOperationTemplateId($value)
+    {
+        Log::info('updatedOperationTempalteId called', ['value' => $value]);
+
+        $operationTemplate = OperationTemplate::find($value);
+        if ($operationTemplate) {
+            Log::info('get template', ['template' => $operationTemplate]);
+            $this->template = $operationTemplate->value;
+            $this->title = $operationTemplate->title;
+        } else {
+            $this->template = '';
+            $this->title = '';
+        }
+    }
+
 
     public function render()
     {

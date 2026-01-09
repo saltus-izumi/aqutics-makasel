@@ -22,7 +22,7 @@
             @mouseenter="sidebarHover = true"
             @mouseleave="sidebarHover = false"
         >
-            <div class="tw:border-r tw:flex tw:flex-col tw:h-full"
+            <div class="tw:border-r tw:flex tw:flex-col tw:h-full tw:bg-white"
                 :class="float ? 'tw:border-b tw:rounded-xl tw:overflow-hidden' : ''"
             >
                 <div class="tw:bg-black tw:h-[48px] tw:p-1 tw:flex tw:items-center tw:justify-between">
@@ -97,7 +97,7 @@
                         @click="toggleFloat()"
                     ></i>
                 </div>
-                <div class="tw:w-[222px] tw:px-2 tw:text-[1.4rem]">
+                <div class="tw:w-[222px] tw:px-2 tw:text-[1.4rem]" x-show="float" x-cloak>
                     {{ $title }}
                 </div>
                 <x-layout.top-menu-item title="チャット"/>
@@ -109,7 +109,15 @@
                 <x-layout.top-menu-item title="物件管理" />
                 <x-layout.top-menu-item title="物件詳細" />
             </div>
-            <div class="{{ $class }}">
+            <div
+                @class([
+                    'tw:h-[calc(100vh-48px)]' => !str_contains($class, 'tw:h-'),
+                    $class
+                ])
+            >
+                <div class="tw:h-[75px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[75px]" x-show="!float" x-cloak>
+                    {{ $title }}
+                </div>
                 {{ $slot }}
             </div>
         </div>

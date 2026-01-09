@@ -21,6 +21,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('operation')->name('operation.')->group(function () {
             Route::get('/', [AdminOperation::class, 'index'])->name('login');
             Route::get('/create', [AdminOperation::class, 'create'])->name('create');
+            Route::post('/create', [AdminOperation::class, 'store'])->name('store');
         });
     });
 });

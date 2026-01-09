@@ -3,20 +3,13 @@
     'value' => '',
     'empty' => '',
     'options' => [],
-    'is_error' => false,
     'placeholder' => '選択してください',
+    'is_error' => false,
+    'disabled' => false,
 ])
 
 @php
-    // wire:modelの取得（wire:model.live="owner_id" → "owner_id"）
-    $wireModelAttr = $attributes->whereStartsWith('wire:model');
-    $wireModel = '';
-    foreach ($wireModelAttr as $key => $value) {
-        $wireModel = $value;
-        break;
-    }
-
-    // optionsをJavaScript用にフラット化
+    // optionsをJavaScript用にフラット化（group対応）
     $flatOptions = [];
     foreach ($options as $key => $item) {
         if (is_array($item)) {
@@ -38,34 +31,39 @@
 @endphp
 
 <div
-    x-ref="root"
-    x-data="selectSearchComponent({
+    x-data="selectSearch({
+        name: {{ json_encode($name) }},
         options: {{ json_encode($flatOptions) }},
         value: '{{ $value }}',
         placeholder: '{{ $placeholder }}',
         emptyLabel: '{{ $empty }}',
-        wireModel: '{{ $wireModel }}',
-        inputName: '{{ $name }}',
     })"
+    wire:ignore
     x-on:click.outside="close()"
     x-on:keydown.escape.window="close()"
-    @update-select-options.window="handleOptionsUpdate($event.detail)"
+    x-on:select-search-options.window="handleOptionsUpdate($event)"
     @class([
         'tw:relative',
         'tw:w-full' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:w-'),
         $attributes->get('class'),
     ])
-    {{ $attributes->except('class') }}
+    {{ $attributes->except('class')->whereDoesntStartWith('wire:model') }}
 >
-    {{-- 隠しinput（フォーム送信用） --}}
-    <input type="hidden" name="{{ $name }}" x-model="selectedValue">
+    <input
+        type="hidden"
+        name="{{ $name }}"
+        x-ref="hiddenInput"
+        x-model="selectedValue"
+        {{ $attributes->whereStartsWith('wire:model') }}
+        @disabled($disabled)
+    >
 
-    {{-- 選択表示エリア --}}
     <button
         type="button"
         x-ref="button"
         x-on:click="toggle()"
-        class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }}"
+        @disabled($disabled)
+        class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }} {{ $disabled ? 'tw:opacity-50 tw:cursor-not-allowed' : '' }}"
     >
         <span x-text="selectedLabel || placeholder" x-bind:class="selectedLabel ? '' : 'tw:text-gray-400'"></span>
         <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,9 +71,7 @@
         </svg>
     </button>
 
-    {{-- ドロップダウン --}}
     <div
-        wire:ignore
         x-show="isOpen"
         x-transition:enter="tw:transition tw:ease-out tw:duration-100"
         x-transition:enter-start="tw:opacity-0 tw:scale-95"
@@ -83,10 +79,9 @@
         x-transition:leave="tw:transition tw:ease-in tw:duration-75"
         x-transition:leave-start="tw:opacity-100 tw:scale-100"
         x-transition:leave-end="tw:opacity-0 tw:scale-95"
-        class="tw:absolute tw:z-50 tw:mt-1 tw:w-full tw:bg-white tw:border-b tw:border-gray-300 tw:rounded tw:shadow-lg"
+        class="tw:absolute tw:z-50 tw:mt-1 tw:w-full tw:bg-white tw:border tw:border-gray-300 tw:rounded tw:shadow-lg"
         x-cloak
     >
-        {{-- 検索入力 --}}
         <div class="tw:p-2 tw:border-b tw:border-gray-200">
             <input
                 type="text"
@@ -97,14 +92,13 @@
             >
         </div>
 
-        {{-- オプションリスト --}}
-        <ul
-            class="tw:max-h-60 tw:overflow-auto tw:py-1"
-        >
-            {{-- 空オプション --}}
+        <ul class="tw:max-h-60 tw:overflow-auto tw:py-1">
             <template x-if="emptyLabel">
                 <li
                     x-on:click="select('', emptyLabel)"
+                    x-on:mouseenter="hoveredIndex = -1"
+                    x-on:mouseleave="hoveredIndex = null"
+                    x-bind:class="hoveredIndex === -1 ? 'tw:bg-blue-100' : ''"
                     class="tw:px-3 tw:py-2 tw:cursor-pointer hover:tw:bg-gray-100"
                 >
                     <span x-text="emptyLabel"></span>
@@ -113,15 +107,18 @@
 
             <template x-for="(item, index) in filteredOptions" :key="item.value">
                 <li>
-                    {{-- グループヘッダー --}}
                     <template x-if="item.group && (index === 0 || filteredOptions[index - 1]?.group !== item.group)">
                         <div class="tw:px-3 tw:py-2 tw:font-bold tw:text-gray-700 tw:bg-gray-50" x-text="item.group"></div>
                     </template>
 
-                    {{-- オプション --}}
                     <div
                         x-on:click="select(item.value, item.label)"
-                        x-bind:class="item.group ? 'tw:pl-6' : 'tw:pl-3'"
+                        x-on:mouseenter="hoveredIndex = index"
+                        x-on:mouseleave="hoveredIndex = null"
+                        x-bind:class="[
+                            hoveredIndex === index ? 'tw:bg-blue-100' : '',
+                            item.group ? 'tw:pl-6' : 'tw:pl-3'
+                        ]"
                         class="tw:pr-3 tw:py-2 tw:cursor-pointer hover:tw:bg-gray-100"
                     >
                         <span x-text="item.label"></span>
@@ -129,7 +126,6 @@
                 </li>
             </template>
 
-            {{-- 検索結果なし --}}
             <template x-if="filteredOptions.length === 0 && search">
                 <li class="tw:px-3 tw:py-2 tw:text-gray-500">該当なし</li>
             </template>
@@ -141,54 +137,96 @@
     @push('scripts')
         <script>
             document.addEventListener('alpine:init', () => {
-                Alpine.data('selectSearchComponent', (config = {}) => ({
+                Alpine.data('selectSearch', (config = {}) => ({
+                    name: config.name ?? '',
                     options: config.options ?? [],
                     selectedValue: config.value ?? '',
                     selectedLabel: '',
                     placeholder: config.placeholder ?? '選択してください',
                     emptyLabel: config.emptyLabel ?? '',
-                    wireModel: config.wireModel ?? '',
-                    inputName: config.inputName ?? '',
                     isOpen: false,
                     search: '',
+                    hoveredIndex: null,
 
                     init() {
-                        // 初期値のラベルを設定
                         this.updateLabelFromValue();
-
-                        // Livewireからのオプション更新イベントをリッスン
                         this.$watch('options', () => {
                             this.updateLabelFromValue();
                         });
                     },
 
-                    updateLabelFromValue() {
-                        if (this.selectedValue) {
-                            const found = this.options.find(o => o.value === this.selectedValue);
-                            this.selectedLabel = found ? found.label : '';
-                        } else {
-                            this.selectedLabel = '';
+                    handleOptionsUpdate(event) {
+                        const detail = event?.detail ?? {};
+                        if (detail.name && this.name && detail.name !== this.name) {
+                            return;
                         }
+                        this.setOptions(detail.options ?? [], detail.value);
                     },
 
-                    // Livewireからのオプション更新イベントを処理
-                    handleOptionsUpdate(detail) {
-                        if (detail.name !== this.inputName) return;
-
-                        // PHPの連想配列をフラット配列に変換
-                        const newOptions = [];
-                        const rawOptions = detail.options || {};
-                        for (const [key, value] of Object.entries(rawOptions)) {
-                            newOptions.push({
-                                value: String(key),
-                                label: value,
-                                group: null,
-                            });
+                    normalizeOptions(options) {
+                        if (Array.isArray(options)) {
+                            if (options.length === 0) {
+                                return [];
+                            }
+                            if (options[0] && Object.prototype.hasOwnProperty.call(options[0], 'value')) {
+                                return options.map((item) => ({
+                                    value: String(item.value ?? ''),
+                                    label: item.label ?? '',
+                                    group: item.group ?? null,
+                                }));
+                            }
                         }
+                        if (options && typeof options === 'object') {
+                            const normalized = [];
+                            Object.entries(options).forEach(([key, value]) => {
+                                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                                    Object.entries(value).forEach(([childKey, childValue]) => {
+                                        normalized.push({
+                                            value: String(childKey),
+                                            label: childValue,
+                                            group: key,
+                                        });
+                                    });
+                                } else {
+                                    normalized.push({
+                                        value: String(key),
+                                        label: value,
+                                        group: null,
+                                    });
+                                }
+                            });
+                            return normalized;
+                        }
+                        return [];
+                    },
 
-                        this.options = newOptions;
-                        this.selectedValue = '';
-                        this.selectedLabel = '';
+                    setOptions(options, value = null) {
+                        this.options = this.normalizeOptions(options);
+                        if (value !== null && value !== undefined) {
+                            this.selectedValue = String(value);
+                        } else if (!this.options.some(o => o.value === this.selectedValue)) {
+                            this.selectedValue = '';
+                        }
+                        this.updateLabelFromValue();
+                        this.dispatchInput();
+                    },
+
+                    dispatchInput() {
+                        const input = this.$refs.hiddenInput;
+                        if (!input) {
+                            return;
+                        }
+                        input.value = this.selectedValue ?? '';
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    },
+
+                    updateLabelFromValue() {
+                        if (!this.selectedValue) {
+                            this.selectedLabel = '';
+                            return;
+                        }
+                        const found = this.options.find(o => o.value === this.selectedValue);
+                        this.selectedLabel = found ? found.label : '';
                     },
 
                     get filteredOptions() {
@@ -196,10 +234,10 @@
                             return this.options;
                         }
                         const query = this.search.toLowerCase();
-                        return this.options.filter(o =>
-                            o.label.toLowerCase().includes(query) ||
-                            (o.group && o.group.toLowerCase().includes(query))
-                        );
+                        return this.options.filter(o => {
+                            return o.label.toLowerCase().includes(query) ||
+                                (o.group && o.group.toLowerCase().includes(query));
+                        });
                     },
 
                     toggle() {
@@ -224,18 +262,7 @@
                         this.selectedLabel = value ? label : '';
                         this.close();
                         this.$refs.button?.focus();
-
-                        // wire:modelがある場合はLivewireプロパティを直接更新
-                        if (this.wireModel && this.$wire) {
-                            this.$wire.set(this.wireModel, value);
-                        }
-
-                        // 選択変更イベントを発火（Livewire/Alpine.js連携用）
-                        const root = this.$refs.root;
-                        const hiddenInput = root?.querySelector('input[type="hidden"]');
-                        if (hiddenInput) {
-                            this.$dispatch('select-changed', { name: hiddenInput.name, value: value });
-                        }
+                        this.dispatchInput();
                     },
                 }));
             });

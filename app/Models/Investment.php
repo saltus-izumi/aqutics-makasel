@@ -22,7 +22,7 @@ class Investment extends Model
      */
     public function investmentRooms()
     {
-        return $this->hasMany(InvestmentRoom::class, 'investment_id');
+        return $this->hasMany(InvestmentRoom::class);
     }
 
     /**
