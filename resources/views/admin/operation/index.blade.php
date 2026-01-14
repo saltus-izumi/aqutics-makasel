@@ -3,7 +3,7 @@
         <div class="tw:border-b tw:pb-[21px] tw:h-[72px] tw:flex tw:items-end">
         </div>
         <div class="tw:pt-[21px] tw:flex tw:gap-x-[38px]">
-            <div class="tw:w-[250px] tw:px-[15px] tw:flex tw:flex-col tw:gap-y-[21px]">
+            <div class="tw:w-[250px] tw:px-[15px] tw:flex tw:flex-col tw:gap-y-[21px]" x-data="operationFilter()">
                 <div>
                     <div class="tw:pb-1">
                         オペレーション所有者
@@ -50,10 +50,12 @@
                     <div class="tw:pb-1">
                         作成日
                     </div>
-                    <x-form.input type="date" name="first_post_at_from" :value="old('first_post_at_from')" class="tw:text-[1.2rem]" />
+                    <x-form.input-date type="date" name="first_post_at_from" :value="old('first_post_at_from')" class="tw:text-[1.2rem]" />
                     <x-form.input type="date" name="first_post_at_to" :value="old('first_post_at_to')" class="tw:text-[1.2rem] tw:mt-1" />
                     <div class="tw:mt-1 tw:w-full tw:text-right">
-                        フィルターをクリア
+                        <button type="button" class="tw:text-[1.2rem] tw:text-pm_blue_001 tw:cursor-pointer" x-on:click="clearFilters()">
+                            フィルターをクリア
+                        </button>
                     </div>
                 </div>
                 <div>
@@ -62,4 +64,26 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('operationFilter', () => ({
+                    clearFilters() {
+                        window.dispatchEvent(new CustomEvent('select-search-clear'));
+
+                        this.$el.querySelectorAll('input:not([type="hidden"])').forEach((input) => {
+                            if (input.type === 'checkbox' || input.type === 'radio') {
+                                input.checked = false;
+                            } else {
+                                input.value = '';
+                            }
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
+                    },
+                }));
+            });
+        </script>
+    @endpush
 </x-admin.auth-layout>

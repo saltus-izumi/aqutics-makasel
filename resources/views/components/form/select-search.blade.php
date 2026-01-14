@@ -42,6 +42,7 @@
     wire:ignore
     x-on:click.outside="close()"
     x-on:keydown.escape.window="close()"
+    x-on:select-search-clear.window="clearSelection($event)"
     x-on:select-search-options.window="handleOptionsUpdate($event)"
     @class([
         'tw:relative',
@@ -267,6 +268,18 @@
                         this.selectedLabel = value ? label : (this.emptyLabel ?? '');
                         this.close();
                         this.$refs.button?.focus();
+                        this.dispatchInput();
+                    },
+
+                    clearSelection(event) {
+                        const detail = event?.detail ?? {};
+                        if (detail.name && this.name && detail.name !== this.name) {
+                            return;
+                        }
+                        this.selectedValue = '';
+                        this.selectedEmpty = false;
+                        this.selectedLabel = '';
+                        this.close();
                         this.dispatchInput();
                     },
                 }));
