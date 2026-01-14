@@ -29,10 +29,33 @@ class Create extends Component
 
     public function mount()
     {
+        $oldOperationKindId = old('operation_kind_id');
+        $oldOwnerId = old('owner_id');
+        $oldInvestmentId = old('investment_id');
+        $oldInvestmentRoomId = old('investment_room_id');
+        $oldOperationTemplateId = old('operation_template_id');
+        $oldTemplate = old('template');
+        $oldTitle = old('title');
+
+        $this->operation_kind_id = $oldOperationKindId !== null ? $oldOperationKindId : '';
+        $this->owner_id = $oldOwnerId !== null ? $oldOwnerId : '';
+        $this->investment_id = $oldInvestmentId !== null ? $oldInvestmentId : '';
+        $this->investment_room_id = $oldInvestmentRoomId !== null ? $oldInvestmentRoomId : '';
+        $this->operation_template_id = $oldOperationTemplateId !== null ? $oldOperationTemplateId : '';
+        $this->template = $oldTemplate !== null ? $oldTemplate : '';
+        $this->title = $oldTitle !== null ? $oldTitle : '';
+
         $this->operationKindOptions = OperationKind::getGroupOptions();
         $this->ownerOptions = Owner::getOptions();
-        $this->investmentOptions = [];
-        $this->investmentRoomOptions = [];
+        $this->investmentOptions = $this->owner_id
+            ? Investment::getOptionsByOwner($this->owner_id)
+            : [];
+        $this->investmentRoomOptions = $this->investment_id
+            ? InvestmentRoom::getOptionsByInvestment($this->investment_id)
+            : [];
+        $this->operationTemplateOptions = $this->operation_kind_id
+            ? OperationTemplate::getOptionsByOperationGroupId($this->operation_kind_id)
+            : [];
     }
 
     // オペレーション選択時のイベントハンドラ（wire:model.liveから自動呼び出し）

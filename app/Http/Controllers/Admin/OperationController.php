@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\Admin\Operation\StoreRequest;
 use App\Models\Operation;
+use App\Models\OperationFile;
 use App\Models\TeProgress;
 use App\Models\Thread;
 use App\Models\ThreadMessage;
@@ -77,13 +78,20 @@ class OperationController
             dump($files);
             if ($request->hasFile('operation_files')) {
                 foreach ($files as $file) {
-                    // $file is Illuminate\Http\UploadedFile
                     $original = $file->getClientOriginalName();
-                    $path = $file->store('operations'); // 例
+                    $path = $file->store("operations/{$operation->id}"); // 例
+                    $operationFile = new OperationFile([
+                        'operation_id' => $operation->id,
+                        'file_kind' => OperationFile::FILE_KIND_OTHER,
+                        'file_name' => $original,
+                        'file_path' => $path,
+                        'upload_at' => now(),
+                    ]);
+                    $operationFile->save();
                 }
             }
 
-            dd($request->input());
+            // dd($request->input());
 
         });
 
