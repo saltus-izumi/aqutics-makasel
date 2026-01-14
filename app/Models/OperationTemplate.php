@@ -42,18 +42,12 @@ class OperationTemplate extends Model
                 $options[$operation_group] = [];
             }
 
-            $options[$operation_group][$operationKind->id] = $operationKind->value;
+            $options[$operation_group][$operationKind->id] = $operationKind->operation_category;
         }
 
         return $options;
     }
 
-    /**
-     * オーナーに紐づく物件のオプションを取得（Owner→Landlord→Investment）
-     *
-     * @param int|string $ownerId
-     * @return array
-     */
     public static function getOptionsByOperationGroupId($operationGroupId): array
     {
        $operationTemplates = self::where('operation_group_id', $operationGroupId)

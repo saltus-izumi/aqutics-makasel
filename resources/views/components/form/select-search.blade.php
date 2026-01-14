@@ -1,7 +1,7 @@
 @props([
     'name' => '',
     'value' => '',
-    'empty' => '',
+    'empty' => false,
     'options' => [],
     'placeholder' => '選択してください',
     'is_error' => false,
@@ -9,6 +9,7 @@
 ])
 
 @php
+    $emptyLabel = is_bool($empty) ? ($empty ? "\u{00A0}" : '') : $empty;
     // optionsをJavaScript用にフラット化（group対応）
     $flatOptions = [];
     foreach ($options as $key => $item) {
@@ -36,7 +37,7 @@
         options: {{ json_encode($flatOptions) }},
         value: '{{ $value }}',
         placeholder: '{{ $placeholder }}',
-        emptyLabel: '{{ $empty }}',
+        emptyLabel: '{{ $emptyLabel }}',
     })"
     wire:ignore
     x-on:click.outside="close()"
@@ -147,6 +148,7 @@
                     isOpen: false,
                     search: '',
                     hoveredIndex: null,
+                    selectedEmpty: false,
 
                     init() {
                         this.updateLabelFromValue();
@@ -204,8 +206,10 @@
                         this.options = this.normalizeOptions(options);
                         if (value !== null && value !== undefined) {
                             this.selectedValue = String(value);
+                            this.selectedEmpty = this.selectedValue === '';
                         } else if (!this.options.some(o => o.value === this.selectedValue)) {
                             this.selectedValue = '';
+                            this.selectedEmpty = false;
                         }
                         this.updateLabelFromValue();
                         this.dispatchInput();
@@ -222,7 +226,7 @@
 
                     updateLabelFromValue() {
                         if (!this.selectedValue) {
-                            this.selectedLabel = '';
+                            this.selectedLabel = this.selectedEmpty ? (this.emptyLabel ?? '') : '';
                             return;
                         }
                         const found = this.options.find(o => o.value === this.selectedValue);
@@ -259,7 +263,8 @@
 
                     select(value, label) {
                         this.selectedValue = value;
-                        this.selectedLabel = value ? label : '';
+                        this.selectedEmpty = !value;
+                        this.selectedLabel = value ? label : (this.emptyLabel ?? '');
                         this.close();
                         this.$refs.button?.focus();
                         this.dispatchInput();

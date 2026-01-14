@@ -38,4 +38,20 @@
     [x-cloak] {
         display: none !important;
     }
+
+    input[type='date'] {
+        color: #9ca3af;
+    }
+
+    input[type='date']:valid {
+        color: #111827;
+    }
+
+    input[type='date']::-webkit-datetime-edit {
+        color: #9ca3af;
+    }
+
+    input[type='date']:valid::-webkit-datetime-edit {
+        color: #111827;
+    }
 }

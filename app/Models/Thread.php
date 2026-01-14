@@ -26,7 +26,7 @@ class Thread extends Model
     public const STATUS_OWNER_REJECTED = 5;
     public const STATUS_CANCELED = 9;
 
-    public const OPERATION_GROUPS = [
+    public const STATUS = [
         self::STATUS_DRAFT => '下書き',
         self::STATUS_PROPOSED => '提案済',
         self::STATUS_REPROPOSED => '再提案',

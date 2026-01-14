@@ -2,21 +2,44 @@
 namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\Admin\Operation\StoreRequest;
 use App\Models\Operation;
 use App\Models\OperationFile;
+use App\Models\OperationKind;
+use App\Models\OperationTemplate;
+use App\Models\Owner;
 use App\Models\TeProgress;
 use App\Models\Thread;
 use App\Models\ThreadMessage;
+use App\Models\User;
 
 class OperationController
 {
     public function index()
     {
-        return view('admin.operation.index');
+        $userOptions = User::getOptions();
+        $ownerOptions = Owner::getOptions();
+        $operationTemplateOptions = OperationTemplate::getGroupOptions();
+        $operationKindOptions = OperationKind::getGroupOptions();
+        $threadStatusOptions = Arr::except(Thread::STATUS, [Thread::STATUS_DRAFT]);
+        $isReadOptions = [
+            '1' => '既読',
+            '2' => '未読',
+        ];
+
+        return view('admin.operation.index')
+            ->with(compact(
+                'userOptions',
+                'ownerOptions',
+                'operationTemplateOptions',
+                'operationKindOptions',
+                'threadStatusOptions',
+                'isReadOptions',
+            ));
     }
 
     public function create()
@@ -90,14 +113,11 @@ class OperationController
                     $operationFile->save();
                 }
             }
-
-            // dd($request->input());
-
         });
 
-
-
-
+        return redirect()
+            ->route('operation.index')
+            ->with('message', 'オペレーションを作成しました。');
     }
 
 

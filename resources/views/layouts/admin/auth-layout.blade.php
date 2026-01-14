@@ -103,7 +103,8 @@
                 <x-layout.top-menu-item title="チャット"/>
                 <x-layout.top-menu-item title="オペレーション"
                     :subItems="[
-                        'http://local.zen.inc/app/admin/operations/add' => 'オペレーション作成'
+                        route('admin.operation.index') => 'オペレーション一覧',
+                        route('admin.operation.create') => 'オペレーション作成',
                     ]"
                 />
                 <x-layout.top-menu-item title="物件管理" />
