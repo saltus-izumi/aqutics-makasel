@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsUserStamps;
 use Illuminate\Database\Eloquent\Model;
 
 class InvestmentRoom extends Model
 {
+    use RecordsUserStamps;
     /**
      * この部屋が属する物件を取得
      */

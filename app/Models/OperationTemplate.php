@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsUserStamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OperationTemplate extends Model
 {
+    use RecordsUserStamps;
     use SoftDeletes;
 
     public const OPERATION_GROUP_EN = 1;

@@ -23,19 +23,19 @@ class StoreRequest extends FormRequest
     {
         return [
             'owner_id' => [
-                'required_unless:is_draft,1'
+                'required'
             ],
             'investment_id' => [
-                'required_unless:is_draft,1'
+                'required'
             ],
             'investment_room_id' => [
-                'required_unless:is_draft,1'
+                'required'
             ],
             'operation_template_id' => [
-                'required_unless:is_draft,1'
+                'required'
             ],
             'title' => [
-                'required_unless:is_draft,1'
+                'required'
             ],
         ];
     }
@@ -43,8 +43,8 @@ class StoreRequest extends FormRequest
     public function messages()
     {
         return [
-            'title.required_unless' => ':attributeを入力してください。',
-            '*.required_unless' => ':attributeを選択してください。',
+            'title.required' => ':attributeを入力してください。',
+            '*.required' => ':attributeを選択してください。',
         ];
     }
 

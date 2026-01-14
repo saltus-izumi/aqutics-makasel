@@ -57,6 +57,6 @@
     </div>
     <div class="tw:mt-[21px]">
         添付ファイル・画像、ＰＤＦ、Excel、Wordファイルが送信可能です。（可能ファイル数：20個／1ファイルの最大サイズ：25MB）
-        <x-form.multi_file_upload class="tw:h-[84px]" maxFileCount="20" maxFileSize="25MB" />
+        <x-form.multi_file_upload name="operation_files" class="tw:h-[84px]" maxFileCount="20" maxFileSize="25MB" />
     </div>
 </div>

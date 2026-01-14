@@ -2,12 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsUserStamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Thread extends Model
 {
+    use RecordsUserStamps;
     use SoftDeletes;
+
+    public const THREAD_TYPE_OPERATION = 1;
+    public const THREAD_TYPE_CHAT = 2;
+
+    public const THREAD_TYPE = [
+        self::THREAD_TYPE_OPERATION => 'オペレーション',
+        self::THREAD_TYPE_CHAT => 'チャット',
+    ];
 
     public const STATUS_DRAFT = 1;
     public const STATUS_PROPOSED = 2;
