@@ -31,4 +31,58 @@ class Operation extends Model
         'id'
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'sent_at' => 'datetime',
+            'read_at' => 'datetime',
+            'replied_at' => 'datetime',
+        ];
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(Owner::class);
+    }
+
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    public function createdUser()
+    {
+        return $this->belongsTo(User::class, 'created_user_id');
+    }
+
+    public function operationKind()
+    {
+        return $this->belongsTo(OperationKind::class);
+    }
+
+    public function operationTemplate()
+    {
+        return $this->belongsTo(OperationTemplate::class);
+    }
+
+    public function investment()
+    {
+        return $this->belongsTo(Investment::class);
+    }
+
+    public function investmentRoom()
+    {
+        return $this->belongsTo(InvestmentRoom::class, 'investment_room_id', 'id');
+    }
+
+    public function threadMessage()
+    {
+        return $this->belongsTo(ThreadMessage::class, 'thread_message_id', 'id');
+    }
+
 }

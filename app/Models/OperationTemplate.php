@@ -25,6 +25,14 @@ class OperationTemplate extends Model
         self::OPERATION_GROUP_OTEHR => 'その他',
     ];
 
+    public const OPERATION_TYPE_NOTIFICATION = 1;
+    public const OPERATION_TYPE_APPROVAL = 2;
+
+    public const OPERATION_TYPE = [
+        self::OPERATION_TYPE_NOTIFICATION => '通知タイプ',
+        self::OPERATION_TYPE_APPROVAL => '承諾タイプ',
+    ];
+
     protected $guarded = [
         'id'
     ];
@@ -50,7 +58,7 @@ class OperationTemplate extends Model
 
     public static function getOptionsByOperationGroupId($operationGroupId): array
     {
-       $operationTemplates = self::where('operation_group_id', $operationGroupId)
+        $operationTemplates = self::where('operation_group_id', $operationGroupId)
             ->orderBy('id', 'asc')
             ->get();
 

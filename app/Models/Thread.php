@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\RecordsUserStamps;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -38,5 +39,59 @@ class Thread extends Model
     protected $guarded = [
         'id'
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'last_post_at' => 'datetime',
+            'first_post_at' => 'datetime',
+        ];
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(Owner::class);
+    }
+
+    public function operations()
+    {
+        return $this->hasMany(Operation::class);
+    }
+
+    protected function firstOperation(): Attribute
+    {
+        return Attribute::get(function () {
+            $operations = $this->operations;
+
+            if ($operations instanceof \Illuminate\Support\Collection) {
+                return $operations->first();
+            }
+
+            return $operations;
+        });
+    }
+
+    protected function lastOperation(): Attribute
+    {
+        return Attribute::get(function () {
+            $operations = $this->operations;
+
+            if ($operations instanceof \Illuminate\Support\Collection) {
+                return $operations->last();
+            }
+
+            return $operations;
+        });
+    }
 
 }

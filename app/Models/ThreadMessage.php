@@ -31,4 +31,9 @@ class ThreadMessage extends Model
         'id'
     ];
 
+    public function operation()
+    {
+        return $this->hasOne(Operation::class, 'thread_message_id', 'id');
+    }
+
 }

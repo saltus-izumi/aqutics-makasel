@@ -1,0 +1,23 @@
+.pm-table {
+    @apply tw:border-separate tw:border-spacing-0 tw:table-fixed;
+}
+
+.pm-table tr:first-child th,
+.pm-table tr:first-child td {
+    @apply tw:border-t tw:border-gray-400;
+}
+
+.pm-table tr th:first-child,
+.pm-table tr td:first-child {
+    @apply tw:border-l tw:border-gray-400;
+}
+
+.pm-table:has(thead) tbody tr:first-child th,
+.pm-table:has(thead) tbody tr:first-child td {
+    @apply tw:border-t-0;
+}
+
+.pm-table th,
+.pm-table td {
+    @apply tw:border-r tw:border-b tw:border-gray-400 tw:text-center tw:p-0 tw:truncate;
+}

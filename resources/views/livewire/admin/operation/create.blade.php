@@ -22,7 +22,7 @@
                 <div class="tw:pb-1">
                     部屋<x-badge.red class="tw:ml-1">必須</x-badge.red>
                 </div>
-                <x-form.select-search name="investment_room_id" wire:model.live="investment_room_id" :options="$investmentRoomOptions" :empty="true":value="$investment_room_id" class="tw:text-[1.2rem]" />
+                <x-form.select-search name="investment_room_id" wire:model.live="investment_room_id" :options="$investmentRoomOptions" :empty="true" :value="$investment_room_id" class="tw:text-[1.2rem]" />
                 <x-form.error-message>{{ $errors->first('investment_room_id') }}</x-form.error-message>
             </div>
             <div>
