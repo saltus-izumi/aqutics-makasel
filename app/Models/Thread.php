@@ -63,6 +63,22 @@ class Thread extends Model
         return $this->belongsTo(Owner::class);
     }
 
+    public function investment()
+    {
+        return $this->belongsTo(Investment::class);
+    }
+
+    public function investmentRoom()
+    {
+        return $this->belongsTo(InvestmentRoom::class, 'investment_room_id', 'id');
+    }
+
+
+    public function threadMessages()
+    {
+        return $this->hasMany(ThreadMessage::class);
+    }
+
     public function operations()
     {
         return $this->hasMany(Operation::class);
@@ -71,26 +87,44 @@ class Thread extends Model
     protected function firstOperation(): Attribute
     {
         return Attribute::get(function () {
-            $operations = $this->operations;
+            if ($this->operations) {
+                $operations = $this->operations;
 
-            if ($operations instanceof \Illuminate\Support\Collection) {
-                return $operations->first();
+                if ($operations instanceof \Illuminate\Support\Collection) {
+                    return $operations->first();
+                }
+            } elseif ($this->threadMessages) {
+                $messages = $this->threadMessages;
+
+                if ($messages instanceof \Illuminate\Support\Collection) {
+                    $message = $messages->first(fn ($message) => $message->operation);
+                    return $message?->operation;
+                }
             }
 
-            return $operations;
+            return null;
         });
     }
 
     protected function lastOperation(): Attribute
     {
         return Attribute::get(function () {
-            $operations = $this->operations;
+            if ($this->operations) {
+                $operations = $this->operations;
 
-            if ($operations instanceof \Illuminate\Support\Collection) {
-                return $operations->last();
+                if ($operations instanceof \Illuminate\Support\Collection) {
+                    return $operations->last();
+                }
+            } elseif ($this->threadMessages) {
+                $messages = $this->threadMessages;
+
+                if ($messages instanceof \Illuminate\Support\Collection) {
+                    $message = $messages->last(fn ($message) => $message->operation);
+                    return $message?->operation;
+                }
             }
 
-            return $operations;
+            return null;
         });
     }
 

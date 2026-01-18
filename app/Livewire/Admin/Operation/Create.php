@@ -6,10 +6,12 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 
 use App\Models\Owner;
+use App\Models\Operation;
 use App\Models\OperationKind;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\OperationTemplate;
+use App\Models\TeProgress;
 
 class Create extends Component
 {
@@ -19,13 +21,23 @@ class Create extends Component
     public $investmentRoomOptions = [];
     public $operationTemplateOptions = [];
 
-    public $operation_kind_id = '';
-    public $owner_id = '';
-    public $investment_id = '';
-    public $investment_room_id = '';
-    public $operation_template_id = '';
+    public $operationKindId = '';
+    public $ownerId = '';
+    public $investmentId = '';
+    public $investmentRoomId = '';
+    public $operationTemplateId = '';
     public $template = '';
     public $title = '';
+    public $message = '';
+    public $retailEstimateFiles = [];
+    public $completionPhotoFiles = [];
+    public $otherFiles = [];
+
+    public $operationId = null;
+    public $operation = null;
+    public $teProgressId = null;
+    public $teProgress = null;
+    public $geProgressId = null;
 
     public function mount()
     {
@@ -36,25 +48,71 @@ class Create extends Component
         $oldOperationTemplateId = old('operation_template_id');
         $oldTemplate = old('template');
         $oldTitle = old('title');
+        $oldMessage = old('message');
 
-        $this->operation_kind_id = $oldOperationKindId !== null ? $oldOperationKindId : '';
-        $this->owner_id = $oldOwnerId !== null ? $oldOwnerId : '';
-        $this->investment_id = $oldInvestmentId !== null ? $oldInvestmentId : '';
-        $this->investment_room_id = $oldInvestmentRoomId !== null ? $oldInvestmentRoomId : '';
-        $this->operation_template_id = $oldOperationTemplateId !== null ? $oldOperationTemplateId : '';
+        // オペレーションID
+        if ($this->operationId) {
+            $this->operation = Operation::with([
+                    'threadMessage',
+                    'retailEstimateFiles',
+                    'completionPhotoFiles',
+                    'otherFiles',
+                ])
+                ->where('id', $this->operationId)
+                ->first();
+            $oldOperationKindId = old('operation_kind_id', $this->operation->operation_kind_id);
+            $oldOwnerId = old('owner_id', $this->operation->owner_id);
+            $oldInvestmentId = old('investment_id', $this->operation->investment_id);
+            $oldInvestmentRoomId = old('investment_room_id', $this->operation->investment_room_id);
+            $oldOperationTemplateId = old('operation_template_id', $this->operation->operation_template_id);
+            $oldTemplate = old('template', $this->operation->threadMessage?->body);
+            $oldTitle = old('title', $this->operation->threadMessage?->title);
+            $oldMessage = old('message', $this->operation->threadMessage?->extended_message);
+            $this->teProgressId = $this->operation->te_progress_id;
+            $this->retailEstimateFiles = $this->operation->retailEstimateFiles ?? [];
+            $this->completionPhotoFiles = $this->operation->completionPhotoFiles ?? [];
+            $this->otherFiles = $this->operation->otherFiles ?? [];
+        }
+
+        if ($this->teProgressId) {
+            // TEプロセスIDが指定されている場合
+            $this->teProgress = TeProgress::with([
+                    'investment',
+                    'investment.landlord',
+                    'investment.landlord.owner',
+                    'investmentRoom',
+                    'retailEstimateFiles',
+                    'completionPhotoFiles',
+                ])
+                ->where('id', $this->teProgressId)
+                ->first();
+
+            if ($this->teProgress) {
+                $oldOwnerId = old('owner_id', $this->teProgress->investment?->landlord?->owner_id);
+                $oldInvestmentId = old('investment_id', $this->teProgress->investment_id);
+                $oldInvestmentRoomId = old('investment_room_id', $this->teProgress->investment_room_uid);
+            }
+        }
+
+        $this->operationKindId = $oldOperationKindId !== null ? $oldOperationKindId : '';
+        $this->ownerId = $oldOwnerId !== null ? $oldOwnerId : '';
+        $this->investmentId = $oldInvestmentId !== null ? $oldInvestmentId : '';
+        $this->investmentRoomId = $oldInvestmentRoomId !== null ? $oldInvestmentRoomId : '';
+        $this->operationTemplateId = $oldOperationTemplateId !== null ? $oldOperationTemplateId : '';
         $this->template = $oldTemplate !== null ? $oldTemplate : '';
         $this->title = $oldTitle !== null ? $oldTitle : '';
+        $this->message = $oldMessage !== null ? $oldMessage : '';
 
         $this->operationKindOptions = OperationKind::getGroupOptions();
         $this->ownerOptions = Owner::getOptions();
-        $this->investmentOptions = $this->owner_id
-            ? Investment::getOptionsByOwner($this->owner_id)
+        $this->investmentOptions = $this->ownerId
+            ? Investment::getOptionsByOwner($this->ownerId)
             : [];
-        $this->investmentRoomOptions = $this->investment_id
-            ? InvestmentRoom::getOptionsByInvestment($this->investment_id)
+        $this->investmentRoomOptions = $this->investmentId
+            ? InvestmentRoom::getOptionsByInvestment($this->investmentId)
             : [];
-        $this->operationTemplateOptions = $this->operation_kind_id
-            ? OperationTemplate::getOptionsByOperationGroupId($this->operation_kind_id)
+        $this->operationTemplateOptions = $this->operationKindId
+            ? OperationTemplate::getOptionsByOperationGroupId($this->operationKindId)
             : [];
     }
 
@@ -63,7 +121,7 @@ class Create extends Component
     {
         Log::info('updatedOperationKind called', ['value' => $value]);
 
-        $this->operation_template_id = ''; // オペレーション変更時はカテゴリ（テンプレート）選択をリセット
+        $this->operationTemplateId = ''; // オペレーション変更時はカテゴリ（テンプレート）選択をリセット
 
         if ($value) {
             // オーナーに紐づく物件オプションを取得
@@ -85,7 +143,7 @@ class Create extends Component
     {
         Log::info('updatedOwnerId called', ['value' => $value]);
 
-        $this->investment_id = ''; // オーナー変更時は物件選択をリセット
+        $this->investmentId = ''; // オーナー変更時は物件選択をリセット
 
         if ($value) {
             // オーナーに紐づく物件オプションを取得
@@ -115,7 +173,7 @@ class Create extends Component
     {
         Log::info('updatedInvestmentId called', ['value' => $value]);
 
-        $this->investment_room_id = ''; // 物件変更時は部屋選択をリセット
+        $this->investmentRoomId = ''; // 物件変更時は部屋選択をリセット
 
         if ($value) {
             // オーナーに紐づく物件オプションを取得

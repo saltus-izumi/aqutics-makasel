@@ -6,6 +6,7 @@
     'placeholder' => '選択してください',
     'is_error' => false,
     'disabled' => false,
+    'readonly' => false,
 ])
 
 @php
@@ -64,7 +65,7 @@
         type="button"
         x-ref="button"
         x-on:click="toggle()"
-        @disabled($disabled)
+        @disabled($disabled || $readonly)
         class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }} {{ $disabled ? 'tw:opacity-50 tw:cursor-not-allowed' : '' }}"
     >
         <span x-text="selectedLabel || placeholder" x-bind:class="selectedLabel ? '' : 'tw:text-gray-400'"></span>

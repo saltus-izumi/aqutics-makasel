@@ -16,7 +16,7 @@
             'tw:bg-red-100' => $is_error,
         ])
         {{ $attributes->except('class') }}
-        {{ (string)$checked === (string)$value ? 'checked' : '' }}
+        {{ $checked ? 'checked' : '' }}
     >
     <div class="tw:ml-1 tw:font-normal {{ $label_class }}">{{ $slot }}</div>
 </label>

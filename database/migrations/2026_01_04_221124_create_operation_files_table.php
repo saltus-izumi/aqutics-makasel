@@ -16,8 +16,8 @@ return new class extends Migration
             $table->integer('operation_id')->comment('オペレーションID');
             $table->integer('file_kind')->comment('ファイル種別');
             $table->integer('te_progress_file_id')->nullable()->comment('TEプロセスファイルID');
-            $table->string('file_name', 255)->comment('ファイル名');
-            $table->string('file_path', 255)->comment('ファイルパス');
+            $table->string('file_name', 255)->nullable()->comment('ファイル名');
+            $table->string('file_path', 255)->nullable()->comment('ファイルパス');
             $table->datetime('upload_at')->nullable()->comment('アップロード日時');
             $table->integer('created_user_id')->nullable()->comment('データ登録スタッフID');
             $table->datetime('user_created_at')->nullable()->comment('データ登録日時（スタッフ）');

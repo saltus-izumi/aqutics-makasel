@@ -7,7 +7,7 @@
         x-ref="form"
     >
         @csrf
-        <livewire:admin.operation.create />
+        <livewire:admin.operation.create :operationId="$operationId" :teProgressId="$teProgressId" />
         <div class="tw:w-[1596px] tw:mx-[20px] tw:py-[21px] tw:flex tw:justify-between">
             <div>
                 <x-button.gray class="tw:text-[1.4rem]">キャンセル</x-button.gray>

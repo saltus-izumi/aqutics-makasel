@@ -1,5 +1,5 @@
 <x-admin.auth-layout title="オペレーション一覧">
-    <div class="tw:pl-[20px]" x-data="operationFilter()">
+    <div class="tw:pl-[20px] tw:h-[calc(100%-75px)]" x-data="operationFilter()">
         <div class="tw:border-b tw:h-[72px] tw:flex tw:items-end tw:pl-[250px]">
             <div class="tw:flex">
                 <a href="{{ route('admin.operation.index', array_merge(request()->query(), ['is_draft' => 0])) }}">
@@ -18,8 +18,8 @@
                 </a>
             </div>
         </div>
-        <div class="tw:flex">
-            <div class="tw:h-screen tw:w-[250px] tw:pt-[21px] tw:pr-[20px] tw:border-r">
+        <div class="tw:flex tw:h-[calc(100%-72px)]">
+            <div class="tw:h-full tw:w-[250px] tw:pt-[21px] tw:pr-[20px] tw:border-r">
                 <form method="get" action="{{ route('admin.operation.index') }}" class="tw:flex tw:flex-col tw:gap-y-[21px]" x-ref="filterForm">
                     <div>
                         <div class="tw:pb-1">
@@ -81,9 +81,9 @@
                     </div>
                 </form>
             </div>
-            <div class="tw:pt-[21px] tw:px-[20px] tw:flex-1 tw:overflow-scroll">
-                <div class="tw:min-w-fit">
-                    <div class="tw:flex tw:gap-x-[38px]">
+            <div class="tw:h-full tw:pt-[21px] tw:px-[20px] tw:flex-1 tw:overflow-x-scroll tw:overflow-y-hidden">
+                <div class="tw:h-full tw:min-w-fit">
+                    <div class="tw:flex tw:gap-x-[38px] tw:h-[92px]">
                         <div class="tw:pr-[75px]">
                             <x-form.input class="tw:w-[245px] tw:text-[1.2rem]" placeholder="🔍 物件(ID)検索" :value="$conditions['investment_id'] ?? ''" x-ref="searchInput" x-on:keydown.enter.prevent="submitSearch()" />
                         </div>
@@ -156,7 +156,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tw:pt-[21px] tw:w-full">
+                    <div class="tw:h-[calc(100%-92px)] tw:mt-[21px] tw:w-full tw:overflow-y-scroll">
                         <livewire:admin.operation.operation-list :threads="$threads" />
                     </div>
                 </div>

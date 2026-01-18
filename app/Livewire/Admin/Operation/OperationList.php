@@ -34,14 +34,14 @@ class OperationList extends Component
         } else {
             $this->selectedThreadId = $threadId;
             $this->selectedThread = Thread::with([
-                'operations.operationTemplate',
-                'operations.investment',
-                'operations.investmentRoom',
-                'operations.owner',
-                'operations.operationKind',
-                'operations.threadMessage',
-                'operations.assignedUser',
-                'operations.createdUser',
+                'threadMessages' => fn ($q) => $q->orderBy('id', 'asc'),
+                // 'operations',
+                // 'operations.investmentRoom',
+                // 'operations.owner',
+                // 'operations.operationTemplate',
+                // 'operations.operationKind',
+                // 'operations.assignedUser',
+                // 'operations.createdUser',
             ])->find($threadId);
         }
     }

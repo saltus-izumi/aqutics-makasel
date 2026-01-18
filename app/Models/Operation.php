@@ -85,4 +85,45 @@ class Operation extends Model
         return $this->belongsTo(ThreadMessage::class, 'thread_message_id', 'id');
     }
 
+    // 上代見積り
+    public function retailEstimateFiles()
+    {
+        return $this->hasMany(OperationFile::class)
+            ->where('file_kind', OperationFile::FILE_KIND_RETAIL_ESTIMATE);
+    }
+
+    // 下代見積り
+    public function lowerEstimateFiles()
+    {
+        return $this->hasMany(OperationFile::class)
+            ->where('file_kind', OperationFile::FILE_KIND_LOWER_ESTIMATE);
+    }
+
+    // 発注書
+    public function purchaseOrderFiles()
+    {
+        return $this->hasMany(OperationFile::class)
+            ->where('file_kind', OperationFile::FILE_KIND_PURCHASE_ORDER);
+    }
+
+    // 現調報告書
+    public function onSiteInspectionReportFiles()
+    {
+        return $this->hasMany(OperationFile::class)
+            ->where('file_kind', OperationFile::FILE_KIND_ON_SITE_INSPECTION_REPORT);
+    }
+
+    // 完工写真
+    public function completionPhotoFiles()
+    {
+        return $this->hasMany(OperationFile::class)
+            ->where('file_kind', OperationFile::FILE_KIND_COMPLETION_PHOTO);
+    }
+
+    // その他ファイル
+    public function otherFiles()
+    {
+        return $this->hasMany(OperationFile::class)
+            ->where('file_kind', OperationFile::FILE_KIND_OTHER);
+    }
 }

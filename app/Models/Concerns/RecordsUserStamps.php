@@ -33,7 +33,7 @@ trait RecordsUserStamps
                 return;
             }
 
-            $model->setAttribute('update_user_id', $adminId);
+            $model->setAttribute('updated_user_id', $adminId);
             $model->setAttribute('user_updated_at', now());
         });
 

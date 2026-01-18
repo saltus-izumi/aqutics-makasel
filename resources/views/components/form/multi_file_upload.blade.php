@@ -11,6 +11,7 @@
     $existingFiles = collect($files ?? [])
         ->filter(fn ($file) => !($file instanceof \Illuminate\Http\UploadedFile))
         ->map(function ($file) {
+
             return [
                 'id' => $file->id ?? null,
                 'file_name' => $file->file_name ?? $file->name ?? '',
@@ -21,14 +22,14 @@
 @endphp
 
 <div
-    x-data="multiFileUploadComponent({
-        name: '{{ $name }}',
-        existingFiles: @json($existingFiles),
-        maxFileCount: {{ $maxFileCount }},
-        maxFileSize: @js($maxFileSize),
-        allowMimeTypes: @json($allowMimeTypes),
-        uploadFunction: @json($uploadFunction),
-    })"
+    x-data="multiFileUploadComponent(@js([
+        'name' => $name,
+        'existingFiles' => $existingFiles,
+        'maxFileCount' => $maxFileCount,
+        'maxFileSize' => $maxFileSize,
+        'allowMimeTypes' => $allowMimeTypes,
+        'uploadFunction' => $uploadFunction,
+    ]))"
     class="tw:w-full"
 >
     <div
@@ -56,6 +57,22 @@
     >
 
     <div class="tw:flex tw:flex-col tw:gap-[3px]">
+        <template x-for="(file, index) in newFiles" :key="`new-${index}`">
+            <div class="tw:flex tw:text-[11pt] tw:px-[2px] tw:w-full">
+                <div class="tw:w-[15px]">
+                    <i class="far" :class="iconClass(file.file.type)"></i>
+                </div>
+                <div class="">
+                    <div class="tw:w-full tw:truncate" x-text="file.file.name"></div>
+                </div>
+                <div class="tw:w-[20px] tw:text-right">
+                    <button type="button" class="tw:text-red-500" @click="removeNew(index)">
+                        <i class="fas fa-minus-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </template>
+
         <template x-for="(file, index) in existingFiles" :key="`existing-${index}`">
             <div
                 class="tw:flex tw:text-[11pt] tw:px-[2px] tw:w-full"
@@ -64,7 +81,7 @@
                 <div class="tw:w-[15px]">
                     <i class="far" :class="iconClass(file.mime_type)"></i>
                 </div>
-                <div class="tw:w-[calc(100%-35px)]">
+                <div class="">
                     <div class="tw:w-full tw:truncate" x-text="file.file_name"></div>
                 </div>
                 <div class="tw:w-[20px] tw:text-right">
@@ -78,22 +95,6 @@
                         :value="file.id"
                         x-model="file.markedDelete"
                     >
-                </div>
-            </div>
-        </template>
-
-        <template x-for="(file, index) in newFiles" :key="`new-${index}`">
-            <div class="tw:flex tw:text-[11pt] tw:px-[2px] tw:w-full">
-                <div class="tw:w-[15px]">
-                    <i class="far" :class="iconClass(file.file.type)"></i>
-                </div>
-                <div class="">
-                    <div class="tw:w-full tw:truncate" x-text="file.file.name"></div>
-                </div>
-                <div class="tw:w-[20px] tw:text-right">
-                    <button type="button" class="tw:text-red-500" @click="removeNew(index)">
-                        <i class="fas fa-minus-circle"></i>
-                    </button>
                 </div>
             </div>
         </template>
@@ -112,6 +113,7 @@ function multiFileUploadComponent({ name, existingFiles, maxFileCount, maxFileSi
 
         init() {
             this.maxFileSizeBytes = this.parseSize(maxFileSize);
+            {{-- console.log(this.existingFiles); --}}
         },
 
         triggerFileInput() {

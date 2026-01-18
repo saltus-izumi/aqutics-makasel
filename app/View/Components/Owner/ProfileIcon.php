@@ -1,16 +1,16 @@
 <?php
 
-namespace App\View\Components\User;
+namespace App\View\Components\Owner;
 
 use Closure;
-use App\Models\User;
+use App\Models\Owner;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Component;
 
 class ProfileIcon extends Component
 {
-    public ?User $user;
+    public ?Owner $owner;
     public ?string $imageDataUrl;
     public ?string $initial;
     public string $bgColor;
@@ -20,11 +20,11 @@ class ProfileIcon extends Component
      */
     public function __construct(?int $id = null)
     {
-        $this->user = $id ? User::find($id) : null;
+        $this->owner = $id ? Owner::find($id) : null;
         $this->imageDataUrl = null;
 
-        if ($this->user?->profile_image_file_path) {
-            $path = $this->user->profile_image_file_path;
+        if ($this->owner?->profile_image_file_path) {
+            $path = $this->owner->profile_image_file_path;
 
             if (Storage::disk('local')->exists($path)) {
                 $fullPath = Storage::disk('local')->path($path);
@@ -34,9 +34,9 @@ class ProfileIcon extends Component
             }
         }
 
-        $name = $this->user?->user_name ?? '';
+        $name = $this->owner?->name ?? '';
         $this->initial = $name !== '' ? mb_substr($name, 0, 1) : null;
-        $this->bgColor = $this->user?->profile_bgcolor ?? '55aaaa';
+        $this->bgColor = $this->owner?->profile_bg_color ?? '55aaaa';
     }
 
     /**
@@ -44,6 +44,6 @@ class ProfileIcon extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.user.profile-icon');
+        return view('components.owner.profile-icon');
     }
 }

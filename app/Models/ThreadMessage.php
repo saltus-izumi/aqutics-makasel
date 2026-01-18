@@ -31,6 +31,24 @@ class ThreadMessage extends Model
         'id'
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'sent_at' => 'datetime',
+            'read_at' => 'datetime',
+        ];
+    }
+
+    public function senderUser()
+    {
+        return $this->belongsTo(User::class, 'sender_user_id');
+    }
+
     public function operation()
     {
         return $this->hasOne(Operation::class, 'thread_message_id', 'id');
