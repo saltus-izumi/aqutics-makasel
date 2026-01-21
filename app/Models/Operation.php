@@ -27,6 +27,15 @@ class Operation extends Model
         self::STATUS_CANCELED => '中止',
     ];
 
+    public const OWNER_STATUS = [
+        self::STATUS_DRAFT => '下書き',
+        self::STATUS_IN_PROGRESS => '進行中',
+        self::STATUS_CONFIRMED => '進行中',
+        self::STATUS_APPROVED => '承諾',
+        self::STATUS_REJECTED => '拒否',
+        self::STATUS_CANCELED => '中止',
+    ];
+
     protected $guarded = [
         'id'
     ];

@@ -21,7 +21,7 @@ class Owner extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
+        'mail',
         'password',
     ];
 
@@ -43,9 +43,13 @@ class Owner extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getAuthPasswordName()
+    {
+        return 'password';
     }
 
     /**

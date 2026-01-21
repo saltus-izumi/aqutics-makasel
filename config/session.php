@@ -131,6 +131,8 @@ return [
         'SESSION_COOKIE',
         Str::slug((string) env('APP_NAME', 'laravel')).'-session'
     ),
+    'admin_cookie' => env('SESSION_ADMIN_COOKIE', 'pm-admin-session'),
+    'owner_cookie' => env('SESSION_OWNER_COOKIE', 'pm-owner-session'),
 
     /*
     |--------------------------------------------------------------------------
@@ -144,6 +146,8 @@ return [
     */
 
     'path' => env('SESSION_PATH', '/'),
+    'admin_path' => env('SESSION_ADMIN_PATH', '/admin'),
+    'owner_path' => env('SESSION_OWNER_PATH', '/owner'),
 
     /*
     |--------------------------------------------------------------------------

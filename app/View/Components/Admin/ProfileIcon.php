@@ -1,6 +1,6 @@
 <?php
 
-namespace App\View\Components\User;
+namespace App\View\Components\Admin;
 
 use Closure;
 use App\Models\User;
@@ -44,6 +44,6 @@ class ProfileIcon extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.user.profile-icon');
+        return view('components.admin.profile-icon');
     }
 }

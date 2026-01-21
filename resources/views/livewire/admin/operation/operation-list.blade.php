@@ -1,6 +1,6 @@
 <div>
-    <table class="tw:w-full tw:text-[10pt]">
-        <thead class="tw:sticky tw:top-0 tw:z-[150]">
+    <table class="tw:w-full">
+        <thead class="tw:sticky tw:top-[134px] tw:z-[150]">
             <tr class="tw:h-[42px] tw:bg-pm_gray_004">
                 <th class="tw:pl-[10px] tw:font-normal tw:text-left tw:min-w-[190px]">更新日/所有係</th>
                 <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[114px]">カテゴリ</th>
@@ -62,7 +62,7 @@
                     <td class="tw:pl-[5px]">
                         <div class="tw:flex tw:items-center tw:gap-x-1">
                             <div class="tw:w-[21px] tw:h-[21px]">
-                                <x-user.profile-icon :id="$thread->first_operation?->created_user_id" />
+                                <x-admin.profile-icon :id="$thread->first_operation?->created_user_id" />
                             </div>
                             {{ $thread->first_operation?->createdUser?->full_name}}
                         </div>
@@ -137,7 +137,7 @@
                                     <div class="tw:flex tw:items-center tw:gap-x-1">
                                         <div class="tw:w-[20px] tw:h-[20px]">
                                             @if ($message->sender_type == App\Models\ThreadMessage::SENDER_TYPE_USER)
-                                                <x-user.profile-icon :id="$message->sender_user_id" />
+                                                <x-admin.profile-icon :id="$message->sender_user_id" />
                                             @else
                                                 <x-owner.profile-icon :id="$selectedThread?->owner_id" />
                                             @endif

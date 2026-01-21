@@ -68,7 +68,7 @@
         @disabled($disabled || $readonly)
         class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }} {{ $disabled ? 'tw:opacity-50 tw:cursor-not-allowed' : '' }}"
     >
-        <span x-text="selectedLabel || placeholder" x-bind:class="selectedLabel ? '' : 'tw:text-gray-400'"></span>
+        <span class="tw:block tw:truncate" x-text="selectedLabel || placeholder" x-bind:class="selectedLabel ? '' : 'tw:text-gray-400'"></span>
         <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
@@ -124,7 +124,7 @@
                         ]"
                         class="tw:pr-3 tw:py-2 tw:cursor-pointer hover:tw:bg-gray-100"
                     >
-                        <span x-text="item.label"></span>
+                        <span class="tw:block tw:truncate" x-text="item.label"></span>
                     </div>
                 </li>
             </template>

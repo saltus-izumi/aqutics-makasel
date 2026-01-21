@@ -36,6 +36,17 @@ class Thread extends Model
         self::STATUS_CANCELED => '中止',
     ];
 
+    public const OWNER_STATUS = [
+        self::STATUS_DRAFT => '下書き',
+        self::STATUS_PROPOSED => '進行中',
+        self::STATUS_REPROPOSED => '進行中',
+        self::STATUS_OWNER_APPROVED => '承諾済',
+        self::STATUS_OWNER_REJECTED => '却下',
+        self::STATUS_CANCELED => '中止',
+    ];
+
+
+
     protected $guarded = [
         'id'
     ];
@@ -82,6 +93,21 @@ class Thread extends Model
     public function operations()
     {
         return $this->hasMany(Operation::class);
+    }
+
+    protected function lastMessage(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->threadMessages) {
+                $threadMessages = $this->threadMessages;
+
+                if ($threadMessages instanceof \Illuminate\Support\Collection) {
+                    return $threadMessages->last();
+                }
+            }
+
+            return null;
+        });
     }
 
     protected function firstOperation(): Attribute

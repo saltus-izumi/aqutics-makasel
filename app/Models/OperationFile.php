@@ -33,6 +33,12 @@ class OperationFile extends Model
         'id'
     ];
 
+    public function teProgressFile()
+    {
+        return $this->belongsTo(TeProgressFile::class);
+    }
+
+
     protected function mimeType(): Attribute
     {
         return Attribute::get(function () {

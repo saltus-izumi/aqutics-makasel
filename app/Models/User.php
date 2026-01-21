@@ -49,6 +49,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function getAuthPasswordName()
+    {
+        return 'user_password';
+    }
+
     protected function fullName(): Attribute
     {
         return Attribute::get(function () {
@@ -57,11 +62,6 @@ class User extends Authenticatable
 
             return trim($userName . ' ' . $firstName);
         });
-    }
-
-    public function getAuthPasswordName()
-    {
-        return 'user_password';
     }
 
     public static function getOptions($department = null)

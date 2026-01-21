@@ -81,9 +81,9 @@
                     </div>
                 </form>
             </div>
-            <div class="tw:h-full tw:pt-[21px] tw:px-[20px] tw:flex-1 tw:overflow-x-scroll tw:overflow-y-hidden">
+            <div class="tw:h-full tw:px-[20px] tw:flex-1 tw:overflow-x-auto">
                 <div class="tw:h-full tw:min-w-fit">
-                    <div class="tw:flex tw:gap-x-[38px] tw:h-[92px]">
+                    <div class="tw:py-[21px] tw:flex tw:gap-x-[38px] tw:sticky tw:top-0 tw:z-[150] tw:bg-white">
                         <div class="tw:pr-[75px]">
                             <x-form.input class="tw:w-[245px] tw:text-[1.2rem]" placeholder="🔍 物件(ID)検索" :value="$conditions['investment_id'] ?? ''" x-ref="searchInput" x-on:keydown.enter.prevent="submitSearch()" />
                         </div>
@@ -156,7 +156,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tw:h-[calc(100%-92px)] tw:mt-[21px] tw:w-full tw:overflow-y-scroll">
+                    <div class="tw:h-[calc(100%-92px)]">
                         <livewire:admin.operation.operation-list :threads="$threads" />
                     </div>
                 </div>

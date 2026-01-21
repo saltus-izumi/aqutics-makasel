@@ -25,6 +25,14 @@ class OperationTemplate extends Model
         self::OPERATION_GROUP_OTEHR => 'その他',
     ];
 
+    public const SHORT_OPERATION_GROUPS = [
+        self::OPERATION_GROUP_EN => 'EN',
+        self::OPERATION_GROUP_LE => 'LE',
+        self::OPERATION_GROUP_TE => 'TE',
+        self::OPERATION_GROUP_PL => 'PA',
+        self::OPERATION_GROUP_OTEHR => 'OT',
+    ];
+
     public const OPERATION_TYPE_NOTIFICATION = 1;
     public const OPERATION_TYPE_APPROVAL = 2;
 

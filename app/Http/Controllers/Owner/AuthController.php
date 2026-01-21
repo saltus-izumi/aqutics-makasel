@@ -8,37 +8,37 @@ class AuthController
 {
     public function create()
     {
-        return view('admin.login');
+        return view('owner.login');
     }
 
     public function store(Request $request)
     {
         $credentials = $request->validate([
-            'user_account' => ['required'],
+            'mail' => ['required'],
             'password' => ['required'],
         ]);
 
-        if (Auth::guard('admin')->attempt(
-            ['user_account' => $credentials['user_account'], 'password' => $credentials['password']],
+        if (Auth::guard('owner')->attempt(
+            ['mail' => $credentials['mail'], 'password' => $credentials['password']],
             $request->boolean('remember')
         )) {
             // セッション固定化対策（公式推奨）
             $request->session()->regenerate();
 
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('owner.dashboard'));
         }
 
         return back()->withErrors([
-            'user_account' => __('auth.failed'),
-        ])->onlyInput('user_account');
+            'mail' => __('auth.failed'),
+        ])->onlyInput('mail');
     }
 
     public function destroy(Request $request)
     {
-        Auth::guard('admin')->logout();
+        Auth::guard('owner')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login');
+        return redirect()->route('owner.login');
     }
 }
