@@ -60,7 +60,6 @@ class OperationController
                 'threadStatusOptions',
                 'isReadOptions',
                 'conditions',
-                'threads',
             ));
     }
 
@@ -99,6 +98,7 @@ class OperationController
             $threadMessage = ThreadMessage::findOrNew($request->input('thread_message_id'));
             $threadMessage->fill([
                 'thread_id' => $thread->id,
+                'message_type' => ThreadMessage::MESSAGE_TYPE_OPERATION,
                 'sender_type' => ThreadMessage::SENDER_TYPE_USER,
                 'sender_user_id' => $threadMessage->sender_user_id ?? Auth::id(),
                 'title' => $request->input('title'),

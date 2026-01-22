@@ -1,6 +1,7 @@
 @props([
     'title' => 'PM Log',
     'class' => '',
+    'investmentId' => '',
 ])
 <!DOCTYPE html>
 <html lang="ja">
@@ -49,14 +50,21 @@
                         <li class="tw:leading-[42px] tw:text-[1.7rem] tw:font-bold">やることリスト</li>
                     </ul> --}}
                 </div>
-                <div class="tw:flex-1 tw:overflow-y-auto tw:p-[20px]">
+                <div class="tw:flex-1 tw:overflow-y-auto tw:py-[20px]">
                     <div class="tw:pb-[20px]">
-                        <x-button.blue class="tw:w-full tw:text-[1.6rem] tw:font-bold">すべての物件</x-button.blue>
+                        <a class="tw:block tw:px-[20px]" href="{{ request()->fullUrlWithQuery(['investment_id' => null]) }}">
+                            <x-button.blue class="tw:w-full tw:text-[1.6rem] tw:font-bold">すべての物件</x-button.blue>
+                        </a>
                         <ul class="tw:mt-[21px]">
                             @foreach ($investments as $investment)
-                                <li class="tw:leading-[42px] tw:flex">
+                                <li @class([
+                                    "tw:px-[20px] tw:leading-[42px] tw:flex",
+                                    "tw:pl-[16px] tw:border-l-[4px] tw:border-l-pm_blue_001" => $investmentId == $investment->id,
+                                ])>
                                     <div class="tw:flex-1 tw:truncate tw:text-[1.3rem] ">
-                                        {{ $investment->investment_name }}
+                                        <a class="tw:block" href="{{ request()->fullUrlWithQuery(['investment_id' => $investment->id]) }}">
+                                            {{ $investment->investment_name }}
+                                        </a>
                                     </div>
                                     <div class="tw:w-[26px] tw:text-center">
                                         {{ $investment->investmentRooms->count() }}
@@ -93,7 +101,6 @@
                 <x-layout.top-menu-item title="オペレーション"
                     :subItems="[
                         route('owner.operation.index') => 'オペレーション一覧',
-                        route('admin.operation.create') => 'オペレーション作成',
                     ]"
                 />
                 <x-layout.top-menu-item title="物件管理" />

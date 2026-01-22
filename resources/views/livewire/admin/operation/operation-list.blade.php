@@ -169,7 +169,7 @@
                                         </div>
                                         @if ($message->operation)
                                             <div class="tw:bg-pm_blue_002 tw:h-[63px] tw:leading-[63px] tw:px-[9px] tw:text-[14pt] tw:text-pm_blue_001">
-                                                <a href="">
+                                                <a href="{{ route('admin.operation.edit', ['operationId' => $message->operation?->id]) }}">
                                                     <div class="tw:flex tw:justify-between">
                                                         <div>
                                                             提案詳細を見る

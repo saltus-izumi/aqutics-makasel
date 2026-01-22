@@ -11,6 +11,7 @@
 
 @php
     $emptyLabel = is_bool($empty) ? ($empty ? "\u{00A0}" : '') : $empty;
+    $hasValue = !($value === '' || $value === null);
     // optionsをJavaScript用にフラット化（group対応）
     $flatOptions = [];
     foreach ($options as $key => $item) {
@@ -28,6 +29,16 @@
                 'label' => $item,
                 'group' => null,
             ];
+        }
+    }
+    $selectedLabel = '';
+    if ($hasValue) {
+        $selectedValue = (string) $value;
+        foreach ($flatOptions as $option) {
+            if ($option['value'] === $selectedValue) {
+                $selectedLabel = $option['label'];
+                break;
+            }
         }
     }
 @endphp
@@ -68,7 +79,11 @@
         @disabled($disabled || $readonly)
         class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }} {{ $disabled ? 'tw:opacity-50 tw:cursor-not-allowed' : '' }}"
     >
-        <span class="tw:block tw:truncate" x-text="selectedLabel || placeholder" x-bind:class="selectedLabel ? '' : 'tw:text-gray-400'"></span>
+        <span
+            class="tw:block tw:truncate {{ $selectedLabel !== '' ? '' : 'tw:text-gray-400' }}"
+            x-text="selectedValue !== '' ? selectedLabel : placeholder"
+            x-bind:class="selectedValue !== '' ? '' : 'tw:text-gray-400'"
+        >{{ $selectedLabel !== '' ? $selectedLabel : $placeholder }}</span>
         <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
@@ -82,7 +97,7 @@
         x-transition:leave="tw:transition tw:ease-in tw:duration-75"
         x-transition:leave-start="tw:opacity-100 tw:scale-100"
         x-transition:leave-end="tw:opacity-0 tw:scale-95"
-        class="tw:absolute tw:z-50 tw:mt-1 tw:w-full tw:bg-white tw:border tw:border-gray-300 tw:rounded tw:shadow-lg"
+        class="tw:absolute tw:z-50 tw:mt-1 tw:w-full tw:bg-white tw:border tw:border-gray-300 tw:rounded tw:shadow-lg tw:z-600"
         x-cloak
     >
         <div class="tw:p-2 tw:border-b tw:border-gray-200">

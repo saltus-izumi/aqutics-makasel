@@ -11,6 +11,16 @@ class ThreadMessage extends Model
     use RecordsUserStamps;
     use SoftDeletes;
 
+    public const MESSAGE_TYPE_OPERATION = 1;
+    public const MESSAGE_TYPE_OPERATION_REPLY = 2;
+    public const MESSAGE_TYPE_CHAT_MESSAGE = 3;
+
+    public const MESSAGE_TYPE = [
+        self::MESSAGE_TYPE_OPERATION => 'オペレーション',
+        self::MESSAGE_TYPE_OPERATION_REPLY => 'オペレーション返答',
+        self::MESSAGE_TYPE_CHAT_MESSAGE => 'チャットメッセージ',
+    ];
+
     public const SENDER_TYPE_USER = 1;
     public const SENDER_TYPE_OWNER = 2;
 

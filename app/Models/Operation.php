@@ -32,7 +32,7 @@ class Operation extends Model
         self::STATUS_IN_PROGRESS => '進行中',
         self::STATUS_CONFIRMED => '進行中',
         self::STATUS_APPROVED => '承諾',
-        self::STATUS_REJECTED => '拒否',
+        self::STATUS_REJECTED => '却下',
         self::STATUS_CANCELED => '中止',
     ];
 
@@ -92,6 +92,11 @@ class Operation extends Model
     public function threadMessage()
     {
         return $this->belongsTo(ThreadMessage::class, 'thread_message_id', 'id');
+    }
+
+    public function ownerMessage()
+    {
+        return $this->belongsTo(ThreadMessage::class, 'owner_message_id', 'id');
     }
 
     // 上代見積り

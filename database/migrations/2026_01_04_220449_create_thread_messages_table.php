@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id()->comment('オペレーションスレッドID');
             $table->integer('thread_id')->comment('スレッドID');
             $table->integer('sender_type')->comment('送信者種別');
-            $table->integer('sender_user_id')->comment('送信者ユーザID');
+            $table->integer('sender_user_id')->nullable()->comment('送信者ユーザID');
             $table->text('title')->nullable()->comment('タイトル');
             $table->text('body')->nullable()->comment('本文');
             $table->text('extended_message')->nullable()->comment('拡張メッセージ');

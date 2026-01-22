@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="tw:flex tw:h-[calc(100%-72px)]">
-            <div class="tw:h-full tw:w-[250px] tw:pt-[21px] tw:pr-[20px] tw:border-r">
+            <div class="tw:h-full tw:w-[250px] tw:pt-[21px] tw:pr-[20px] tw:border-r tw:overflow-y-auto">
                 <form method="get" action="{{ route('admin.operation.index') }}" class="tw:flex tw:flex-col tw:gap-y-[21px]" x-ref="filterForm">
                     <div>
                         <div class="tw:pb-1">
@@ -157,7 +157,7 @@
                         </div>
                     </div>
                     <div class="tw:h-[calc(100%-92px)]">
-                        <livewire:admin.operation.operation-list :threads="$threads" />
+                        <livewire:admin.operation.operation-list :conditions="$conditions" />
                     </div>
                 </div>
             </div>

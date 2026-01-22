@@ -116,7 +116,7 @@
                     $class
                 ])
             >
-                <div class="tw:h-[75px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[75px]" x-show="!float" x-cloak>
+                <div class="tw:h-[75px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[75px]" x-show="!float">
                     {{ $title }}
                 </div>
                 {{ $slot }}

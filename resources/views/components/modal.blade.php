@@ -1,12 +1,14 @@
 @props([
     'title' => '',
     'open' => false,
+    'event' => 'modal',
+    'previewWidth' => null,
 ])
 
 <div
     x-data="{ open: @js($open) }"
-    x-on:open-modal.window="open = true"
-    x-on:close-modal.window="open = false"
+    x-on:open-{{ $event }}.window="open = true"
+    x-on:close-{{ $event }}.window="open = false"
     x-cloak
 >
     <template x-teleport="body">
@@ -21,7 +23,8 @@
             <div
                 x-show="open"
                 x-transition
-                class="tw:w-full tw:max-w-[640px] tw:rounded-[8px] tw:bg-white tw:shadow-lg"
+            class="tw:w-full tw:max-w-[900px] tw:rounded-[8px] tw:bg-white tw:shadow-lg"
+            style="{{ $previewWidth ? "width: {$previewWidth}; max-width: {$previewWidth};" : '' }}"
             >
                 <div class="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-b-pm_gray_003 tw:px-[20px] tw:py-[12px]">
                     <div class="tw:text-[1.6rem] tw:font-bold">

@@ -5,8 +5,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 use App\Http\Requests\Admin\Operation\StoreRequest;
+use App\Models\Investment;
 use App\Models\Operation;
 use App\Models\OperationFile;
 use App\Models\OperationKind;
@@ -21,54 +23,22 @@ class OperationController
 {
     public function index(Request $request)
     {
-        $owner = Auth::guard('owner')->user();
-
-        $userOptions = User::getOptions();
-        $ownerOptions = Owner::getOptions();
-        $operationTemplateOptions = OperationTemplate::getGroupOptions();
         $operationKindOptions = OperationKind::getGroupOptions();
-        $threadStatusOptions = Arr::except(Thread::STATUS, [Thread::STATUS_DRAFT]);
-        $isReadOptions = [
-            '1' => '既読',
-            '2' => '未読',
-        ];
+        $threadStatusOptions = Arr::except(Thread::OWNER_STATUS, [Thread::STATUS_DRAFT, Thread::STATUS_REPROPOSED]);
 
         $conditions = $request->query();
 
-
-        $query = Thread::with([
-                'user',
-                'owner',
-                'threadMessages',
-                'threadMessages.operation',
-                'threadMessages.operation.assignedUser',
-                'threadMessages.operation.createdUser',
-                'threadMessages.operation.operationKind',
-                'threadMessages.operation.operationTemplate',
-                'threadMessages.operation.investment',
-                'threadMessages.operation.investmentRoom',
-                'threadMessages.operation.retailEstimateFiles',
-                'threadMessages.operation.retailEstimateFiles.teProgressFile',
-                'threadMessages.operation.completionPhotoFiles',
-                'threadMessages.operation.completionPhotoFiles.teProgressFile',
-                'threadMessages.operation.otherFiles',
-            ])
-            ->where('thread_type', Thread::THREAD_TYPE_OPERATION)
-            ->where('owner_id', $owner->id)
-            ->orderBy('last_post_at', 'desc');
-
-        $threads = $query->get();
+        $investment = null;
+        if ($investmentId = ($conditions['investment_id'] ?? '')) {
+            $investment = Investment::find($investmentId);
+        }
 
         return view('owner.operation.index')
             ->with(compact(
-                'userOptions',
-                'ownerOptions',
-                'operationTemplateOptions',
+                'investment',
                 'operationKindOptions',
                 'threadStatusOptions',
-                'isReadOptions',
                 'conditions',
-                'threads',
             ));
     }
 
@@ -80,6 +50,31 @@ class OperationController
                 'teProgressId',
                 'geProgressId',
             ));
+    }
+
+    public function previewFile($operationFileId)
+    {
+        $owner = Auth::guard('owner')->user();
+        $operationFile = OperationFile::with('teProgressFile')->findOrFail($operationFileId);
+        $operation = Operation::find($operationFile->operation_id);
+        if (!$operation) {
+            abort(404);
+        }
+
+        $thread = Thread::find($operation->thread_id);
+        if (!$thread || $thread->owner_id !== $owner->id) {
+            abort(403);
+        }
+
+        $filePath = $operationFile->teProgressFile?->file_path ?? $operationFile->file_path;
+        $fileName = $operationFile->teProgressFile?->file_name ?? $operationFile->file_name ?? 'file';
+        if (!$filePath || !Storage::disk('local')->exists($filePath)) {
+            abort(404);
+        }
+
+        return response()->file(Storage::disk('local')->path($filePath), [
+            'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+        ]);
     }
 
     public function store(StoreRequest $request)

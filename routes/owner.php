@@ -14,6 +14,7 @@ Route::prefix('owner')->name('owner.')->group(function () {
 
         Route::prefix('operation')->name('operation.')->group(function () {
             Route::get('/', [OwnerOperation::class, 'index'])->name('index');
+            Route::get('/files/{operationFileId}', [OwnerOperation::class, 'previewFile'])->name('files.preview');
         });
     });
 });
