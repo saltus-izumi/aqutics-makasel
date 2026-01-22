@@ -74,7 +74,7 @@
         </div>
     @endif
     <input type="hidden" name="te_progress_id" value="{{ $teProgressId }}">
+    <input type="hidden" name="thread_id" value="{{ $threadId }}">
     <input type="hidden" name="operation_id" value="{{ $operation?->id }}">
-    <input type="hidden" name="thread_id" value="{{ $operation?->thread_id }}">
     <input type="hidden" name="thread_message_id" value="{{ $operation?->thread_message_id }}">
 </div>

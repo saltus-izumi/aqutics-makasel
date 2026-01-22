@@ -62,6 +62,15 @@ class OperationList extends Component
                 // 'operations.assignedUser',
                 // 'operations.createdUser',
             ])->find($threadId);
+
+            DB::transaction(function () use ($threadId) {
+                ThreadMessage::where('thread_id', $threadId)
+                    ->update(['read_at' => now()]);
+
+                Operation::where('thread_id', $threadId)
+                    ->update(['read_at' => now()]);
+            });
+
         }
     }
 

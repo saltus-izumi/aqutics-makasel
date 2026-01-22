@@ -18,9 +18,9 @@ class ProfileIcon extends Component
     /**
      * Create a new component instance.
      */
-    public function __construct(?int $id = null)
+    public function __construct(?int $id = null, $owner = null)
     {
-        $this->owner = $id ? Owner::find($id) : null;
+        $this->owner = $owner ?? ($id ? Owner::find($id) : null);
         $this->imageDataUrl = null;
 
         if ($this->owner?->profile_image_file_path) {

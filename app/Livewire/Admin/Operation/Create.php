@@ -33,6 +33,7 @@ class Create extends Component
     public $completionPhotoFiles = [];
     public $otherFiles = [];
 
+    public $threadId = null;
     public $operationId = null;
     public $operation = null;
     public $teProgressId = null;
@@ -60,7 +61,7 @@ class Create extends Component
                 ])
                 ->where('id', $this->operationId)
                 ->first();
-            $oldOperationKindId = old('operation_kind_id', $this->operation->operation_kind_id);
+            $oldOperationKindId = old('operation_kind_id', $this->operation?->operation_kind_id);
             $oldOwnerId = old('owner_id', $this->operation->owner_id);
             $oldInvestmentId = old('investment_id', $this->operation->investment_id);
             $oldInvestmentRoomId = old('investment_room_id', $this->operation->investment_room_id);
@@ -68,6 +69,7 @@ class Create extends Component
             $oldTemplate = old('template', $this->operation->threadMessage?->body);
             $oldTitle = old('title', $this->operation->threadMessage?->title);
             $oldMessage = old('message', $this->operation->threadMessage?->extended_message);
+            $this->threadId = $this->operation->thread_id;
             $this->teProgressId = $this->operation->te_progress_id;
             $this->retailEstimateFiles = $this->operation->retailEstimateFiles ?? [];
             $this->completionPhotoFiles = $this->operation->completionPhotoFiles ?? [];
@@ -91,6 +93,12 @@ class Create extends Component
                 $oldOwnerId = old('owner_id', $this->teProgress->investment?->landlord?->owner_id);
                 $oldInvestmentId = old('investment_id', $this->teProgress->investment_id);
                 $oldInvestmentRoomId = old('investment_room_id', $this->teProgress->investment_room_uid);
+
+                $operation = Operation::where('te_progress_id', $this->teProgress->id)
+                    ->first();
+                if ($operation) {
+                    $this->threadId = $operation->thread_id;
+                }
             }
         }
 

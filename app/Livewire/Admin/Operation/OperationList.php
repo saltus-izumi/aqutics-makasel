@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Arr;
 
 use App\Models\Thread;
+use App\Models\Operation;
 use App\Models\OperationKind;
 use App\Models\OperationTemplate;
 use App\Models\Owner;
@@ -36,7 +37,9 @@ class OperationList extends Component
         } else {
             $this->selectedThreadId = $threadId;
             $this->selectedThread = Thread::with([
-                'threadMessages' => fn ($q) => $q->orderBy('id', 'asc'),
+                'threadMessages' => fn ($q) => $q->orderBy('id', 'desc'),
+                'threadMessages.operation',
+                'threadMessages.operation.ownerMessage',
                 // 'operations',
                 // 'operations.investmentRoom',
                 // 'operations.owner',
@@ -58,19 +61,15 @@ class OperationList extends Component
         $query = Thread::with([
                 'user',
                 'owner',
-                'threadMessages',
-                'threadMessages.operation',
-                'threadMessages.operation.assignedUser',
-                'threadMessages.operation.createdUser',
-                'threadMessages.operation.operationKind',
-                'threadMessages.operation.operationTemplate',
-                'threadMessages.operation.investment',
-                'threadMessages.operation.investmentRoom',
-                'threadMessages.operation.retailEstimateFiles',
-                'threadMessages.operation.retailEstimateFiles.teProgressFile',
-                'threadMessages.operation.completionPhotoFiles',
-                'threadMessages.operation.completionPhotoFiles.teProgressFile',
-                'threadMessages.operation.otherFiles',
+                'operations',
+                'operations.assignedUser',
+                'operations.createdUser',
+                'operations.owner',
+                'operations.operationKind',
+                'operations.operationTemplate',
+                'operations.investment',
+                'operations.investmentRoom',
+                'operations.threadMessage',
             ])
             ->where('thread_type', Thread::THREAD_TYPE_OPERATION)
             ->orderBy('last_post_at', 'desc');
@@ -110,21 +109,42 @@ class OperationList extends Component
             });
         }
 
-        if ($investmentId = ($this->conditions['investment_id'] ?? '')) {
-            $query->where('investment_id', $investmentId);
+        // ステータス
+        if ($threadStatus = ($this->conditions['thread_status'] ?? '')) {
+            $query->where('status', $threadStatus);
         }
 
-
-        if ($threadStatus = ($this->conditions['thread_status'] ?? '')) {
-            if ($threadStatus == Thread::STATUS_PROPOSED) {
-                $query->where(function ($q) {
-                    $q->where('status', Thread::STATUS_PROPOSED)
-                        ->orWhere('status', Thread::STATUS_REPROPOSED);
+        // 既読 / 未読
+        if ($isRead = ($this->conditions['is_read'] ?? '')) {
+            if ($isRead == 1) {
+                $query->whereDoesntHave('threadMessages', function ($q) {
+                    $q->whereNull('read_at');
+                });
+            } else {
+                $query->whereHas('threadMessages', function ($q) {
+                    $q->whereNull('read_at');
                 });
             }
-            else {
-                $query->where('status', $threadStatus);
-            }
+        }
+
+        // 作成日
+        if ($firstPostAtFrom = ($this->conditions['first_post_at_from'] ?? '')) {
+            $query->where('first_post_at', '>=', $firstPostAtFrom . ' 00:00:00');
+        }
+        if ($firstPostAtTo = ($this->conditions['first_post_at_to'] ?? '')) {
+            $query->where('first_post_at', '<=', $firstPostAtTo . ' 23:59:59');
+        }
+
+        // 下書き
+        if ($isDraft = ($this->conditions['is_draft'] ?? '')) {
+            $query->whereHas('threadMessages.operation', function ($q) use ($isDraft) {
+                $q->where('status', Operation::STATUS_DRAFT);
+            });
+        }
+
+        // 物件ID
+        if ($investmentId = ($this->conditions['investment_id'] ?? '')) {
+            $query->where('investment_id', $investmentId);
         }
 
         $this->threads = $query->get();

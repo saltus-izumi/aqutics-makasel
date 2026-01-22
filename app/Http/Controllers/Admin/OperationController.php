@@ -34,22 +34,22 @@ class OperationController
         $conditions = $request->query();
 
 
-        $query = Thread::with([
-                'user',
-                'owner',
-                'operations',
-                'operations.assignedUser',
-                'operations.createdUser',
-                'operations.operationKind',
-                'operations.operationTemplate',
-                'operations.investment',
-                'operations.investmentRoom',
-                'operations.threadMessage',
-            ])
-            ->where('thread_type', Thread::THREAD_TYPE_OPERATION)
-            ->orderBy('last_post_at', 'desc');
+        // $query = Thread::with([
+        //         'user',
+        //         'owner',
+        //         'operations',
+        //         'operations.assignedUser',
+        //         'operations.createdUser',
+        //         'operations.operationKind',
+        //         'operations.operationTemplate',
+        //         'operations.investment',
+        //         'operations.investmentRoom',
+        //         'operations.threadMessage',
+        //     ])
+        //     ->where('thread_type', Thread::THREAD_TYPE_OPERATION)
+        //     ->orderBy('last_post_at', 'desc');
 
-        $threads = $query->get();
+        // $threads = $query->get();
 
         return view('admin.operation.index')
             ->with(compact(
@@ -63,8 +63,37 @@ class OperationController
             ));
     }
 
-    public function create($operationId = null, $teProgressId = null, $geProgressId = null)
+    public function create($operationId = null)
     {
+        $teProgressId = null;
+        $geProgressId = null;
+
+        return view('admin.operation.create')
+            ->with(compact(
+                'operationId',
+                'teProgressId',
+                'geProgressId',
+            ));
+    }
+
+    public function createTe($teProgressId = null)
+    {
+        $operationId = null;
+        $geProgressId = null;
+
+        return view('admin.operation.create')
+            ->with(compact(
+                'operationId',
+                'teProgressId',
+                'geProgressId',
+            ));
+    }
+
+    public function createGe($geProgressId = null)
+    {
+        $operationId = null;
+        $teProgressId = null;
+
         return view('admin.operation.create')
             ->with(compact(
                 'operationId',
@@ -92,7 +121,7 @@ class OperationController
             }
             $thread->status = !$request->input('is_draft') && $thread->status == Thread::STATUS_DRAFT ? Thread::STATUS_PROPOSED : $thread->status;
             $thread->first_post_at = !$request->input('is_draft') && !$thread->first_post_at  ? now() : null;
-            $thread->last_post_at = !$request->input('is_draft') && !$thread->last_post_at  ? now() : null;
+            $thread->last_post_at = !$request->input('is_draft') ? now() : $thread->last_post_at;
             $thread->save();
 
             $threadMessage = ThreadMessage::findOrNew($request->input('thread_message_id'));

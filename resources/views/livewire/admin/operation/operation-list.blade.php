@@ -34,7 +34,7 @@
                     <td class="tw:pl-[5px]">
                         <div class="tw:flex tw:items-center tw:gap-x-1">
                             <div class="tw:w-[21px] tw:h-[21px]">
-                                <x-owner.profile-icon :id="$thread->first_operation?->owner_id" />
+                                <x-owner.profile-icon :owner="$thread->first_operation?->owner" />
                             </div>
                             {{ $thread->first_operation?->owner?->name }}
                         </div>
@@ -62,7 +62,7 @@
                     <td class="tw:pl-[5px]">
                         <div class="tw:flex tw:items-center tw:gap-x-1">
                             <div class="tw:w-[21px] tw:h-[21px]">
-                                <x-admin.profile-icon :id="$thread->first_operation?->created_user_id" />
+                                <x-admin.profile-icon :user="$thread->first_operation?->createdUser" />
                             </div>
                             {{ $thread->first_operation?->createdUser?->full_name}}
                         </div>
@@ -132,6 +132,47 @@
                 <div class="tw:px-[21px] tw:pb-[21px]">
                     @if ($selectedThread?->threadMessages)
                         @foreach ($selectedThread?->threadMessages as $message)
+                            @continue($message->message_type == App\Models\ThreadMessage::MESSAGE_TYPE_OPERATION_REPLY)
+                            @if ($message->operation?->ownerMessage)
+                                <div class="tw:pt-[21px]">
+                                    <div class="tw:flex tw:justify-between tw:items-center tw:text-[10pt] tw:w-full">
+                                        <div class="tw:flex tw:items-center tw:gap-x-1">
+                                            <div class="tw:w-[20px] tw:h-[20px]">
+                                                <x-owner.profile-icon :id="$selectedThread?->owner_id" />
+                                            </div>
+                                            <div class="tw:w-[180px] tw:truncate">
+                                                {{ $selectedThread?->owner?->name }}
+                                            </div>
+                                        </div>
+                                        <div class="tw:text-right">
+                                            {{ $message->operation?->ownerMessage?->sent_at?->format('Y/m/d H:i:s') }}
+                                        </div>
+                                    </div>
+                                    <div class="tw:mt-[5px]">
+                                        <div class="tw:ml-[10px] tw:pl-[10px] tw:border-l tw:border-pm_gray_005">
+                                            <div class="tw:border tw:border-pm_gray_005 tw:h-[42px] tw:leading-[42px] tw:pl-[9px]">
+                                                <?php if ($message->operation?->status == App\Models\Operation::STATUS_APPROVED): ?>
+                                                    ✔  オーナー承諾済み
+                                                <?php elseif ($message->operation?->status == App\Models\Operation::STATUS_REJECTED): ?>
+                                                    ✖  オーナー拒否
+                                                <?php elseif ($message->operation?->status == App\Models\Operation::STATUS_CANCELED): ?>
+                                                    ✖  中止
+                                                <?php endif; ?>
+                                            </div>
+                                            @if ($message->operation?->ownerMessage)
+                                                <div class="tw:border tw:border-t-0 tw:border-pm_gray_005 tw:pl-[9px] tw:py-[21px]">
+                                                    <div>
+                                                        {!! nl2br(e($message->operation?->ownerMessage?->body)) !!}
+                                                    </div>
+                                                    <div>
+                                                        {!! nl2br(e($message->operation?->ownerMessage?->extended_message)) !!}
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                             <div class="tw:pt-[21px]">
                                 <div class="tw:flex tw:justify-between tw:items-center tw:text-[10pt] tw:w-full">
                                     <div class="tw:flex tw:items-center tw:gap-x-1">
@@ -232,7 +273,7 @@
                             部屋
                         </div>
                         <div>
-                            {{ $selectedThread?->investment_room?->investment_room_number }}
+                            {{ $selectedThread?->investmentRoom?->investment_room_number }}
                         </div>
                     </div>
                     <div class="tw:flex tw:gap-x-[10px]">
