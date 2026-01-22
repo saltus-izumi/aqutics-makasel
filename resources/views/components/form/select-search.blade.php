@@ -80,9 +80,9 @@
         class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }} {{ $disabled ? 'tw:opacity-50 tw:cursor-not-allowed' : '' }}"
     >
         <span
-            class="tw:block tw:truncate {{ $selectedLabel !== '' ? '' : 'tw:text-gray-400' }}"
-            x-text="selectedValue !== '' ? selectedLabel : placeholder"
-            x-bind:class="selectedValue !== '' ? '' : 'tw:text-gray-400'"
+            class="tw:block tw:truncate {{ $hasValue ? '' : 'tw:text-gray-400' }}"
+            x-text="selectedValue !== '' || selectedEmpty ? selectedLabel : placeholder"
+            x-effect="$el.classList.toggle('tw:text-gray-400', selectedValue === '' && !selectedEmpty)"
         >{{ $selectedLabel !== '' ? $selectedLabel : $placeholder }}</span>
         <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
