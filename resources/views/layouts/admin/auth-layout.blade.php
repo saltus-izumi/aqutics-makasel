@@ -109,6 +109,13 @@
                 />
                 <x-layout.top-menu-item title="物件管理" />
                 <x-layout.top-menu-item title="物件詳細" />
+                <x-layout.top-menu-item title="空室物件" />
+                <x-layout.top-menu-item title="プロセス管理"
+                    :subItems="[
+                        route('admin.progress.ge.index') => '原復プロセス管理',
+                    ]"
+                />
+
             </div>
             <div
                 @class([
@@ -116,7 +123,7 @@
                     $class
                 ])
             >
-                <div class="tw:h-[75px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[75px]" x-show="!float">
+                <div class="tw:h-[50px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[50px]" x-show="!float">
                     {{ $title }}
                 </div>
                 {{ $slot }}
