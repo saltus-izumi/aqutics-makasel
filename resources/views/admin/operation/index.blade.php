@@ -1,5 +1,5 @@
 <x-admin.auth-layout title="オペレーション一覧">
-    <div class="tw:pl-[20px] tw:h-[calc(100%-75px)]" x-data="operationFilter()">
+    <div class="tw:pl-[20px] tw:h-full" x-data="operationFilter()">
         <div class="tw:border-b tw:h-[72px] tw:flex tw:items-end tw:pl-[250px]">
             <div class="tw:flex">
                 <a href="{{ route('admin.operation.index', array_merge(request()->query(), ['is_draft' => 0])) }}">
@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="tw:flex tw:h-[calc(100%-72px)]">
-            <div class="tw:h-full tw:w-[250px] tw:pt-[21px] tw:pr-[20px] tw:border-r tw:overflow-y-auto">
+            <div class="tw:h-full tw:w-[250px] tw:py-[21px] tw:pr-[20px] tw:border-r tw:overflow-y-auto">
                 <form method="get" action="{{ route('admin.operation.index') }}" class="tw:flex tw:flex-col tw:gap-y-[21px]" x-ref="filterForm">
                     <div>
                         <div class="tw:pb-1">
@@ -82,8 +82,8 @@
                 </form>
             </div>
             <div class="tw:h-full tw:px-[20px] tw:flex-1 tw:overflow-x-auto">
-                <div class="tw:h-full tw:min-w-fit">
-                    <div class="tw:py-[21px] tw:flex tw:gap-x-[38px] tw:sticky tw:top-0 tw:z-[150] tw:bg-white">
+                <div class="tw:h-full tw:w-[1295px]">
+                    <div class="tw:h-[134px] tw:py-[21px] tw:flex tw:gap-x-[38px] tw:z-[150] tw:bg-white">
                         <div class="tw:pr-[75px]">
                             <x-form.input class="tw:w-[245px] tw:text-[1.2rem]" placeholder="🔍 物件(ID)検索" :value="$conditions['investment_id'] ?? ''" x-ref="searchInput" x-on:keydown.enter.prevent="submitSearch()" />
                         </div>
@@ -156,7 +156,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="tw:h-[calc(100%-92px)]">
+                    <div class="tw:h-[calc(100%-134px)] tw:overflow-y-auto">
                         <livewire:admin.operation.operation-list :conditions="$conditions" />
                     </div>
                 </div>

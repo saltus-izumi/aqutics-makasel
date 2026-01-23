@@ -21,11 +21,11 @@ class OperationList extends Component
 
     public function mount()
     {
+        $this->refreshThreads();
     }
 
     public function render()
     {
-        $this->refreshThreads();
         return view('livewire.admin.operation.operation-list');
     }
 
@@ -37,9 +37,11 @@ class OperationList extends Component
         } else {
             $this->selectedThreadId = $threadId;
             $this->selectedThread = Thread::with([
+                'owner',
                 'threadMessages' => fn ($q) => $q->orderBy('id', 'desc'),
                 'threadMessages.operation',
                 'threadMessages.operation.ownerMessage',
+                'threadMessages.senderUser',
                 // 'operations',
                 // 'operations.investmentRoom',
                 // 'operations.owner',

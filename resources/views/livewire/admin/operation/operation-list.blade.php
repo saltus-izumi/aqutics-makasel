@@ -1,70 +1,90 @@
 <div>
-    <table class="tw:w-full">
-        <thead class="tw:sticky tw:top-[134px] tw:z-[150]">
+    <table class="tw:table-fixed">
+        <thead class="tw:sticky tw:top-[0px] tw:z-[150]">
             <tr class="tw:h-[42px] tw:bg-pm_gray_004">
-                <th class="tw:pl-[10px] tw:font-normal tw:text-left tw:min-w-[190px]">更新日/所有係</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[114px]">カテゴリ</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[190px]">物件ID / 物件名 / 号室</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[114px]">オーナー個人名</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[228px]">アクティビティ</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[152px]">ステータス</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[76px]">既読/未読</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[114px]">作成日</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[76px]">作成者</th>
-                <th class="tw:pl-[5px] tw:font-normal tw:text-left tw:min-w-[76px]"></th>
+                <th class="tw:pl-[10px] tw:font-normal tw:text-left">更新日/所有係</th>
+                <th class="tw:font-normal tw:text-left">カテゴリ</th>
+                <th class="tw:font-normal tw:text-left">物件ID / 物件名 / 号室</th>
+                <th class="tw:font-normal tw:text-left">オーナー個人名</th>
+                <th class="tw:font-normal tw:text-left">アクティビティ</th>
+                <th class="tw:font-normal tw:text-left">ステータス</th>
+                <th class="tw:font-normal tw:text-left">既読/未読</th>
+                <th class="tw:font-normal tw:text-left">作成日</th>
+                <th class="tw:font-normal tw:text-left">作成者</th>
+                <th class="tw:font-normal tw:text-left"></th>
             </tr>
         </thead>
         <tbody>
             @foreach($threads as $thread)
                 <tr class="tw:h-[63px] tw:border-b tw:border-b-pm_gray_005 tw:cursor-pointer" wire:click="selectThread({{ $thread->id }})">
-                    <td class="tw:pl-[10px]">
-                        {{ $thread->last_operation?->sent_at?->format('Y/m/d H:i:s') }}<br>
-                        担当：{{ $thread->first_operation?->assignedUser?->full_name}}
-                    </td>
-                    <td class="tw:pl-[5px]">
-                        {{ $thread->first_operation?->operationTemplate->operation_category }}
-                        <div class="tw:text-pm_gray_005">
-                            {{ App\Models\OperationTemplate::OPERATION_TYPE[$thread->first_operation?->operationTemplate->operation_type] ?? '' }}
+                    <td>
+                        <div class="tw:pl-[10px] tw:w-[175px] tw:truncate">
+                            {{ $thread->last_operation?->sent_at?->format('Y/m/d H:i:s') }}<br>
+                            担当：{{ $thread->first_operation?->assignedUser?->full_name}}
                         </div>
                     </td>
-                    <td class="tw:pl-[5px]">
-                        {{ $thread->first_operation?->investment_id }} {{ $thread->first_operation?->investment?->investment_name }}<br>
-                        {{ $thread->first_operation?->investmentRoom?->investment_room_number }}
+                    <td>
+                        <div class="tw:w-[105px] tw:truncate">
+                            {{ $thread->first_operation?->operationTemplate->operation_category }}
+                            <div class="tw:text-pm_gray_005">
+                                {{ App\Models\OperationTemplate::OPERATION_TYPE[$thread->first_operation?->operationTemplate->operation_type] ?? '' }}
+                            </div>
+                        </div>
                     </td>
-                    <td class="tw:pl-[5px]">
-                        <div class="tw:flex tw:items-center tw:gap-x-1">
+                    <td>
+                        <div class="tw:w-[175px] tw:truncate">
+                            {{ $thread->first_operation?->investment_id }} {{ $thread->first_operation?->investment?->investment_name }}<br>
+                            {{ $thread->first_operation?->investmentRoom?->investment_room_number }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="tw:flex tw:items-center tw:gap-x-[4px]">
                             <div class="tw:w-[21px] tw:h-[21px]">
                                 <x-owner.profile-icon :owner="$thread->first_operation?->owner" />
                             </div>
-                            {{ $thread->first_operation?->owner?->name }}
-                        </div>
-
-
-                    </td>
-                    <td class="tw:pl-[5px]">
-                        {{ $thread->first_operation?->operationKind?->value }}<br>
-                        <div class="tw:text-pm_gray_005">
-                            {{ $thread->first_operation?->threadMessage?->title }}
+                            <div class="tw:w-[80px] tw:truncate">
+                                {{ $thread->first_operation?->owner?->name }}
+                            </div>
                         </div>
                     </td>
-                    <td class="tw:pl-[5px]">
-                        {{ App\Models\Operation::STATUS[$thread->last_operation?->status] ?? '' }}<br>
-                    </td>
-                    <td class="tw:pl-[5px]">
-                        {{ $thread->last_operation?->read_at ? '既読' : '未読' }}<br>
-                    </td>
-                    <td class="tw:pl-[5px]">
-                        {{ $thread->first_operation?->sent_at?->format('Y/m/d') }}
-                        <div class="tw:text-pm_gray_005">
-                            {{ (int) $thread->first_operation?->sent_at?->diffInDays(now()) }}日
+                    <td>
+                        <div class="tw:w-[210px] tw:truncate">
+                            {{ $thread->first_operation?->operationKind?->value }}<br>
+                            <span class="tw:text-pm_gray_005">
+                                {{ $thread->first_operation?->threadMessage?->title }}
+                            </span>
                         </div>
                     </td>
-                    <td class="tw:pl-[5px]">
-                        <div class="tw:flex tw:items-center tw:gap-x-1">
+                    <td>
+                        <div class="tw:w-[140px] tw:truncate">
+                            {{ App\Models\Operation::STATUS[$thread->last_operation?->status] ?? '' }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="tw:w-[70px] tw:truncate">
+                            {{ $thread->last_operation?->read_at ? '既読' : '未読' }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="tw:w-[105px] tw:truncate">
+                            {{ $thread->first_operation?->sent_at?->format('Y/m/d') }}<br>
+                            <span class="tw:text-pm_gray_005">
+                                {{ (int) $thread->first_operation?->sent_at?->diffInDays(now()) }}日
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="tw:flex tw:items-center tw:gap-x-[4px]">
                             <div class="tw:w-[21px] tw:h-[21px]">
                                 <x-admin.profile-icon :user="$thread->first_operation?->createdUser" />
                             </div>
-                            {{ $thread->first_operation?->createdUser?->full_name}}
+                            <div class="tw:w-[80px] tw:truncate">
+                                {{ $thread->first_operation?->createdUser?->full_name}}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="tw:w-[105px]">
                         </div>
                     </td>
                 </tr>

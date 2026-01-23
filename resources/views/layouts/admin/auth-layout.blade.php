@@ -126,7 +126,9 @@
                 <div class="tw:h-[50px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[50px]" x-show="!float">
                     {{ $title }}
                 </div>
-                {{ $slot }}
+                <div class="tw:h-[calc(100%-50px)]">
+                    {{ $slot }}
+                </div>
             </div>
         </div>
     </div>
