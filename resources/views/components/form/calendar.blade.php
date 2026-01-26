@@ -174,10 +174,11 @@
                         if (detail.name && this.name && detail.name !== this.name) {
                             return;
                         }
-                        this.setDate(detail.value ?? '');
+                        this.setDate(detail.value ?? '', { silent: detail.silent });
                     },
 
-                    setDate(value) {
+                    setDate(value, options = {}) {
+                        const { silent = false } = options;
                         const next = value ?? '';
                         this.selectedDate = next;
                         if (!next) {
@@ -185,7 +186,9 @@
                             this.year = now.getFullYear();
                             this.month = now.getMonth() + 1;
                         }
-                        this.dispatchInput();
+                        if (!silent) {
+                            this.dispatchInput();
+                        }
                     },
 
                     dispatchInput() {

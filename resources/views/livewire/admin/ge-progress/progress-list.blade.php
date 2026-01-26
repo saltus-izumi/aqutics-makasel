@@ -666,6 +666,7 @@
                     },
 
                     handleCalendarInput(event) {
+console.log('handleCalendarInput');
                         if (!this.open) {
                             return;
                         }
@@ -680,7 +681,7 @@
                         const raw = trigger.dataset.popupDate ?? trigger.textContent ?? '';
                         const value = this.normalizeDate(raw);
                         window.dispatchEvent(new CustomEvent('calendar-set', {
-                            detail: { name: this.calendarName, value },
+                            detail: { name: this.calendarName, value, silent: true },
                         }));
                     },
 
