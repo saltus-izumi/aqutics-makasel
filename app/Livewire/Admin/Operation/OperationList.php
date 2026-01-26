@@ -37,11 +37,24 @@ class OperationList extends Component
         } else {
             $this->selectedThreadId = $threadId;
             $this->selectedThread = Thread::with([
-                'owner',
                 'threadMessages' => fn ($q) => $q->orderBy('id', 'desc'),
+                'threadMessages.senderUser',
                 'threadMessages.operation',
                 'threadMessages.operation.ownerMessage',
-                'threadMessages.senderUser',
+                'owner',
+                'investment',
+                'investmentRoom',
+                'firstOperationRelation',
+                'firstOperationRelation.assignedUser',
+                'firstOperationRelation.createdUser',
+                'firstOperationRelation.owner',
+                'firstOperationRelation.operationKind',
+                'firstOperationRelation.operationTemplate',
+                'firstOperationRelation.investment',
+                'firstOperationRelation.investmentRoom',
+                'firstOperationRelation.threadMessage',
+                'lastOperationRelation',
+                'lastOperationRelation.assignedUser',
                 // 'operations',
                 // 'operations.investmentRoom',
                 // 'operations.owner',
@@ -61,17 +74,16 @@ class OperationList extends Component
 
     protected function refreshThreads() {
         $query = Thread::with([
-                'user',
-                'owner',
-                'operations',
-                'operations.assignedUser',
-                'operations.createdUser',
-                'operations.owner',
-                'operations.operationKind',
-                'operations.operationTemplate',
-                'operations.investment',
-                'operations.investmentRoom',
-                'operations.threadMessage',
+                'firstOperationRelation',
+                'firstOperationRelation.assignedUser',
+                'firstOperationRelation.createdUser',
+                'firstOperationRelation.owner',
+                'firstOperationRelation.operationKind',
+                'firstOperationRelation.operationTemplate',
+                'firstOperationRelation.investment',
+                'firstOperationRelation.investmentRoom',
+                'firstOperationRelation.threadMessage',
+                'lastOperationRelation',
             ])
             ->where('thread_type', Thread::THREAD_TYPE_OPERATION)
             ->orderBy('last_post_at', 'desc');

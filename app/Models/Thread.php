@@ -95,6 +95,16 @@ class Thread extends Model
         return $this->hasMany(Operation::class);
     }
 
+    public function firstOperationRelation()
+    {
+        return $this->hasOne(Operation::class)->ofMany('id', 'min');
+    }
+
+    public function lastOperationRelation()
+    {
+        return $this->hasOne(Operation::class)->ofMany('id', 'max');
+    }
+
     protected function lastMessage(): Attribute
     {
         return Attribute::get(function () {
@@ -113,14 +123,18 @@ class Thread extends Model
     protected function firstOperation(): Attribute
     {
         return Attribute::get(function () {
-            if ($this->operations) {
-                $operations = $this->operations;
+            if ($this->relationLoaded('firstOperationRelation')) {
+                return $this->getRelation('firstOperationRelation');
+            }
+
+            if ($this->relationLoaded('operations')) {
+                $operations = $this->getRelation('operations');
 
                 if ($operations instanceof \Illuminate\Support\Collection) {
                     return $operations->first();
                 }
-            } elseif ($this->threadMessages) {
-                $messages = $this->threadMessages;
+            } elseif ($this->relationLoaded('threadMessages')) {
+                $messages = $this->getRelation('threadMessages');
 
                 if ($messages instanceof \Illuminate\Support\Collection) {
                     $message = $messages->first(fn ($message) => $message->operation);
@@ -128,21 +142,25 @@ class Thread extends Model
                 }
             }
 
-            return null;
+            return $this->firstOperationRelation()->getResults();
         });
     }
 
     protected function lastOperation(): Attribute
     {
         return Attribute::get(function () {
-            if ($this->operations) {
-                $operations = $this->operations;
+            if ($this->relationLoaded('lastOperationRelation')) {
+                return $this->getRelation('lastOperationRelation');
+            }
+
+            if ($this->relationLoaded('operations')) {
+                $operations = $this->getRelation('operations');
 
                 if ($operations instanceof \Illuminate\Support\Collection) {
                     return $operations->last();
                 }
-            } elseif ($this->threadMessages) {
-                $messages = $this->threadMessages;
+            } elseif ($this->relationLoaded('threadMessages')) {
+                $messages = $this->getRelation('threadMessages');
 
                 if ($messages instanceof \Illuminate\Support\Collection) {
                     $message = $messages->last(fn ($message) => $message->operation);
@@ -150,7 +168,7 @@ class Thread extends Model
                 }
             }
 
-            return null;
+            return $this->lastOperationRelation()->getResults();
         });
     }
 
