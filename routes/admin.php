@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController as AdminAuth;
 use App\Http\Controllers\Admin\OperationController as AdminOperation;
 use App\Http\Controllers\Admin\GeProgressController as AdminGeProgress;
+use App\Http\Controllers\Admin\ImportController as AdminImport;
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AdminAuth::class, 'index'])->middleware('guest:admin')->name('login');
@@ -27,6 +28,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('ge')->name('ge.')->group(function () {
                 Route::get('/', [AdminGeProgress::class, 'index'])->name('index');
             });
+        });
+
+        Route::prefix('import')->name('import.')->group(function () {
+            Route::get('/procall-add', [AdminImport::class, 'procallAdd'])->name('procall-add');
         });
     });
 });

@@ -675,6 +675,7 @@ console.log('handleCalendarInput');
                             return;
                         }
                         this.applyDateToTarget(detail.value ?? '');
+                        this.close();
                     },
 
                     setCalendarFromTarget(trigger) {

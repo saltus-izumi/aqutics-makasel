@@ -10,4 +10,9 @@ class ProgressList extends Component
     {
         return view('livewire.admin.ge-progress.progress-list');
     }
+
+    protected function refreshGeProgresses() {
+
+
+    }
 }
