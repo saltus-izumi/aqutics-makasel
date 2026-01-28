@@ -13,9 +13,30 @@ class TeProgress extends Model
 
     protected $table = 'te_progresses';
 
+    public const LAST_IMPORT_KIND_NEW = 1;
+    public const LAST_IMPORT_KIND_UPDATE = 2;
+    public const LAST_IMPORT_KIND = [
+        self::LAST_IMPORT_KIND_NEW => '新規',
+        self::LAST_IMPORT_KIND_UPDATE => '更新',
+    ];
+
     protected $guarded = [
         'id'
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'nyuuden_date' => 'date',
+            'complete_date' => 'date',
+            'last_import_date' => 'datetime',
+        ];
+    }
 
     public function investment()
     {
@@ -25,6 +46,11 @@ class TeProgress extends Model
     public function investmentRoom()
     {
         return $this->belongsTo(InvestmentRoom::class, 'investment_room_uid', 'id');
+    }
+
+    public function responsible()
+    {
+        return $this->belongsTo(User::class, 'responsible_id', 'id');
     }
 
     // 上代見積り

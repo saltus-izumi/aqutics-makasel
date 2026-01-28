@@ -69,4 +69,43 @@ class Investment extends Model
 
         return $options;
     }
+
+    /****************
+    * プロコールからの物件名でデータを取得する
+    *
+    * 取得ルール
+    *   以下の順で取得を試す
+    *   1. そのままの名称で取得
+    *   2. 半角変換可能なものを半角変換して検索
+    *   3. （旧 〜）と記載されている可能性があるので、データを分割して検索
+    ****************/
+    public static function getByInvestmentNameForProcall($investmentName) {
+        // そのままの名称で検索
+        $investment = self::where('investment_name', $investmentName)
+            ->first();
+        if ($investment) return $investment;
+
+        // 半角変換可能なものを半角に変換して検索
+        $investment = self::where('investment_name', mb_convert_kana($investmentName, 'r'))
+            ->first();
+        if ($investment) return $investment;
+
+        // （旧 〜）と記載されている可能性があるので文字列を分割してからそれぞれの要素を検索
+        if (preg_match('/(.*)（旧　(.*)）/', $investmentName, $matches)) {
+            for ($i = 1; $i < count($matches); $i++) {
+                // そのままの名称で検索
+                $investment = self::where('investment_name', $matches[$i])
+                    ->first();
+                if ($investment) return $investment;
+
+                // 半角変換可能なものを半角に変換して検索
+                $investment = self::where('investment_name', mb_convert_kana($matches[$i], 'r'))
+                    ->first();
+                if ($investment) return $investment;
+            }
+        }
+
+        return null;
+    }
+
 }

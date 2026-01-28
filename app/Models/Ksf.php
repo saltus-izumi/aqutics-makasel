@@ -6,14 +6,18 @@ use App\Models\Concerns\RecordsUserStamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class GeProgress extends Model
+class Ksf extends Model
 {
     use RecordsUserStamps;
     use SoftDeletes;
 
-    protected $table = 'ge_progresses';
-
     protected $guarded = [
         'id'
     ];
+
+    public function kpyType()
+    {
+        return $this->belongsTo(KpiType::class);
+    }
+
 }

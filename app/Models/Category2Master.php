@@ -6,14 +6,13 @@ use App\Models\Concerns\RecordsUserStamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class GeProgress extends Model
+class Category2Master extends Model
 {
     use RecordsUserStamps;
     use SoftDeletes;
 
-    protected $table = 'ge_progresses';
-
-    protected $guarded = [
-        'id'
-    ];
+    public const KIND_TE = '1';
+    public const KIND_EN = '2';
+    public const KIND_LE = '3';
+    public const KIND_KEIRI = '4';
 }

@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class InvestmentRoom extends Model
 {
     use RecordsUserStamps;
+
+    protected $guarded = [
+        'id'
+    ];
+
     /**
      * この部屋が属する物件を取得
      */
@@ -36,6 +41,30 @@ class InvestmentRoom extends Model
         }
 
         return $options;
+    }
+
+    /****************
+    * プロコールからの部屋名でデータを取得する
+    *
+    * 取得ルール
+    *   以下の順で取得を試す
+    *   1. そのままの名称で取得
+    *   2. 半角変換可能なものを半角変換して検索（－を半角-に変換する)
+    ****************/
+    public static function getByInvestmentRoomNumberForProcall($investmentId, $investmentRoomNumber) {
+        // そのままの名称で検索
+        $investmentRoom = self::where('investment_id', $investmentId)
+            ->where('investment_room_number', $investmentRoomNumber)
+            ->first();
+        if ($investmentRoom) return $investmentRoom;
+
+        // 半角変換可能なものを半角に変換して検索
+        $investmentRoom = self::where('investment_id', $investmentId)
+            ->where('investment_room_number', mb_convert_kana(str_replace('－', '-', $investmentRoomNumber), 'r'))
+            ->first();
+        if ($investmentRoom) return $investmentRoom;
+
+        return null;
     }
 
 }
