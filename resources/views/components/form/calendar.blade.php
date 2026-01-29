@@ -111,6 +111,7 @@
                     cells: [],
 
                     init() {
+                        this.selectedDate = String(this.selectedDate ?? '').replace(/^\s+|\s+$/g, '');
                         this.syncFromSelectedDate();
                         if (!this.selectedDate) {
                             const now = new Date();
@@ -179,12 +180,13 @@
 
                     setDate(value, options = {}) {
                         const { silent = false } = options;
-                        const next = value ?? '';
+                        const next = String(value ?? '').replace(/^\s+|\s+$/g, '');
                         this.selectedDate = next;
                         if (!next) {
                             const now = new Date();
                             this.year = now.getFullYear();
                             this.month = now.getMonth() + 1;
+                            this.updateCalendar();
                         }
                         if (!silent) {
                             this.dispatchInput();

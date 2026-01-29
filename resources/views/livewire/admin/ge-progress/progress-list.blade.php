@@ -30,7 +30,7 @@
             <col class="tw:w-[52px]">
             <col class="tw:w-[52px]">
         </colgroup>
-        <thead class="tw:sticky tw:top-0">
+        <thead class="tw:sticky tw:top-0 tw:z-10">
             <tr class="tw:h-[21px] tw:bg-white">
                 <td rowspan="2" colspan="2">
                     <x-button.blue class="tw:!h-[21px] tw:!w-[104px] tw:!font-normal">検索</x-button.blue>
@@ -142,17 +142,14 @@
                     <td class="tw:text-center">脇谷</td>
                     <td class="tw:text-center">貸主提案</td>
                     <td class="tw:text-center">
-                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
-                            data-popup-title="退去受付"
-                            data-popup-date="{{ $progress?->taikyo_uketuke_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="taikyo_uketuke_date"
-                        >{{ $progress?->taikyo_uketuke_date?->format('m/d') }}</div>
+                        <x-tooltip :text="$progress?->taikyo_uketuke_date?->format('Y/m/d')">
+                            {{ $progress?->taikyo_uketuke_date?->format('m/d') }}
+                        </x-tooltip>
                     </td>
-                    <td class="tw:text-center">
-                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center">
+                    <td class="tw:text-center tw:overflow-visible">
+                        <x-tooltip :text="$progress?->investmentEmptyRoom?->cancellation_date?->format('Y/m/d')">
                             {{ $progress?->investmentEmptyRoom?->cancellation_date?->format('m/d') }}
-                        </div>
+                        </x-tooltip>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
@@ -160,11 +157,17 @@
                             data-popup-date="{{ $progress?->taikyo_date?->format('Y/m/d') }}"
                             data-progress-id="{{ $progress->id }}"
                             data-field="taikyo_date"
-                        >{{ $progress?->taikyo_date?->format('m/d') }}</div>
+                        >
+                            <x-tooltip :text="$progress?->taikyo_date?->format('Y/m/d')">
+                                {{ $progress?->taikyo_date?->format('m/d') ?? '　' }}
+                            </x-tooltip>
+                        </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center">
-                            {{ $progress?->genpuku_mitsumori_recieved_date?->format('m/d') }}
+                            <x-tooltip :text="$progress?->genpuku_mitsumori_recieved_date?->format('Y/m/d')">
+                                {{ $progress?->genpuku_mitsumori_recieved_date?->format('m/d') }}
+                            </x-tooltip>
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -173,447 +176,122 @@
                             data-popup-date="{{ $progress?->tsuden?->format('Y/m/d') }}"
                             data-progress-id="{{ $progress->id }}"
                             data-field="tsuden"
-                        >{{ $progress?->tsuden?->format('m/d') }}</div>
+                        >
+                            <x-tooltip :text="$progress?->tsuden?->format('Y/m/d')">
+                                {{ $progress?->tsuden?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
                     </td>
                     <td class="tw:text-center">
-                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="借主負担"
-                            data-popup-date="2025/10/31"
+                            data-popup-date="{{ $progress?->tenant_charge_confirmed_date?->format('Y/m/d') }}"
                             data-progress-id="{{ $progress->id }}"
                             data-field="tenant_charge_confirmed_date"
-                        >10/31</div>
+                        >
+                            <x-tooltip :text="$progress?->tenant_charge_confirmed_date?->format('Y/m/d')">
+                                {{ $progress?->tenant_charge_confirmed_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
                     </td>
                     <td class="tw:text-center">
-                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:before:content-['.'] tw:before:invisible"
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="貸主提案"
+                            data-popup-date="{{ $progress?->genpuku_teian_date?->format('Y/m/d') }}"
                             data-progress-id="{{ $progress->id }}"
-                            data-field="owner_proposed_date"></div>
+                            data-field="genpuku_teian_date"
+                        >
+                            <x-tooltip :text="$progress?->genpuku_teian_date?->format('Y/m/d')">
+                                {{ $progress?->genpuku_teian_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
                     </td>
-                    <td class="tw:text-center"></td>
-                    <td class="tw:text-center"></td>
-                    <td class="tw:text-center"></td>
-                    <td class="tw:text-center"></td>
-                    <td class="tw:text-center"></td>
-                    <td class="tw:text-center"></td>
-                    <td class="tw:text-center"></td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="貸主承諾"
+                            data-popup-date="{{ $progress?->genpuku_teian_kyodaku_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="genpuku_teian_kyodaku_date"
+                        >
+                            <x-tooltip :text="$progress?->genpuku_teian_kyodaku_date?->format('Y/m/d')">
+                                {{ $progress?->genpuku_teian_kyodaku_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="発注"
+                            data-popup-date="{{ $progress?->genpuku_kouji_hachu_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="genpuku_kouji_hachu_date"
+                        >
+                            <x-tooltip :text="$progress?->genpuku_kouji_hachu_date?->format('Y/m/d')">
+                                {{ $progress?->genpuku_kouji_hachu_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="完工予定"
+                            data-popup-date="{{ $progress?->kanko_yotei_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="kanko_yotei_date"
+                        >
+                            <x-tooltip :text="$progress?->kanko_yotei_date?->format('Y/m/d')">
+                                {{ $progress?->kanko_yotei_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="完工受信"
+                            data-popup-date="{{ $progress?->kanko_jyushin_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="kanko_jyushin_date"
+                        >
+                            <x-tooltip :text="$progress?->kanko_jyushin_date?->format('Y/m/d')">
+                                {{ $progress?->kanko_jyushin_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="完工報告"
+                            data-popup-date="{{ $progress?->owner_kanko_houkoku_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="owner_kanko_houkoku_date"
+                        >
+                            <x-tooltip :text="$progress?->owner_kanko_houkoku_date?->format('Y/m/d')">
+                                {{ $progress?->owner_kanko_houkoku_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="革命控除"
+                            data-popup-date="{{ $progress?->kakumei_koujo_touroku_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="kakumei_koujo_touroku_date"
+                        >
+                            <x-tooltip :text="$progress?->kakumei_koujo_touroku_date?->format('Y/m/d')">
+                                {{ $progress?->kakumei_koujo_touroku_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="完了"
+                            data-popup-date="{{ $progress?->ge_complete_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="ge_complete_date"
+                        >
+                            <x-tooltip :text="$progress?->ge_complete_date?->format('Y/m/d')">
+                                {{ $progress?->ge_complete_date?->format('m/d') }}
+                            </x-tooltip>
+                        </div>
+                    </td>
                 </tr>
             @endforeach
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去受付"
-                        data-popup-date="8/31"
-                    >8/31</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="解約日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="下代"
-                        data-popup-date="10/8"
-                    >10/8</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="通電"
-                        data-popup-date="10/9"
-                    >10/9</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="借主負担"
-                        data-popup-date="10/10"
-                    >10/10</div>
-                </td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去受付"
-                        data-popup-date="8/31"
-                    >8/31</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="解約日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="下代"
-                        data-popup-date="10/8"
-                    >10/8</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="通電"
-                        data-popup-date="10/9"
-                    >10/9</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="借主負担"
-                        data-popup-date="10/10"
-                    >10/10</div>
-                </td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去受付"
-                        data-popup-date="8/31"
-                    >8/31</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="解約日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="下代"
-                        data-popup-date="10/8"
-                    >10/8</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="通電"
-                        data-popup-date="10/9"
-                    >10/9</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="借主負担"
-                        data-popup-date="10/10"
-                    >10/10</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="貸主提案"
-                    ></div>
-                </td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">8/31</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/7</td>
-                <td class="tw:text-center">10/8</td>
-                <td class="tw:text-center">10/9</td>
-                <td class="tw:text-center">10/10</td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
         </tbody>
     </table>
     <div
@@ -676,6 +354,8 @@
                     },
 
                     handleCalendarInput(event) {
+console.log('handleCalendarInput');
+//console.log(event);
                         if (!this.open) {
                             return;
                         }
@@ -688,6 +368,7 @@
                         const normalized = this.normalizeDate(detail.value ?? '');
                         this.applyDateToTarget(normalized);
                         if (progressId && field && this.$wire?.updateDate) {
+console.log(normalized);
                             this.$wire.updateDate(progressId, field, normalized || null);
                         }
                         this.close();

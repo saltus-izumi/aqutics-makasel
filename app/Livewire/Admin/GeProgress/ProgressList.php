@@ -12,6 +12,9 @@ class ProgressList extends Component
 
     public function mount()
     {
+        $this->conditions += [
+            'cmp' => '1',
+        ];
         $this->refreshGeProgresses();
     }
 
@@ -21,11 +24,16 @@ class ProgressList extends Component
     }
 
     protected function refreshGeProgresses() {
-        $query = Progress::with([
-            'investment',
-            'investmentRoom',
-            'investmentEmptyRoom',
-        ]);
+        $query = Progress::query()
+            ->with([
+                'investment',
+                'investmentRoom',
+                'investmentEmptyRoom',
+            ])
+            ->whereNull('kaiyaku_cancellation_date')
+            ->orderBy('id', 'asc');
+
+        $query = $this->setCondition($query);
 
         $this->progresses = $query->get();
     }
@@ -40,7 +48,21 @@ class ProgressList extends Component
             ])
             ->find($progressId);
 
+        if (!$progress) {
+            return;
+        }
+
         $progress->{$field} = $date;
         $progress->save();
+        $this->refreshGeProgresses();
+    }
+
+    protected function setCondition($query)
+    {
+        if (($this->conditions['cmp'] ?? '') == '1') {
+            $query->whereNull('ge_complete_date');
+        }
+
+        return $query;
     }
 }

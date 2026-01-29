@@ -40,6 +40,15 @@ class Progress extends Model
             'taikyo_date' => 'date',
             'genpuku_mitsumori_recieved_date' => 'date',
             'tsuden' => 'date',
+            'tenant_charge_confirmed_date' => 'date',
+            'genpuku_teian_date' => 'date',
+            'genpuku_teian_kyodaku_date' => 'date',
+            'genpuku_kouji_hachu_date' => 'date',
+            'kanko_yotei_date' => 'date',
+            'kanko_jyushin_date' => 'date',
+            'owner_kanko_houkoku_date' => 'date',
+            'kakumei_koujo_touroku_date' => 'date',
+            'ge_complete_date' => 'date',
 
 
 
