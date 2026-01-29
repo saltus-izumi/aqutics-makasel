@@ -50,7 +50,7 @@ return new class extends Migration
             "     responsible_user_id," .           // 実行者
             "     taikyo_accepted_date," .          // 退去受付
             "     taikyo_date," .                   // 退去日
-            // "     lower_estimate_date," .           // 下代
+            "     lower_estimate_date," .           // 下代
             "     tsuuden_date," .                  // 通電
             "     tenant_charge_confirmed_date," .  // 借主負担
             "     owner_proposed_date," .           // 貸主提案
@@ -68,15 +68,16 @@ return new class extends Migration
             "   genpuku_responsible_id," .          // 実行者
             "   taikyo_uketuke_date," .             // 退去受付
             "   taikyo_date," .                     // 退去日
+            "   genpuku_mitsumori_recieved_date," . // 見積書受信日
             "   tsuden," .                          // 通電
             "   tenant_charge_confirmed_date," .    // 借主負担
-            "   genpuku_teian_date," .              // 貸主提案
-            "   genpuku_teian_kyodaku_date," .      // 貸主承諾
-            "   genpuku_kouji_hachu_date," .        // 発注
-            "   kanko_yotei_date," .                // 完工予定
-            "   kanko_jyushin_date," .              // 完工受信
-            "   owner_kanko_houkoku_date," .        // 完工報告
-            "   kakumei_koujo_touroku_date," .      // 革命控除
+            "   genpuku_teian_date," .              // OWN原復提案
+            "   genpuku_teian_kyodaku_date," .      // OWN原復承諾
+            "   genpuku_kouji_hachu_date," .        // 原復発注
+            "   kanko_yotei_date," .                // 完工予定日
+            "   kanko_jyushin_date," .              // 完工受信日
+            "   owner_kanko_houkoku_date," .        // OWN完工報告
+            "   kakumei_koujo_touroku_date," .      // 革命控除登録
             "   ge_complete_date," .                // 完了
             "   created," .
             "   modified" .

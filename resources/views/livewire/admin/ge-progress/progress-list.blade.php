@@ -132,62 +132,72 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                <td class="tw:text-center">1</td>
-                <td class="tw:text-center">1</td>
-                <td>XXXマンション</td>
-                <td class="tw:text-center">101</td>
-                <td class="tw:text-center">児玉</td>
-                <td class="tw:text-center">脇谷</td>
-                <td class="tw:text-center">貸主提案</td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去受付"
-                        data-popup-date="8/31"
-                    >8/31</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="解約日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="退去日"
-                        data-popup-date="10/7"
-                    >10/7</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="下代"
-                        data-popup-date="10/8"
-                    >10/8</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="通電"
-                        data-popup-date="10/9"
-                    >10/9</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
-                        data-popup-title="借主負担"
-                        data-popup-date="2025/10/31"
-                    >10/31</div>
-                </td>
-                <td class="tw:text-center">
-                    <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:before:content-['.'] tw:before:invisible"
-                        data-popup-title="貸主提案"></div>
-                </td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-                <td class="tw:text-center"></td>
-            </tr>
+            @foreach ($progresses as $progress)
+                <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
+                    <td class="tw:text-center">{{ $progress->id }}</td>
+                    <td class="tw:text-center">{{ $progress->investment_id }}</td>
+                    <td>{{ $progress?->investment?->investment_name }}</td>
+                    <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
+                    <td class="tw:text-center">児玉</td>
+                    <td class="tw:text-center">脇谷</td>
+                    <td class="tw:text-center">貸主提案</td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="退去受付"
+                            data-popup-date="{{ $progress?->taikyo_uketuke_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="taikyo_uketuke_date"
+                        >{{ $progress?->taikyo_uketuke_date?->format('m/d') }}</div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center">
+                            {{ $progress?->investmentEmptyRoom?->cancellation_date?->format('m/d') }}
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="退去日"
+                            data-popup-date="{{ $progress?->taikyo_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="taikyo_date"
+                        >{{ $progress?->taikyo_date?->format('m/d') }}</div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center">
+                            {{ $progress?->genpuku_mitsumori_recieved_date?->format('m/d') }}
+                        </div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                            data-popup-title="通電"
+                            data-popup-date="{{ $progress?->tsuden?->format('Y/m/d') }}"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="tsuden"
+                        >{{ $progress?->tsuden?->format('m/d') }}</div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:underline"
+                            data-popup-title="借主負担"
+                            data-popup-date="2025/10/31"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="tenant_charge_confirmed_date"
+                        >10/31</div>
+                    </td>
+                    <td class="tw:text-center">
+                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer tw:before:content-['.'] tw:before:invisible"
+                            data-popup-title="貸主提案"
+                            data-progress-id="{{ $progress->id }}"
+                            data-field="owner_proposed_date"></div>
+                    </td>
+                    <td class="tw:text-center"></td>
+                    <td class="tw:text-center"></td>
+                    <td class="tw:text-center"></td>
+                    <td class="tw:text-center"></td>
+                    <td class="tw:text-center"></td>
+                    <td class="tw:text-center"></td>
+                    <td class="tw:text-center"></td>
+                </tr>
+            @endforeach
             <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
                 <td class="tw:text-center">1</td>
                 <td class="tw:text-center">1</td>
@@ -666,7 +676,6 @@
                     },
 
                     handleCalendarInput(event) {
-console.log('handleCalendarInput');
                         if (!this.open) {
                             return;
                         }
@@ -674,7 +683,13 @@ console.log('handleCalendarInput');
                         if (detail.name && detail.name !== this.calendarName) {
                             return;
                         }
-                        this.applyDateToTarget(detail.value ?? '');
+                        const progressId = this.activeTarget?.dataset?.progressId ?? '';
+                        const field = this.activeTarget?.dataset?.field ?? '';
+                        const normalized = this.normalizeDate(detail.value ?? '');
+                        this.applyDateToTarget(normalized);
+                        if (progressId && field && this.$wire?.updateDate) {
+                            this.$wire.updateDate(progressId, field, normalized || null);
+                        }
                         this.close();
                     },
 

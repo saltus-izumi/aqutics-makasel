@@ -6,7 +6,7 @@ use App\Models\Concerns\RecordsUserStamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class OnSite extends Model
+class Onsite extends Model
 {
     use RecordsUserStamps;
     use SoftDeletes;
@@ -38,11 +38,10 @@ class OnSite extends Model
         ];
 
         if( $inventmentRoom->leaving_date == null){
-            $data = [];
             // 退去日が現れた場合は登録
             // 新規
             foreach( $requestKinds as $requestId ){
-                $data[] = [   //
+                $data = [   //
                         'investment_id'     => $inventmentRoom->investment_id,      // 物件id
                         'investment_room_id'=> $inventmentRoom->investment_room_id,	// 物件部屋ID
                         'request_date'      => $now,                                // 依頼日時
@@ -55,20 +54,16 @@ class OnSite extends Model
                 if(!is_null($progressId)){
                     $data['progress_id'] = $progressId;
                 }
+                self::create($data);
             }
-            $entities = $this->newEntities($data);
-            if( $this->saveMany($entities) == false ){
-                // エラーの場合、どうする？
-            }
-        }else if(strcmp($leavingDate->i18nFormat('yyyy-MM-dd'), $emptyRoom['leaving_date']->i18nFormat('yyyy-MM-dd')) != 0 ){
+        } elseif($leavingDate->isSameDay($inventmentRoom->leaving_date)) {
             // 退去日が変更の場合、該当ONSITEがある場合は更新、
             // 更新処理
-            $onsites = $this->find('all',[
-                'conditions' => ['investment_empty_room_id' => $emptyRoom['id']]
-            ])->all();
+            $onsites = self::where('investment_empty_room_id', $inventmentRoom->id)
+                ->get();
 
             foreach($onsites as $onsite){
-                $request_id = $onsite['request_kind_id'];
+                $request_id = $onsite->request_kind_id;
                 $data = [
                     'id' => $onsite['id'],
                 ];
@@ -77,12 +72,10 @@ class OnSite extends Model
                 }
                 if( isset( $mapAddDays[$request_id] ) == true ){
                     // 日付変更
-                    $data['due_date'] = $leavingDate->addDays($mapAddDays[$request_id]);
+                    $data['due_date'] = $leavingDate->copy()->addDays($mapAddDays[$request_id]);
                 }
-                $entity = $this->patchEntity($onsite, $data);
-                if( $this->save($entity) == false ){
-                    // エラーの場合、どうする？
-                }
+                $onsite->fill($onsite);
+                $onsite->save();
             }
 
         }

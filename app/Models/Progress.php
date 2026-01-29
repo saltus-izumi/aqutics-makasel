@@ -33,6 +33,16 @@ class Progress extends Model
     {
         return [
             'ge_application_date' => 'date',
+            'ge_complete_date' => 'date',
+            'genpuku_shiryou_soushin_date' => 'date',
+            'notice_of_intent_to_vacate_date' => 'date',
+            'taikyo_yotei_date' => 'date',
+            'taikyo_date' => 'date',
+            'genpuku_mitsumori_recieved_date' => 'date',
+            'tsuden' => 'date',
+
+
+
             'taikyo_uketuke_date' => 'date',
             'kaiyaku_date' => 'date',
             'last_import_date' => 'datetime',

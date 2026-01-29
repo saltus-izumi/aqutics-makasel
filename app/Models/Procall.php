@@ -17,4 +17,18 @@ class Procall extends Model
         'id'
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'pr003' => 'datetime',
+            'pr032' => 'datetime',
+            'pr033' => 'datetime',
+        ];
+    }
+
 }

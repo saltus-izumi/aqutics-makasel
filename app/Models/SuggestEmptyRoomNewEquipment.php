@@ -32,6 +32,8 @@ class SuggestEmptyRoomNewEquipment extends Model
     public const KIND_EQUIPMENT = 19;                    // 設備
     public const KIND_FREE_INPUT = 20;                   // 手入力
 
+    protected $table = 'suggest_empty_room_new_equipments';
+
     protected $guarded = [
         'id'
     ];

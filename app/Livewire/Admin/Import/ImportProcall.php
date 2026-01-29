@@ -7,6 +7,7 @@ use App\Models\Category1Master;
 use App\Models\Category2Master;
 use App\Models\Category3Master;
 use App\Models\FortificationsProposal;
+use App\Models\GeProgress;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\Onsite;
@@ -17,18 +18,20 @@ use App\Models\SuggestEmptyRoomNewEquipment;
 use App\Models\TeProgress;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class ProcallAdd extends Component
+class ImportProcall extends Component
 {
     use WithFileUploads;
     use SyncKsf;
 
     public $procallFile = null;
     public $isUpdate = false;
-    public $insertCount = 0;
-    public $updateCount = 0;
+    public $insertCount = null;
+    public $updateCount = null;
+    public $errorCount = null;
     public $errorMessages = [];
 
     protected $messages = [
@@ -43,32 +46,52 @@ class ProcallAdd extends Component
 
         $this->insertCount = 0;
         $this->updateCount = 0;
+        $this->errorCount = 0;
+        $this->errorMessages = [];
 
-        $file = new \SplFileObject($this->procallFile->getRealPath(), 'r');
-        $rowCount = 1;
-        while (! $file->eof()) {
-            $row = $file->fgetcsv();
-            if ($row === [null] || $row === false) {
-                continue;
-            }
-            // ヘッダー行読み飛ばし
-            if ($rowCount === 1) {
+
+        DB::beginTransaction();
+
+        try {
+            $file = new \SplFileObject($this->procallFile->getRealPath(), 'r');
+            $rowCount = 1;
+
+            while (! $file->eof()) {
+                $row = $file->fgetcsv();
+                if ($row === [null] || $row === false) {
+                    continue;
+                }
+
+                // ヘッダー行読み飛ばし
+                if ($rowCount === 1) {
+                    $rowCount++;
+                    continue;
+                }
+
+                // $row = mb_convert_encoding($row, 'UTF-8', 'SJIS-win');
+                $result = $this->insert($row);
+                if ($result !== true) {
+                    $this->errorMessages[] = "{$rowCount}行目：" . $result;
+                }
                 $rowCount++;
-                continue;
             }
-            $row = mb_convert_encoding($row, 'UTF-8', 'SJIS-win');
-            $result = $this->insert($row);
-            if ($result !== true) {
-                $this->errorMessages[] = "{$rowCount}行目：" . $result;
-            }
-            $rowCount++;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e; // 必要なら再スロー
         }
+
+        if ($this->errorCount == 0) {
+            DB::commit();
+        } else {
+            DB::rollBack();
+        }
+
         $this->reset('procallFile');
     }
 
     public function render()
     {
-        return view('livewire.admin.import.procall-add');
+        return view('livewire.admin.import.import-procall');
     }
 
     protected function insert($record)
@@ -79,6 +102,7 @@ class ProcallAdd extends Component
         $procallExists = Procall::where('pr001', $record[0])->exists();
 
         if ($procallExists && $this->isUpdate == false) {
+            $this->errorCount++;
             return "すでに登録済みデータです。（案件ID：{$record[0]}）";
         } elseif ($procallExists && $this->isUpdate) {
             return $this->update($record);
@@ -91,12 +115,14 @@ class ProcallAdd extends Component
             // 物件情報検索
             $inventment = Investment::getByInvestmentNameForProcall($investmentName);
             if (!$inventment) {
+                $this->errorCount++;
                 return "物件が見つかりません（物件名：{$investmentName}）";
             }
 
             if ($record[18] !== '') {
                 $inventmentRoom = InvestmentRoom::getByInvestmentRoomNumberForProcall($inventment->id, $roomNumber);
                 if (empty($inventmentRoom)) {
+                    $this->errorCount++;
                     return "部屋が見つかりません（物件：{$investmentName}({$inventment->id})、部屋：{$roomNumber}）";
                 }
             }
@@ -140,6 +166,13 @@ class ProcallAdd extends Component
                     $progress->en_responsible_2_id = $inventment->en_staff_id ?? null;
                     $progress->save();
 
+                    // GeProgresses作成
+                    GeProgress::create([
+                        'progress_id' => $progress->id,
+                        'trading_company_id' => $inventment->restoration_company_id,
+                    ]);
+
+
                     $this->insertCount++;
 
                     // fortifications_proposalsにデータ追加
@@ -167,7 +200,7 @@ class ProcallAdd extends Component
                     $this->createKsfForLe($progress->id);
                     $this->createKsfForEn($progress->id);
 
-                    $this->Onsites->regit($inventmentRoom,
+                    Onsite::regit($inventmentRoom,
                         [Onsite::ONSITE_REQEST_KIND_ORIGINAL_SUBTRACTION, Onsite::ONSITE_REQEST_KIND_COMPLETION_SHOOTING],
                         $leavingDate, $leavingDate, Auth::user());
                 }
@@ -254,7 +287,7 @@ class ProcallAdd extends Component
                         'nyuuden_date' => $record[32], // 連絡日時を入電日
                         'type_id' => $typeId,
                         'type_name' => $record[9], // カテゴリ1階層を案件分類に
-                        'complete_date' => $record[31],
+                        'complete_date' => $this->nullIfEmpty($record[31]),
                         'last_import_date' => now(),
                     ]);
                     $progress->save();
@@ -276,8 +309,11 @@ class ProcallAdd extends Component
                 }
             }
         } catch (\Exception $e) {
+            $this->errorCount++;
             return $e->getMessage();
         }
+
+        return true;
     }
 
     protected function update($record) {
@@ -390,7 +426,7 @@ class ProcallAdd extends Component
         $procalls = Procall::create([
             'pr001' =>  $record[0],
             'pr002' =>  $record[1],
-            'pr003' =>  $record[2],
+            'pr003' =>  $this->nullIfEmpty($record[2]),
             'pr004' =>  $record[3],
             'pr005' =>  $record[4],
             'pr006' =>  $record[5],
@@ -419,8 +455,8 @@ class ProcallAdd extends Component
             'pr029' =>  $record[28],
             'pr030' =>  $record[29],
             'pr031' =>  $record[30],
-            'pr032' =>  $record[31],
-            'pr033' =>  $record[32],
+            'pr032' =>  $this->nullIfEmpty($record[31]),
+            'pr033' =>  $this->nullIfEmpty($record[32]),
             'pr034' =>  $record[33],
             'pr035' =>  $record[34],
             'pr036' =>  $record[35],
@@ -428,5 +464,10 @@ class ProcallAdd extends Component
         ]);
 
         return $procalls;
+    }
+
+    protected function nullIfEmpty($value)
+    {
+        return $value === '' ? null : $value;
     }
 }
