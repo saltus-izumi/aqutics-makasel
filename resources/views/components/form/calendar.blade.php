@@ -101,8 +101,6 @@
                 Alpine.data('calendarPicker', (config = {}) => ({
                     name: config.name ?? '',
                     selectedDate: config.value ?? '',
-//                    year: config.year ?? new Date().getFullYear(),
-//                    month: config.month ?? (new Date().getMonth() + 1),
                     year: config.year ?? new Date().getFullYear(),
                     month: config.month ?? (new Date().getMonth() + 1),
                     years: config.years ?? [],

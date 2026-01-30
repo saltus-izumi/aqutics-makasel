@@ -36,7 +36,7 @@
                     <x-button.blue class="tw:!h-[21px] tw:!w-[104px] tw:!font-normal">検索</x-button.blue>
                 </td>
                 <td class="tw:pl-[10px]" rowspan="2">
-                    案件数  ３０
+                    案件数  {{ $progresses->count() }}
                 </td>
                 <td rowspan="2" colspan="4"></td>
                 <td></td>
@@ -303,6 +303,7 @@
         x-transition:leave-start="tw:opacity-100 tw:scale-100"
         x-transition:leave-end="tw:opacity-0 tw:scale-95"
         x-on:click.stop
+        x-ref="popup"
         class="tw:fixed tw:z-50 tw:max-w-[320px] tw:rounded tw:border tw:border-gray-200 tw:bg-white tw:shadow-lg tw:p-2"
         :style="popupStyle"
         x-cloak
@@ -336,8 +337,25 @@
                         this.popupTitle = trigger.dataset.popupTitle ?? '';
                         const x = event.clientX + 12;
                         const y = event.clientY + 12;
-                        this.popupStyle = `left: ${x}px; top: ${y}px;`;
                         this.open = true;
+                        this.$nextTick(() => {
+                            const popup = this.$refs.popup;
+                            const rect = popup?.getBoundingClientRect();
+                            const width = rect?.width ?? 320;
+                            const height = rect?.height ?? 0;
+                            const margin = 8;
+                            let left = x;
+                            let top = y;
+                            const maxLeft = window.innerWidth - width - margin;
+                            if (left > maxLeft) {
+                                left = Math.max(margin, maxLeft);
+                            }
+                            const maxTop = window.innerHeight - height - margin;
+                            if (top > maxTop) {
+                                top = Math.max(margin, maxTop);
+                            }
+                            this.popupStyle = `left: ${left}px; top: ${top}px;`;
+                        });
                         this.setCalendarFromTarget(trigger);
                     },
 

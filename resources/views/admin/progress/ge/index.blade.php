@@ -5,10 +5,10 @@
                 物件選択
             </div>
             <div>
-                <x-form.input class="tw:w-[245px] tw:text-[1.2rem]" placeholder="オーナー名（ID）、物件名" :value="$conditions['investment_id'] ?? ''" x-ref="searchInput" x-on:keydown.enter.prevent="submitSearch()" />
+                <x-form.input id="ge-progress-search-input" class="tw:w-[245px] tw:text-[1.2rem]" placeholder="オーナー名（ID）、物件名" x-ref="searchInput" />
             </div>
             <div class="tw:h-[42px] tw:leading-[42px]">
-                <x-form.checkbox class="tw:text-[1.1rem]">未完了のみ表示</x-form.checkbox>
+                <x-form.checkbox id="ge-progress-incomplete-only" class="tw:text-[1.1rem]" :checked="true">未完了のみ表示</x-form.checkbox>
             </div>
         </div>
         <div class="tw:h-[45px] tw:w-full tw:ml-[26px] tw:flex tw:items-end tw:border-b tw:mb-[21px]">
@@ -28,6 +28,32 @@
 
     @push('scripts')
         <script>
+            document.addEventListener('livewire:init', () => {
+                const checkbox = document.getElementById('ge-progress-incomplete-only');
+                if (!checkbox) {
+                    return;
+                }
+                checkbox.addEventListener('change', (event) => {
+                    Livewire.dispatch('ge-progress:incomplete-only-changed', {
+                        incompleteOnly: event.target.checked,
+                    });
+                });
+
+                const searchInput = document.getElementById('ge-progress-search-input');
+                if (!searchInput) {
+                    return;
+                }
+                searchInput.addEventListener('keydown', (event) => {
+                    if (event.key !== 'Enter') {
+                        return;
+                    }
+                    event.preventDefault();
+                    Livewire.dispatch('ge-progress:search-input-submitted', {
+                        keyword: event.target.value,
+                    });
+                });
+            });
+
             document.addEventListener('alpine:init', () => {
                 Alpine.data('operationFilter', () => ({
                     submitSearch() {

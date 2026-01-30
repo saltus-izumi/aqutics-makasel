@@ -3,18 +3,19 @@
 namespace App\Livewire\Admin\GeProgress;
 
 use App\Models\Progress;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ProgressList extends Component
 {
     public $conditions = [];
     public $progresses = null;
+    public bool $incompleteOnly = true;
+    public string $searchKeyword = '';
 
     public function mount()
     {
-        $this->conditions += [
-            'cmp' => '1',
-        ];
+        $this->incompleteOnly = true;
         $this->refreshGeProgresses();
     }
 
@@ -27,6 +28,7 @@ class ProgressList extends Component
         $query = Progress::query()
             ->with([
                 'investment',
+                'investment.landlord.owner',
                 'investmentRoom',
                 'investmentEmptyRoom',
             ])
@@ -57,10 +59,38 @@ class ProgressList extends Component
         $this->refreshGeProgresses();
     }
 
+    #[On('ge-progress:incomplete-only-changed')]
+    public function updateIncompleteOnly($incompleteOnly)
+    {
+        $this->incompleteOnly = (bool) $incompleteOnly;
+        $this->refreshGeProgresses();
+    }
+
+    #[On('ge-progress:search-input-submitted')]
+    public function updateSearchKeyword($keyword)
+    {
+        $this->searchKeyword = trim((string) $keyword);
+        $this->refreshGeProgresses();
+    }
+
     protected function setCondition($query)
     {
-        if (($this->conditions['cmp'] ?? '') == '1') {
+        if ($this->incompleteOnly) {
             $query->whereNull('ge_complete_date');
+        }
+
+        if ($this->searchKeyword !== '') {
+            $keyword = $this->searchKeyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('investment_id', $keyword)
+                    ->orWhereHas('investment', function ($q) use ($keyword) {
+                        $q->where('investment_name', 'like', '%' . $keyword . '%');
+                    })
+                    ->orWhereHas('investment.landlord.owner', function ($q) use ($keyword) {
+                        $q->where('name', 'like', '%' . $keyword . '%')
+                            ->orWhere('id', $keyword);
+                    });
+            });
         }
 
         return $query;
