@@ -4,6 +4,7 @@
     'year_from' => null,
     'year_to' => null,
     'clear_label' => '削除',
+    'disable_label' => '無効',
     'is_error' => false,
 ])
 
@@ -68,7 +69,12 @@
         </select>
         <button
             type="button"
-            class="tw:btn tw:btn-sm tw:btn-outline tw:h-[1.7rem] tw:min-h-0 tw:px-3"
+            class="tw:btn tw:btn-sm tw:btn-outline tw:h-[1.7rem] tw:min-h-0 tw:px-3 tw:text-blue-600"
+            x-on:click="disableDate()"
+        >{{ $disable_label }}</button>
+        <button
+            type="button"
+            class="tw:btn tw:btn-sm tw:btn-outline tw:h-[1.7rem] tw:min-h-0 tw:px-3 tw:text-red-600"
             x-on:click="clearDate()"
         >{{ $clear_label }}</button>
     </div>
@@ -164,6 +170,11 @@
 
                     clearDate() {
                         this.selectedDate = '';
+                        this.dispatchInput();
+                    },
+
+                    disableDate() {
+                        this.selectedDate = 'ー';
                         this.dispatchInput();
                     },
 

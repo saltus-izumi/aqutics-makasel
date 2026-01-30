@@ -74,72 +74,42 @@ class Progress extends Model
         return $this->belongsTo(InvestmentEmptyRoom::class);
     }
 
-    protected function geStatus(): Attribute
+    protected function geNextAction(): Attribute
     {
         return Attribute::get(function () {
-            $status = '';
+            $nextAction = '';
 
             if (!$this?->taikyo_uketuke_date) {
-                $status = '退去受付';
+                $nextAction = '退去受付';
             } elseif (!$this?->investmentEmptyRoom?->cancellation_date) {
-                $status = '解約日';
-            } elseif (!$this?->taikyo_date) {
-                $status = '退去日';
+                $nextAction = '解約日';
+            } elseif ($this?->taikyo_date_state === 0) {
+                $nextAction = '退去日';
             } elseif (!$this?->genpuku_mitsumori_recieved_date) {
-                $status = '下代';
-            } elseif (!$this?->tsuden) {
-                $status = '通電';
-            } elseif (!$this?->tenant_charge_confirmed_date) {
-                $status = '借主負担';
-            } elseif (!$this?->genpuku_teian_date) {
-                $status = '貸主提案';
-            } elseif (!$this?->genpuku_teian_kyodaku_date) {
-                $status = '貸主承諾';
-            } elseif (!$this?->genpuku_kouji_hachu_date) {
-                $status = '発注';
-            } elseif (!$this?->kanko_yotei_date) {
-                $status = '完工予定';
-            } elseif (!$this?->kanko_jyushin_date) {
-                $status = '完工受信';
-            } elseif (!$this?->owner_kanko_houkoku_date) {
-                $status = '完工報告';
-            } elseif (!$this?->kakumei_koujo_touroku_date) {
-                $status = '革命控除';
-            } elseif (!$this?->ge_complete_date) {
-                $status = '完了';
+                $nextAction = '下代';
+            } elseif ($this?->tsuden_state === 0) {
+                $nextAction = '通電';
+            } elseif ($this?->tenant_charge_confirmed_date_state === 0) {
+                $nextAction = '借主負担';
+            } elseif ($this?->genpuku_teian_date_state === 0) {
+                $nextAction = '貸主提案';
+            } elseif ($this?->genpuku_teian_kyodaku_date_state === 0) {
+                $nextAction = '貸主承諾';
+            } elseif ($this?->genpuku_kouji_hachu_date_state === 0) {
+                $nextAction = '発注';
+            } elseif ($this?->kanko_yotei_date_state === 0) {
+                $nextAction = '完工予定';
+            } elseif ($this?->kanko_jyushin_date_state === 0) {
+                $nextAction = '完工受信';
+            } elseif ($this?->owner_kanko_houkoku_date_state === 0) {
+                $nextAction = '完工報告';
+            } elseif ($this?->kakumei_koujo_touroku_date_state === 0) {
+                $nextAction = '革命控除';
+            } elseif ($this?->ge_complete_date_state === 0) {
+                $nextAction = '完了';
             }
 
-            // if ($this?->ge_complete_date) {
-            //     $status = '完了';
-            // } elseif ($this?->kakumei_koujo_touroku_date) {
-            //     $status = '革命控除';
-            // } elseif ($this?->owner_kanko_houkoku_date) {
-            //     $status = '完工報告';
-            // } elseif ($this?->kanko_jyushin_date) {
-            //     $status = '完工受信';
-            // } elseif ($this?->kanko_yotei_date) {
-            //     $status = '完工予定';
-            // } elseif ($this?->genpuku_kouji_hachu_date) {
-            //     $status = '発注';
-            // } elseif ($this?->genpuku_teian_kyodaku_date) {
-            //     $status = '貸主承諾';
-            // } elseif ($this?->genpuku_teian_date) {
-            //     $status = '貸主提案';
-            // } elseif ($this?->tenant_charge_confirmed_date) {
-            //     $status = '借主負担';
-            // } elseif ($this?->tsuden) {
-            //     $status = '通電';
-            // } elseif ($this?->genpuku_mitsumori_recieved_date) {
-            //     $status = '下代';
-            // } elseif ($this?->taikyo_date) {
-            //     $status = '退去日';
-            // } elseif ($this?->investmentEmptyRoom?->cancellation_date) {
-            //     $status = '解約日';
-            // } elseif ($this?->taikyo_uketuke_date) {
-            //     $status = '退去受付';
-            // }
-
-            return $status;
+            return $nextAction;
         });
     }
 

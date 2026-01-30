@@ -56,7 +56,18 @@ class ProgressList extends Component
             return;
         }
 
-        $progress->{$field} = $date;
+        if ($date == 'ー') {
+            $progress->{$field} = null;
+            $progress->{$field . '_state'} = 2;
+        }
+        elseif ($date == '') {
+            $progress->{$field} = $date;
+            $progress->{$field . '_state'} = 0;
+        }
+        else {
+            $progress->{$field} = $date;
+            $progress->{$field . '_state'} = 1;
+        }
         $progress->save();
         $this->refreshGeProgresses();
     }

@@ -160,16 +160,12 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="taikyo_date"
                         >
-                            <x-tooltip :text="$progress?->taikyo_date?->format('Y/m/d')">
-                                {{ $progress?->taikyo_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="taikyo_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center">
-                            <x-tooltip :text="$progress?->genpuku_mitsumori_recieved_date?->format('Y/m/d')">
-                                {{ $progress?->genpuku_mitsumori_recieved_date?->format('m/d') }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="genpuku_mitsumori_recieved_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -179,9 +175,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="tsuden"
                         >
-                            <x-tooltip :text="$progress?->tsuden?->format('Y/m/d')">
-                                {{ $progress?->tsuden?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="tsuden" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -191,9 +185,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="tenant_charge_confirmed_date"
                         >
-                            <x-tooltip :text="$progress?->tenant_charge_confirmed_date?->format('Y/m/d')">
-                                {{ $progress?->tenant_charge_confirmed_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="tenant_charge_confirmed_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -203,9 +195,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="genpuku_teian_date"
                         >
-                            <x-tooltip :text="$progress?->genpuku_teian_date?->format('Y/m/d')">
-                                {{ $progress?->genpuku_teian_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="genpuku_teian_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -215,9 +205,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="genpuku_teian_kyodaku_date"
                         >
-                            <x-tooltip :text="$progress?->genpuku_teian_kyodaku_date?->format('Y/m/d')">
-                                {{ $progress?->genpuku_teian_kyodaku_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="genpuku_teian_kyodaku_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -227,9 +215,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="genpuku_kouji_hachu_date"
                         >
-                            <x-tooltip :text="$progress?->genpuku_kouji_hachu_date?->format('Y/m/d')">
-                                {{ $progress?->genpuku_kouji_hachu_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="genpuku_kouji_hachu_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -239,9 +225,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="kanko_yotei_date"
                         >
-                            <x-tooltip :text="$progress?->kanko_yotei_date?->format('Y/m/d')">
-                                {{ $progress?->kanko_yotei_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="kanko_yotei_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -251,9 +235,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="kanko_jyushin_date"
                         >
-                            <x-tooltip :text="$progress?->kanko_jyushin_date?->format('Y/m/d')">
-                                {{ $progress?->kanko_jyushin_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="kanko_jyushin_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -263,9 +245,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="owner_kanko_houkoku_date"
                         >
-                            <x-tooltip :text="$progress?->owner_kanko_houkoku_date?->format('Y/m/d')">
-                                {{ $progress?->owner_kanko_houkoku_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="owner_kanko_houkoku_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -275,9 +255,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="kakumei_koujo_touroku_date"
                         >
-                            <x-tooltip :text="$progress?->kakumei_koujo_touroku_date?->format('Y/m/d')">
-                                {{ $progress?->kakumei_koujo_touroku_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="kakumei_koujo_touroku_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
@@ -287,9 +265,7 @@
                             data-progress-id="{{ $progress->id }}"
                             data-field="ge_complete_date"
                         >
-                            <x-tooltip :text="$progress?->ge_complete_date?->format('Y/m/d')">
-                                {{ $progress?->ge_complete_date?->format('m/d') ?? '　' }}
-                            </x-tooltip>
+                            <x-admin.progress.date :progress="$progress" field="ge_complete_date" />
                         </div>
                     </td>
                 </tr>
@@ -404,6 +380,11 @@
                         if (!this.activeTarget) {
                             return;
                         }
+                        if (value === 'ー') {
+                            this.activeTarget.dataset.popupDate = 'ー';
+                            this.activeTarget.textContent = 'ー';
+                            return;
+                        }
                         const formatted = this.formatMonthDay(value);
                         this.activeTarget.dataset.popupDate = formatted ? value : '';
                         this.activeTarget.textContent = formatted;
@@ -463,6 +444,9 @@
                         const raw = String(value ?? '').trim();
                         if (!raw) {
                             return '';
+                        }
+                        if (raw === 'ー') {
+                            return 'ー';
                         }
                         if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
                             return raw;
