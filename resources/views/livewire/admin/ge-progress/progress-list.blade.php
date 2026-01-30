@@ -1,10 +1,10 @@
 <div
     class="tw:relative"
-    x-data="tablePopup()"
+    x-data="tablePopup(@js($sortOrder ?? 'asc'), @js($filterId ?? ''))"
     x-on:click="handleClick($event)"
     x-on:input="handleDateInput($event)"
     x-on:calendar-input.window="handleCalendarInput($event)"
-    x-on:keydown.escape.window="close()"
+    x-on:keydown.escape.window="closeAll()"
 >
     <table class="tw:table-fixed tw:w-[1352px] tw:min-w-[1352px]">
         <colgroup>
@@ -76,7 +76,7 @@
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">号室</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">責任者</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">実行者</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">ステータス</td>
+                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">ネクストアクション</td>
                 <td class="tw:text-center tw:bg-black tw:text-white tw:leading-[1.1rem]">退去<br>受付</td>
                 <td class="tw:text-center tw:bg-[#efefef]">解約日</td>
                 <td class="tw:text-center tw:bg-[#efefef]">退去日</td>
@@ -108,7 +108,9 @@
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">0日</td>
             </tr>
             <tr class="tw:h-[21px]">
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div data-filter-trigger>▼</div>
+                </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
@@ -311,52 +313,54 @@
         <div class="tw:text-sm tw:font-semibold tw:text-gray-800 tw:mb-2" x-text="popupTitle"></div>
         <x-form.calendar name="popup_date" />
     </div>
+    <x-admin.sort-filter-dialog
+        x-show="filterOpen"
+        x-ref="filterPopup"
+        x-bind:style="filterPopupStyle"
+    />
 </div>
 
 @once
     @push('scripts')
         <script>
             document.addEventListener('alpine:init', () => {
-                Alpine.data('tablePopup', () => ({
+                Alpine.data('tablePopup', (initialSortOrder = 'asc', initialFilterId = '') => ({
                     open: false,
                     popupTitle: '',
                     popupStyle: '',
                     activeTarget: null,
                     calendarName: 'popup_date',
+                    filterOpen: false,
+                    filterPopupStyle: '',
+                    sortOrder: initialSortOrder ?? 'asc',
+                    filterId: initialFilterId ?? '',
                     handleClick(event) {
-                        const trigger = event.target.closest('[data-popup-title]');
-                        if (!trigger) {
-                            this.close();
+                        const filterTrigger = event.target.closest('[data-filter-trigger]');
+                        if (filterTrigger) {
+                            this.openFilterPopup(filterTrigger, event);
                             return;
                         }
-                        this.openPopup(trigger, event);
+                        const trigger = event.target.closest('[data-popup-title]');
+                        if (trigger) {
+                            this.openPopup(trigger, event);
+                            return;
+                        }
+                        this.closeAll();
                     },
 
                     openPopup(trigger, event) {
+                        this.filterOpen = false;
                         this.activeTarget = trigger;
                         this.popupTitle = trigger.dataset.popupTitle ?? '';
-                        const x = event.clientX + 12;
-                        const y = event.clientY + 12;
                         this.open = true;
-                        this.$nextTick(() => {
-                            const popup = this.$refs.popup;
-                            const rect = popup?.getBoundingClientRect();
-                            const width = rect?.width ?? 320;
-                            const height = rect?.height ?? 0;
-                            const margin = 8;
-                            let left = x;
-                            let top = y;
-                            const maxLeft = window.innerWidth - width - margin;
-                            if (left > maxLeft) {
-                                left = Math.max(margin, maxLeft);
-                            }
-                            const maxTop = window.innerHeight - height - margin;
-                            if (top > maxTop) {
-                                top = Math.max(margin, maxTop);
-                            }
-                            this.popupStyle = `left: ${left}px; top: ${top}px;`;
-                        });
+                        this.setPopupPosition(event, 'popup', 320, 'popupStyle');
                         this.setCalendarFromTarget(trigger);
+                    },
+
+                    openFilterPopup(trigger, event) {
+                        this.close();
+                        this.filterOpen = true;
+                        this.setPopupPosition(event, 'filterPopup', 260, 'filterPopupStyle');
                     },
 
                     handleDateInput(event) {
@@ -408,6 +412,51 @@
                     close() {
                         this.open = false;
                         this.activeTarget = null;
+                    },
+
+                    closeFilter() {
+                        this.filterOpen = false;
+                    },
+
+                    closeAll() {
+                        this.close();
+                        this.closeFilter();
+                    },
+
+                    applySortFilter() {
+                        if (this.$wire?.updateSortFilter) {
+                            this.$wire.updateSortFilter(this.sortOrder, this.filterId);
+                        }
+                        this.closeFilter();
+                    },
+
+                    resetSortFilter() {
+                        this.sortOrder = 'asc';
+                        this.filterId = '';
+                        this.applySortFilter();
+                    },
+
+                    setPopupPosition(event, refName, fallbackWidth, styleKey) {
+                        const x = event.clientX + 12;
+                        const y = event.clientY + 12;
+                        this.$nextTick(() => {
+                            const popup = this.$refs[refName];
+                            const rect = popup?.getBoundingClientRect();
+                            const width = rect?.width ?? fallbackWidth;
+                            const height = rect?.height ?? 0;
+                            const margin = 8;
+                            let left = x;
+                            let top = y;
+                            const maxLeft = window.innerWidth - width - margin;
+                            if (left > maxLeft) {
+                                left = Math.max(margin, maxLeft);
+                            }
+                            const maxTop = window.innerHeight - height - margin;
+                            if (top > maxTop) {
+                                top = Math.max(margin, maxTop);
+                            }
+                            this[styleKey] = `left: ${left}px; top: ${top}px;`;
+                        });
                     },
 
                     normalizeDate(value) {

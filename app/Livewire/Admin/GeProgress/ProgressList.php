@@ -12,6 +12,8 @@ class ProgressList extends Component
     public $progresses = null;
     public bool $incompleteOnly = true;
     public string $searchKeyword = '';
+    public string $sortOrder = 'asc';
+    public string $filterId = '';
 
     public function mount()
     {
@@ -33,7 +35,7 @@ class ProgressList extends Component
                 'investmentEmptyRoom',
             ])
             ->whereNull('kaiyaku_cancellation_date')
-            ->orderBy('id', 'asc');
+            ->orderBy('id', $this->normalizeSortOrder($this->sortOrder));
 
         $query = $this->setCondition($query);
 
@@ -73,6 +75,13 @@ class ProgressList extends Component
         $this->refreshGeProgresses();
     }
 
+    public function updateSortFilter($sortOrder, $filterId)
+    {
+        $this->sortOrder = $this->normalizeSortOrder($sortOrder);
+        $this->filterId = trim((string) $filterId);
+        $this->refreshGeProgresses();
+    }
+
     protected function setCondition($query)
     {
         if ($this->incompleteOnly) {
@@ -93,6 +102,15 @@ class ProgressList extends Component
             });
         }
 
+        if ($this->filterId !== '') {
+            $query->where('id', 'like', '%' . $this->filterId . '%');
+        }
+
         return $query;
+    }
+
+    protected function normalizeSortOrder($sortOrder)
+    {
+        return $sortOrder === 'desc' ? 'desc' : 'asc';
     }
 }
