@@ -178,7 +178,7 @@
                             data-field="tsuden"
                         >
                             <x-tooltip :text="$progress?->tsuden?->format('Y/m/d')">
-                                {{ $progress?->tsuden?->format('m/d') }}
+                                {{ $progress?->tsuden?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -190,7 +190,7 @@
                             data-field="tenant_charge_confirmed_date"
                         >
                             <x-tooltip :text="$progress?->tenant_charge_confirmed_date?->format('Y/m/d')">
-                                {{ $progress?->tenant_charge_confirmed_date?->format('m/d') }}
+                                {{ $progress?->tenant_charge_confirmed_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -202,7 +202,7 @@
                             data-field="genpuku_teian_date"
                         >
                             <x-tooltip :text="$progress?->genpuku_teian_date?->format('Y/m/d')">
-                                {{ $progress?->genpuku_teian_date?->format('m/d') }}
+                                {{ $progress?->genpuku_teian_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -214,7 +214,7 @@
                             data-field="genpuku_teian_kyodaku_date"
                         >
                             <x-tooltip :text="$progress?->genpuku_teian_kyodaku_date?->format('Y/m/d')">
-                                {{ $progress?->genpuku_teian_kyodaku_date?->format('m/d') }}
+                                {{ $progress?->genpuku_teian_kyodaku_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -226,7 +226,7 @@
                             data-field="genpuku_kouji_hachu_date"
                         >
                             <x-tooltip :text="$progress?->genpuku_kouji_hachu_date?->format('Y/m/d')">
-                                {{ $progress?->genpuku_kouji_hachu_date?->format('m/d') }}
+                                {{ $progress?->genpuku_kouji_hachu_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -238,7 +238,7 @@
                             data-field="kanko_yotei_date"
                         >
                             <x-tooltip :text="$progress?->kanko_yotei_date?->format('Y/m/d')">
-                                {{ $progress?->kanko_yotei_date?->format('m/d') }}
+                                {{ $progress?->kanko_yotei_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -250,7 +250,7 @@
                             data-field="kanko_jyushin_date"
                         >
                             <x-tooltip :text="$progress?->kanko_jyushin_date?->format('Y/m/d')">
-                                {{ $progress?->kanko_jyushin_date?->format('m/d') }}
+                                {{ $progress?->kanko_jyushin_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -262,7 +262,7 @@
                             data-field="owner_kanko_houkoku_date"
                         >
                             <x-tooltip :text="$progress?->owner_kanko_houkoku_date?->format('Y/m/d')">
-                                {{ $progress?->owner_kanko_houkoku_date?->format('m/d') }}
+                                {{ $progress?->owner_kanko_houkoku_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -274,7 +274,7 @@
                             data-field="kakumei_koujo_touroku_date"
                         >
                             <x-tooltip :text="$progress?->kakumei_koujo_touroku_date?->format('Y/m/d')">
-                                {{ $progress?->kakumei_koujo_touroku_date?->format('m/d') }}
+                                {{ $progress?->kakumei_koujo_touroku_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -286,7 +286,7 @@
                             data-field="ge_complete_date"
                         >
                             <x-tooltip :text="$progress?->ge_complete_date?->format('Y/m/d')">
-                                {{ $progress?->ge_complete_date?->format('m/d') }}
+                                {{ $progress?->ge_complete_date?->format('m/d') ?? '　' }}
                             </x-tooltip>
                         </div>
                     </td>
@@ -322,7 +322,6 @@
                     popupStyle: '',
                     activeTarget: null,
                     calendarName: 'popup_date',
-
                     handleClick(event) {
                         const trigger = event.target.closest('[data-popup-title]');
                         if (!trigger) {
@@ -354,8 +353,6 @@
                     },
 
                     handleCalendarInput(event) {
-console.log('handleCalendarInput');
-//console.log(event);
                         if (!this.open) {
                             return;
                         }
@@ -368,7 +365,6 @@ console.log('handleCalendarInput');
                         const normalized = this.normalizeDate(detail.value ?? '');
                         this.applyDateToTarget(normalized);
                         if (progressId && field && this.$wire?.updateDate) {
-console.log(normalized);
                             this.$wire.updateDate(progressId, field, normalized || null);
                         }
                         this.close();

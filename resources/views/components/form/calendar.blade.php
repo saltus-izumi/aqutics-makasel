@@ -18,12 +18,11 @@
         }
     }
     $baseYear = $today->year;
-    $selectedYear = $selected?->year;
-    $yearFrom = $year_from ?? ($selectedYear ? min($selectedYear, $baseYear - 5) : $baseYear - 5);
-    $yearTo = $year_to ?? ($selectedYear ? max($selectedYear, $baseYear + 5) : $baseYear + 5);
+    $yearFrom = $year_from ?? ($baseYear - 10);
+    $yearTo = $year_to ?? ($baseYear + 2);
     $years = range($yearFrom, $yearTo);
     $months = range(1, 12);
-    $initialDate = $selected ?? $today;
+    $initialDate = $selected ??  \Illuminate\Support\Carbon::create(1900, 12, 1);
 @endphp
 
 <div
@@ -33,7 +32,6 @@
         year: {{ $initialDate->year }},
         month: {{ $initialDate->month }},
         years: {{ json_encode($years) }},
-        months: {{ json_encode($months) }},
     })"
     x-on:calendar-set.window="handleSetEvent($event)"
     @class([
@@ -56,17 +54,17 @@
             x-model.number="year"
             class="tw:select tw:select-bordered tw:h-[1.7rem] tw:bg-white tw:!w-auto tw:!pl-[5px] {{ $is_error ? 'tw:bg-red-100' : '' }}"
         >
-            <template x-for="y in years" :key="y">
-                <option :value="y" x-text="y"></option>
-            </template>
+            @foreach ($years as $y)
+                <option value="{{ $y }}">{{ $y }}</option>
+            @endforeach
         </select>
         <select
             x-model.number="month"
             class="tw:select tw:select-bordered tw:h-[1.7rem] tw:bg-white tw:!w-auto tw:!pl-[5px] {{ $is_error ? 'tw:bg-red-100' : '' }}"
         >
-            <template x-for="m in months" :key="m">
-                <option :value="m" x-text="m"></option>
-            </template>
+            @foreach ($months as $m)
+                <option value="{{ $m }}">{{ $m }}</option>
+            @endforeach
         </select>
         <button
             type="button"
@@ -103,20 +101,21 @@
                 Alpine.data('calendarPicker', (config = {}) => ({
                     name: config.name ?? '',
                     selectedDate: config.value ?? '',
+//                    year: config.year ?? new Date().getFullYear(),
+//                    month: config.month ?? (new Date().getMonth() + 1),
                     year: config.year ?? new Date().getFullYear(),
                     month: config.month ?? (new Date().getMonth() + 1),
                     years: config.years ?? [],
-                    months: config.months ?? [],
                     weekLabels: ['月', '火', '水', '木', '金', '土', '日'],
                     cells: [],
+                    todayStr: '',
 
                     init() {
                         this.selectedDate = String(this.selectedDate ?? '').replace(/^\s+|\s+$/g, '');
+                        this.refreshToday();
                         this.syncFromSelectedDate();
                         if (!this.selectedDate) {
-                            const now = new Date();
-                            this.year = now.getFullYear();
-                            this.month = now.getMonth() + 1;
+                            this.setToToday();
                         }
                         this.updateCalendar();
                         this.$watch('year', () => this.updateCalendar());
@@ -171,7 +170,7 @@
                     },
 
                     handleSetEvent(event) {
-                        const detail = event?.detail ?? {};
+                        var detail = event?.detail ?? {};
                         if (detail.name && this.name && detail.name !== this.name) {
                             return;
                         }
@@ -183,9 +182,7 @@
                         const next = String(value ?? '').replace(/^\s+|\s+$/g, '');
                         this.selectedDate = next;
                         if (!next) {
-                            const now = new Date();
-                            this.year = now.getFullYear();
-                            this.month = now.getMonth() + 1;
+                            this.setToToday();
                             this.updateCalendar();
                         }
                         if (!silent) {
@@ -207,6 +204,7 @@
                     },
 
                     syncFromSelectedDate() {
+
                         if (!this.selectedDate) {
                             return;
                         }
@@ -236,9 +234,22 @@
                     },
 
                     isToday(date) {
+                        return date === this.todayStr;
+                    },
+
+                    refreshToday() {
                         const now = new Date();
-                        const today = this.formatDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
-                        return date === today;
+                        this.todayStr = this.formatDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+                    },
+
+                    setToToday() {
+                        this.refreshToday();
+                        const parts = this.todayStr.split('-');
+                        if (parts.length < 2) {
+                            return;
+                        }
+                        this.year = Number(parts[0]);
+                        this.month = Number(parts[1]);
                     },
 
                     ensureYearRange() {
