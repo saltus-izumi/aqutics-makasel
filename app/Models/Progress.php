@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\RecordsUserStamps;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -72,4 +73,74 @@ class Progress extends Model
     {
         return $this->belongsTo(InvestmentEmptyRoom::class);
     }
+
+    protected function geStatus(): Attribute
+    {
+        return Attribute::get(function () {
+            $status = '';
+
+            // if (!$this?->taikyo_uketuke_date) {
+            //     $status = '退去受付';
+            // } elseif (!$this?->investmentEmptyRoom?->cancellation_date) {
+            //     $status = '解約日';
+            // } elseif (!$this?->taikyo_date) {
+            //     $status = '退去日';
+            // } elseif (!$this?->genpuku_mitsumori_recieved_date) {
+            //     $status = '下代';
+            // } elseif (!$this?->tsuden) {
+            //     $status = '通電';
+            // } elseif (!$this?->tenant_charge_confirmed_date) {
+            //     $status = '借主負担';
+            // } elseif (!$this?->genpuku_teian_date) {
+            //     $status = '貸主提案';
+            // } elseif (!$this?->genpuku_teian_kyodaku_date) {
+            //     $status = '貸主承諾';
+            // } elseif (!$this?->genpuku_kouji_hachu_date) {
+            //     $status = '発注';
+            // } elseif (!$this?->kanko_yotei_date) {
+            //     $status = '完工予定';
+            // } elseif (!$this?->kanko_jyushin_date) {
+            //     $status = '完工受信';
+            // } elseif (!$this?->owner_kanko_houkoku_date) {
+            //     $status = '完工報告';
+            // } elseif (!$this?->kakumei_koujo_touroku_date) {
+            //     $status = '革命控除';
+            // } elseif (!$this?->ge_complete_date) {
+            //     $status = '完了';
+            // }
+
+            if ($this?->ge_complete_date) {
+                $status = '完了';
+            } elseif ($this?->kakumei_koujo_touroku_date) {
+                $status = '革命控除';
+            } elseif ($this?->owner_kanko_houkoku_date) {
+                $status = '完工報告';
+            } elseif ($this?->kanko_jyushin_date) {
+                $status = '完工受信';
+            } elseif ($this?->kanko_yotei_date) {
+                $status = '完工予定';
+            } elseif ($this?->genpuku_kouji_hachu_date) {
+                $status = '発注';
+            } elseif ($this?->genpuku_teian_kyodaku_date) {
+                $status = '貸主承諾';
+            } elseif ($this?->genpuku_teian_date) {
+                $status = '貸主提案';
+            } elseif ($this?->tenant_charge_confirmed_date) {
+                $status = '借主負担';
+            } elseif ($this?->tsuden) {
+                $status = '通電';
+            } elseif ($this?->genpuku_mitsumori_recieved_date) {
+                $status = '下代';
+            } elseif ($this?->taikyo_date) {
+                $status = '退去日';
+            } elseif ($this?->investmentEmptyRoom?->cancellation_date) {
+                $status = '解約日';
+            } elseif ($this?->taikyo_uketuke_date) {
+                $status = '退去受付';
+            }
+
+            return $status;
+        });
+    }
+
 }

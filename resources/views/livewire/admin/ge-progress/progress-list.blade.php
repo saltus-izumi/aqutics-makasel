@@ -140,7 +140,7 @@
                     <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:text-center">児玉</td>
                     <td class="tw:text-center">脇谷</td>
-                    <td class="tw:text-center">貸主提案</td>
+                    <td class="tw:text-center">{{ $progress?->geStatus }}</td>
                     <td class="tw:text-center">
                         <x-tooltip :text="$progress?->taikyo_uketuke_date?->format('Y/m/d')">
                             {{ $progress?->taikyo_uketuke_date?->format('m/d') }}

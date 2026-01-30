@@ -22,5 +22,4 @@ class GeProgress extends Model
     {
         return $this->belongsTo(Progress::class);
     }
-
 }
