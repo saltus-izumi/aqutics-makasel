@@ -1,6 +1,6 @@
 <div
     class="tw:relative"
-    x-data="tablePopup(@js($sortOrder ?? 'asc'), @js($filterId ?? ''))"
+    x-data="tablePopup(@js($sortOrder ?? 'asc'), @js($sortField ?? 'id'), @js($filterField ?? 'id'), @js($filterValue ?? ''), @js($filterBlank ?? ''))"
     x-on:click="handleClick($event)"
     x-on:input="handleDateInput($event)"
     x-on:calendar-input.window="handleCalendarInput($event)"
@@ -109,11 +109,37 @@
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
-                    <div data-filter-trigger>▼</div>
+                    <div
+                        data-filter-trigger
+                        data-sort-field="id"
+                        data-filter-field="id"
+                        data-filter-type="text"
+                    >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-sort-field="investment_id"
+                        data-filter-field="investment_id"
+                        data-filter-type="text"
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-sort-field="investment_name"
+                        data-filter-field="investment_name"
+                        data-filter-type="text"
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-sort-field="investment_room_number"
+                        data-filter-field="investment_room_number"
+                        data-filter-type="text"
+                    >▼</div>
+                </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
@@ -142,7 +168,7 @@
                     <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:text-center">児玉</td>
                     <td class="tw:text-center">脇谷</td>
-                    <td class="tw:text-center">{{ $progress?->geStatus }}</td>
+                    <td class="tw:text-center">{{ $progress?->geNextAction }}</td>
                     <td class="tw:text-center">
                         <x-tooltip :text="$progress?->taikyo_uketuke_date?->format('Y/m/d')">
                             {{ $progress?->taikyo_uketuke_date?->format('m/d') }}
@@ -293,6 +319,11 @@
         x-show="filterOpen"
         x-ref="filterPopup"
         x-bind:style="filterPopupStyle"
+        id-label="原復ID / 物件ID"
+        placeholder="IDで絞り込み"
+        filter-model="filterValue"
+        blank-model="filterBlank"
+        sort-model="sortOrderDraft"
     />
 </div>
 
@@ -300,7 +331,7 @@
     @push('scripts')
         <script>
             document.addEventListener('alpine:init', () => {
-                Alpine.data('tablePopup', (initialSortOrder = 'asc', initialFilterId = '') => ({
+                Alpine.data('tablePopup', (initialSortOrder = 'asc', initialSortField = 'id', initialFilterField = 'id', initialFilterValue = '', initialFilterBlank = '') => ({
                     open: false,
                     popupTitle: '',
                     popupStyle: '',
@@ -309,7 +340,12 @@
                     filterOpen: false,
                     filterPopupStyle: '',
                     sortOrder: initialSortOrder ?? 'asc',
-                    filterId: initialFilterId ?? '',
+                    sortField: initialSortField ?? 'id',
+                    sortOrderDraft: initialSortOrder ?? 'asc',
+                    sortFieldDraft: initialSortField ?? 'id',
+                    filterField: initialFilterField ?? 'id',
+                    filterValue: initialFilterValue ?? '',
+                    filterBlank: initialFilterBlank ?? '',
                     handleClick(event) {
                         const filterTrigger = event.target.closest('[data-filter-trigger]');
                         if (filterTrigger) {
@@ -335,6 +371,14 @@
 
                     openFilterPopup(trigger, event) {
                         this.close();
+                        const nextFilterField = trigger.dataset.filterField ?? this.filterField ?? 'id';
+                        if (nextFilterField !== this.filterField) {
+                            this.filterValue = '';
+                            this.filterBlank = '';
+                        }
+                        this.filterField = nextFilterField;
+                        this.sortFieldDraft = trigger.dataset.sortField ?? this.sortField ?? this.filterField ?? 'id';
+                        this.sortOrderDraft = this.sortFieldDraft === this.sortField ? this.sortOrder : '';
                         this.filterOpen = true;
                         this.setPopupPosition(event, 'filterPopup', 260, 'filterPopupStyle');
                     },
@@ -404,16 +448,45 @@
                         this.closeFilter();
                     },
 
+                    handleFilterInput(event) {
+                        const value = event?.target?.value ?? '';
+                        if (String(value).trim() !== '' && this.filterBlank !== 'not_blank') {
+                            this.filterBlank = 'not_blank';
+                        }
+                    },
+
+                    handleFilterBlankChange(event) {
+                        const value = event?.target?.value ?? '';
+                        if (value === 'blank') {
+                            this.filterValue = '';
+                        }
+                    },
+
                     applySortFilter() {
                         if (this.$wire?.updateSortFilter) {
-                            this.$wire.updateSortFilter(this.sortOrder, this.filterId);
+                            const nextSortOrder = this.sortOrderDraft || this.sortOrder;
+                            const nextSortField = this.sortOrderDraft ? this.sortFieldDraft : this.sortField;
+                            this.sortOrder = nextSortOrder;
+                            this.sortField = nextSortField;
+                            this.$wire.updateSortFilter(
+                                nextSortOrder,
+                                nextSortField,
+                                this.filterField,
+                                this.filterValue,
+                                this.filterBlank
+                            );
                         }
                         this.closeFilter();
                     },
 
                     resetSortFilter() {
                         this.sortOrder = 'asc';
-                        this.filterId = '';
+                        this.sortField = 'id';
+                        this.sortOrderDraft = 'asc';
+                        this.sortFieldDraft = 'id';
+                        this.filterField = 'id';
+                        this.filterValue = '';
+                        this.filterBlank = '';
                         this.applySortFilter();
                     },
 

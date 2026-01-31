@@ -2,6 +2,8 @@
     'title' => '並び順 / ID絞り込み',
     'sortLabel' => '並び順',
     'idLabel' => '原復ID',
+    'blankLabel' => '空白',
+    'notBlankLabel' => '空白以外',
     'placeholder' => 'IDで絞り込み',
     'ascLabel' => '昇順',
     'descLabel' => '降順',
@@ -9,6 +11,7 @@
     'resetLabel' => 'クリア',
     'sortModel' => 'sortOrder',
     'filterModel' => 'filterId',
+    'blankModel' => 'filterBlank',
     'onApply' => 'applySortFilter()',
     'onReset' => 'resetSortFilter()',
 ])
@@ -41,11 +44,22 @@
         </div>
         <div>
             <div class="tw:text-xs tw:text-gray-600 tw:mb-1">{{ $idLabel }}</div>
+            <div class="tw:flex tw:gap-3 tw:mb-2">
+                <label class="tw:inline-flex tw:items-center tw:gap-1">
+                    <input type="radio" class="tw:accent-blue-600" value="blank" x-model="{{ $blankModel }}" x-on:change="handleFilterBlankChange($event)">
+                    <span class="tw:text-sm">{{ $blankLabel }}</span>
+                </label>
+                <label class="tw:inline-flex tw:items-center tw:gap-1">
+                    <input type="radio" class="tw:accent-blue-600" value="not_blank" x-model="{{ $blankModel }}">
+                    <span class="tw:text-sm">{{ $notBlankLabel }}</span>
+                </label>
+            </div>
             <input
                 type="text"
                 class="tw:w-full tw:border tw:border-gray-300 tw:rounded tw:px-2 tw:py-1 tw:text-sm"
                 placeholder="{{ $placeholder }}"
                 x-model="{{ $filterModel }}"
+                x-on:input="handleFilterInput($event)"
                 x-on:keydown.enter.prevent="{{ $onApply }}"
             >
         </div>

@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Admin\GeProgress;
 
+use App\Models\Investment;
+use App\Models\InvestmentRoom;
 use App\Models\Progress;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -13,7 +15,10 @@ class ProgressList extends Component
     public bool $incompleteOnly = true;
     public string $searchKeyword = '';
     public string $sortOrder = 'asc';
-    public string $filterId = '';
+    public string $sortField = 'id';
+    public string $filterField = 'id';
+    public string $filterValue = '';
+    public string $filterBlank = '';
 
     public function mount()
     {
@@ -34,8 +39,25 @@ class ProgressList extends Component
                 'investmentRoom',
                 'investmentEmptyRoom',
             ])
-            ->whereNull('kaiyaku_cancellation_date')
-            ->orderBy('id', $this->normalizeSortOrder($this->sortOrder));
+            ->whereNull('kaiyaku_cancellation_date');
+
+        $sortOrder = $this->normalizeSortOrder($this->sortOrder);
+        $sortField = $this->normalizeSortField($this->sortField);
+        if ($sortField === 'investment_name') {
+            $query->orderBy(
+                Investment::select('investment_name')
+                    ->whereColumn('investments.id', 'progresses.investment_id'),
+                $sortOrder
+            );
+        } elseif ($sortField === 'investment_room_number') {
+            $query->orderBy(
+                InvestmentRoom::select('investment_room_number')
+                    ->whereColumn('investment_rooms.id', 'progresses.investment_room_uid'),
+                $sortOrder
+            );
+        } else {
+            $query->orderBy($sortField, $sortOrder);
+        }
 
         $query = $this->setCondition($query);
 
@@ -86,10 +108,13 @@ class ProgressList extends Component
         $this->refreshGeProgresses();
     }
 
-    public function updateSortFilter($sortOrder, $filterId)
+    public function updateSortFilter($sortOrder, $sortField, $filterField, $filterValue, $filterBlank)
     {
         $this->sortOrder = $this->normalizeSortOrder($sortOrder);
-        $this->filterId = trim((string) $filterId);
+        $this->sortField = $this->normalizeFilterField($sortField);
+        $this->filterField = $this->normalizeFilterField($filterField);
+        $this->filterValue = trim((string) $filterValue);
+        $this->filterBlank = $this->normalizeFilterBlank($filterBlank);
         $this->refreshGeProgresses();
     }
 
@@ -113,8 +138,54 @@ class ProgressList extends Component
             });
         }
 
-        if ($this->filterId !== '') {
-            $query->where('id', 'like', '%' . $this->filterId . '%');
+        $filterField = $this->normalizeFilterField($this->filterField);
+        if ($this->filterValue !== '') {
+            // 物件名
+            if ($filterField === 'investment_name') {
+                $query->whereHas('investment', function ($q) {
+                    $q->where('investment_name', 'like', '%' . $this->filterValue . '%');
+                });
+            // 号室
+            } elseif ($filterField === 'investment_room_number') {
+                if ($this->filterValue === '共用部') {
+                    $query->where('investment_room_number', 0);
+                } else {
+                    $query->whereHas('investmentRoom', function ($q) {
+                        $q->where('investment_room_number', $this->filterValue);
+                    });
+                }
+            // その他の項目
+            } else {
+                $query->where($filterField, $this->filterValue);
+            }
+        } elseif ($this->filterBlank === 'blank') {
+            if ($filterField === 'investment_name') {
+                $query->whereHas('investment', function ($q) {
+                    $q->whereNull('investment_name')
+                        ->orWhere('investment_name', '');
+                });
+            } elseif ($filterField === 'investment_room_number') {
+                $query->whereHas('investmentRoom', function ($q) {
+                    $q->whereNull('investment_room_number')
+                        ->orWhere('investment_room_number', '');
+                });
+            } else {
+                $query->whereNull($filterField);
+            }
+        } elseif ($this->filterBlank === 'not_blank') {
+            if ($filterField === 'investment_name') {
+                $query->whereHas('investment', function ($q) {
+                    $q->whereNotNull('investment_name')
+                        ->where('investment_name', '!=', '');
+                });
+            } elseif ($filterField === 'investment_room_number') {
+                $query->whereHas('investmentRoom', function ($q) {
+                    $q->whereNotNull('investment_room_number')
+                        ->where('investment_room_number', '!=', '');
+                });
+            } else {
+                $query->whereNotNull($filterField);
+            }
         }
 
         return $query;
@@ -123,5 +194,20 @@ class ProgressList extends Component
     protected function normalizeSortOrder($sortOrder)
     {
         return $sortOrder === 'desc' ? 'desc' : 'asc';
+    }
+
+    protected function normalizeFilterField($field)
+    {
+        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number'], true) ? $field : 'id';
+    }
+
+    protected function normalizeSortField($field)
+    {
+        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number'], true) ? $field : 'id';
+    }
+
+    protected function normalizeFilterBlank($value)
+    {
+        return in_array($value, ['blank', 'not_blank'], true) ? $value : '';
     }
 }
