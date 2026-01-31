@@ -148,6 +148,7 @@
                     <div
                         data-filter-trigger
                         data-filter-title="責任者"
+                        data-sort-field="genpuku_responsible_id"
                         data-filter-field="genpuku_responsible_id"
                         data-filter-type="select"
                         data-filter-select-name="select_filter"
@@ -158,6 +159,7 @@
                     <div
                         data-filter-trigger
                         data-filter-title="実行者"
+                        data-sort-field="executor_user_id"
                         data-filter-field="executor_user_id"
                         data-filter-type="select"
                         data-filter-select-name="select_filter"
@@ -168,7 +170,8 @@
                     <div
                         data-filter-trigger
                         data-filter-title="ネクストアクション"
-                        data-filter-field="status"
+                        data-sort-field="next_action"
+                        data-filter-field="next_action"
                         data-filter-type="select"
                         data-filter-select-name="select_filter"
                         data-filter-options='@json($nextActionOptions ?? [])'
@@ -199,7 +202,7 @@
                     <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:text-center">児玉</td>
                     <td class="tw:text-center">脇谷</td>
-                    <td class="tw:text-center">{{ $progress?->geNextAction }}</td>
+                    <td class="tw:text-center">{{ App\Models\GeProgress::NEXT_ACTIONS[$progress?->geProgress?->next_action] ?? '' }}</td>
                     <td class="tw:text-center">
                         <x-tooltip :text="$progress?->taikyo_uketuke_date?->format('Y/m/d')">
                             {{ $progress?->taikyo_uketuke_date?->format('m/d') }}
@@ -515,8 +518,12 @@
                             this.filterBlank = '';
                         }
                         this.filterField = nextFilterField;
-                        this.sortFieldDraft = trigger.dataset.sortField ?? this.sortField ?? this.filterField ?? 'id';
-                        this.sortOrderDraft = this.sortFieldDraft === this.sortField ? this.sortOrder : '';
+                        const nextSortField = trigger.dataset.sortField;
+                        const hasSortField = !!nextSortField;
+                        this.sortFieldDraft = hasSortField ? nextSortField : '';
+                        this.sortOrderDraft = hasSortField && this.sortFieldDraft === this.sortField ? this.sortOrder : '';
+console.log(nextSortField);
+
                         const nextFilterType = trigger.dataset.filterType;
                         this.filterType = nextFilterType === 'select' ? 'select' : 'text';
 

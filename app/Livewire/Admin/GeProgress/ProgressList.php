@@ -7,6 +7,8 @@ use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\Progress;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -29,21 +31,7 @@ class ProgressList extends Component
         $this->incompleteOnly = true;
         $this->genpukuResponsibleOptions = User::getOptions(User::DEPARTMENT_GE);
         $this->refreshGeProgresses();
-        $this->nextActionOptions = [
-            '1' => '解約日',
-            '2' => '退去日',
-            '3' => '下代',
-            '4' => '通電',
-            '5' => '借主負担',
-            '6' => '貸主提案',
-            '7' => '貸主承諾',
-            '8' => '発注',
-            '9' => '完工予定',
-            '10' => '完工受信',
-            '11' => '完工報告',
-            '12' => '革命控除',
-            '13' => '完了',
-        ];
+        $this->nextActionOptions = GeProgress::NEXT_ACTIONS;
     }
 
     public function render()
@@ -70,31 +58,38 @@ class ProgressList extends Component
 
     public function updateDate($progressId, $field, $date)
     {
-        $progress = Progress::query()
-            ->with([
-                'investment',
-                'investmentRoom',
-                'investmentEmptyRoom',
-            ])
-            ->find($progressId);
+        DB::transaction(function() use ($progressId, $field, $date) {
+            $progress = Progress::query()
+                ->with([
+                    'investment',
+                    'investmentRoom',
+                    'investmentEmptyRoom',
+                    'GeProgress',
+                ])
+                ->find($progressId);
 
-        if (!$progress) {
-            return;
-        }
+            if (!$progress) {
+                return;
+            }
 
-        if ($date == 'ー') {
-            $progress->{$field} = null;
-            $progress->{$field . '_state'} = 2;
-        }
-        elseif ($date == '') {
-            $progress->{$field} = $date;
-            $progress->{$field . '_state'} = 0;
-        }
-        else {
-            $progress->{$field} = $date;
-            $progress->{$field . '_state'} = 1;
-        }
-        $progress->save();
+            if ($date == 'ー') {
+                $progress->{$field} = null;
+                $progress->{$field . '_state'} = 2;
+            }
+            elseif ($date == '') {
+                $progress->{$field} = $date;
+                $progress->{$field . '_state'} = 0;
+            }
+            else {
+                $progress->{$field} = $date;
+                $progress->{$field . '_state'} = 1;
+            }
+            $progress->save();
+
+            $progress->geProgress->next_action = $progress->ge_next_action;
+            $progress->geProgress->save();
+        });
+
         $this->refreshGeProgresses();
     }
 
@@ -115,8 +110,8 @@ class ProgressList extends Component
     public function updateSortFilter($sortOrder, $sortField, $filterField, $filterValue, $filterBlank)
     {
         $this->sortOrder = $this->normalizeSortOrder($sortOrder);
-        $this->sortField = $this->normalizeFilterField($sortField);
-        $this->filterField = $this->normalizeFilterField($filterField);
+        $this->sortField = $sortField;
+        $this->filterField = $filterField;
         $this->filterValue = trim((string) $filterValue);
         $this->filterBlank = $this->normalizeFilterBlank($filterBlank);
         $this->refreshGeProgresses();
@@ -142,15 +137,25 @@ class ProgressList extends Component
             });
         }
 
-        $filterField = $this->normalizeFilterField($this->filterField);
-        if ($this->filterValue !== '') {
-            // 物件名
-            if ($filterField === 'investment_name') {
+        $filterField = $this->filterField;
+        if ($filterField === 'investment_name') {
+            if ($this->filterValue !== '') {
                 $query->whereHas('investment', function ($q) {
                     $q->where('investment_name', 'like', '%' . $this->filterValue . '%');
                 });
-            // 号室
-            } elseif ($filterField === 'investment_room_number') {
+            } elseif ($this->filterBlank === 'blank') {
+                $query->whereHas('investment', function ($q) {
+                    $q->whereNull('investment_name')
+                        ->orWhere('investment_name', '');
+                });
+            } elseif ($this->filterBlank === 'not_blank') {
+                $query->whereHas('investment', function ($q) {
+                    $q->whereNotNull('investment_name')
+                        ->where('investment_name', '!=', '');
+                });
+            }
+        } elseif ($filterField === 'investment_room_number') {
+            if ($this->filterValue !== '') {
                 if ($this->filterValue === '共用部') {
                     $query->where('investment_room_number', 0);
                 } else {
@@ -158,36 +163,55 @@ class ProgressList extends Component
                         $q->where('investment_room_number', $this->filterValue);
                     });
                 }
-            // その他の項目
-            } else {
-                $query->where($filterField, $this->filterValue);
-            }
-        } elseif ($this->filterBlank === 'blank') {
-            if ($filterField === 'investment_name') {
-                $query->whereHas('investment', function ($q) {
-                    $q->whereNull('investment_name')
-                        ->orWhere('investment_name', '');
-                });
-            } elseif ($filterField === 'investment_room_number') {
+            } elseif ($this->filterBlank === 'blank') {
                 $query->whereHas('investmentRoom', function ($q) {
                     $q->whereNull('investment_room_number')
                         ->orWhere('investment_room_number', '');
                 });
-            } else {
-                $query->whereNull($filterField);
-            }
-        } elseif ($this->filterBlank === 'not_blank') {
-            if ($filterField === 'investment_name') {
-                $query->whereHas('investment', function ($q) {
-                    $q->whereNotNull('investment_name')
-                        ->where('investment_name', '!=', '');
-                });
-            } elseif ($filterField === 'investment_room_number') {
+            } elseif ($this->filterBlank === 'not_blank') {
                 $query->whereHas('investmentRoom', function ($q) {
                     $q->whereNotNull('investment_room_number')
                         ->where('investment_room_number', '!=', '');
                 });
-            } else {
+            }
+        } elseif ($filterField === 'executor_user_id') {
+            if ($this->filterValue !== '') {
+                $query->whereHas('geProgress', function ($q) {
+                    $q->where('executor_user_id', $this->filterValue);
+                });
+            } elseif ($this->filterBlank === 'blank') {
+                $query->whereHas('geProgress', function ($q) {
+                    $q->whereNull('executor_user_id')
+                        ->orWhere('executor_user_id', '');
+                });
+            } elseif ($this->filterBlank === 'not_blank') {
+                $query->whereHas('geProgress', function ($q) {
+                    $q->whereNotNull('executor_user_id')
+                        ->where('executor_user_id', '!=', '');
+                });
+            }
+        } elseif ($filterField === 'next_action') {
+            if ($this->filterValue !== '') {
+                $query->whereHas('geProgress', function ($q) {
+                    $q->where('next_action', $this->filterValue);
+                });
+            } elseif ($this->filterBlank === 'blank') {
+                $query->whereHas('geProgress', function ($q) {
+                    $q->whereNull('next_action')
+                        ->orWhere('next_action', '');
+                });
+            } elseif ($this->filterBlank === 'not_blank') {
+                $query->whereHas('geProgress', function ($q) {
+                    $q->whereNotNull('next_action')
+                        ->where('next_action', '!=', '');
+                });
+            }
+        } else {
+            if ($this->filterValue !== '') {
+                $query->where($filterField, $this->filterValue);
+            } elseif ($this->filterBlank === 'blank') {
+                $query->whereNull($filterField);
+            } elseif ($this->filterBlank === 'not_blank') {
                 $query->whereNotNull($filterField);
             }
         }
@@ -197,8 +221,9 @@ class ProgressList extends Component
 
     protected function setOrder($query)
     {
+Log::debug('sort:' . $this->sortField);
         $sortOrder = $this->normalizeSortOrder($this->sortOrder);
-        $sortField = $this->normalizeSortField($this->sortField);
+        $sortField = $this->sortField;
         if ($sortField === 'investment_name') {
             $query->orderBy(
                 Investment::select('investment_name')
@@ -217,6 +242,12 @@ class ProgressList extends Component
                     ->whereColumn('ge_progresses.progress_id', 'progresses.id'),
                 $sortOrder
             );
+        } elseif ($sortField === 'next_action') {
+            $query->orderBy(
+                GeProgress::select('next_action')
+                    ->whereColumn('ge_progresses.progress_id', 'progresses.id'),
+                $sortOrder
+            );
         } else {
             $query->orderBy($sortField, $sortOrder);
         }
@@ -227,16 +258,6 @@ class ProgressList extends Component
     protected function normalizeSortOrder($sortOrder)
     {
         return $sortOrder === 'desc' ? 'desc' : 'asc';
-    }
-
-    protected function normalizeFilterField($field)
-    {
-        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number', 'genpuku_responsible_id'], true) ? $field : 'id';
-    }
-
-    protected function normalizeSortField($field)
-    {
-        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number', 'genpuku_responsible_id'], true) ? $field : 'id';
     }
 
     protected function normalizeFilterBlank($value)

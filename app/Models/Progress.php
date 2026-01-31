@@ -74,39 +74,44 @@ class Progress extends Model
         return $this->belongsTo(InvestmentEmptyRoom::class);
     }
 
+    public function geProgress()
+    {
+        return $this->hasOne(GeProgress::class);
+    }
+
     protected function geNextAction(): Attribute
     {
         return Attribute::get(function () {
-            $nextAction = '';
+            $nextAction = null;
 
             if (!$this?->taikyo_uketuke_date) {
-                $nextAction = '退去受付';
+                $nextAction = GeProgress::NEXT_ACTION_TAIKYO_UKETUKE;
             } elseif (!$this?->investmentEmptyRoom?->cancellation_date) {
-                $nextAction = '解約日';
+                $nextAction = GeProgress::NEXT_ACTION_CANCELLATION;
             } elseif ($this?->taikyo_date_state === 0) {
-                $nextAction = '退去日';
+                $nextAction = GeProgress::NEXT_ACTION_TAIKYO;
             } elseif (!$this?->genpuku_mitsumori_recieved_date) {
-                $nextAction = '下代';
+                $nextAction = GeProgress::NEXT_ACTION_GENPUKU_MITSUMORI_RECIEVED;
             } elseif ($this?->tsuden_state === 0) {
-                $nextAction = '通電';
+                $nextAction = GeProgress::NEXT_ACTION_TSUDEN;
             } elseif ($this?->tenant_charge_confirmed_date_state === 0) {
-                $nextAction = '借主負担';
+                $nextAction = GeProgress::NEXT_ACTION_TENANT_CHARGE_CONFIRMED;
             } elseif ($this?->genpuku_teian_date_state === 0) {
-                $nextAction = '貸主提案';
+                $nextAction = GeProgress::NEXT_ACTION_GENPUKU_TEIAN;
             } elseif ($this?->genpuku_teian_kyodaku_date_state === 0) {
-                $nextAction = '貸主承諾';
+                $nextAction = GeProgress::NEXT_ACTION_GENPUKU_TEIAN_KYODAKU;
             } elseif ($this?->genpuku_kouji_hachu_date_state === 0) {
-                $nextAction = '発注';
+                $nextAction = GeProgress::NEXT_ACTION_GENPUKU_KOUJI_HACHU;
             } elseif ($this?->kanko_yotei_date_state === 0) {
-                $nextAction = '完工予定';
+                $nextAction = GeProgress::NEXT_ACTION_KANKO_YOTEI;
             } elseif ($this?->kanko_jyushin_date_state === 0) {
-                $nextAction = '完工受信';
+                $nextAction = GeProgress::NEXT_ACTION_KANKO_JYUSHIN;
             } elseif ($this?->owner_kanko_houkoku_date_state === 0) {
-                $nextAction = '完工報告';
+                $nextAction = GeProgress::NEXT_ACTION_OWNER_KANKO_HOUKOKU;
             } elseif ($this?->kakumei_koujo_touroku_date_state === 0) {
-                $nextAction = '革命控除';
+                $nextAction = GeProgress::NEXT_ACTION_KAKUMEI_KOUJO_TOUROKU;
             } elseif ($this?->ge_complete_date_state === 0) {
-                $nextAction = '完了';
+                $nextAction = GeProgress::NEXT_ACTION_GE_COMPLETE;
             }
 
             return $nextAction;
