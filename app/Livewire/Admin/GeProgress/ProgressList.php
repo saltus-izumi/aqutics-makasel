@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\GeProgress;
 
 use App\Models\GeProgress;
 use App\Models\Investment;
+use App\Models\InvestmentEmptyRoom;
 use App\Models\InvestmentRoom;
 use App\Models\Progress;
 use App\Models\User;
@@ -134,9 +135,23 @@ class ProgressList extends Component
         }
 
         foreach ($this->filters as $filterField => $filter) {
-            $filterValue = trim((string) ($filter['value'] ?? ''));
+            $rawValue = $filter['value'] ?? '';
+            $filterValue = is_array($rawValue) ? $this->normalizeDateRangeValue($rawValue) : trim((string) $rawValue);
             $filterBlank = $this->normalizeFilterBlank($filter['blank'] ?? '');
             if ($filterValue === '' && $filterBlank === '') {
+                continue;
+            }
+
+            if (in_array($filterField, $this->getDateRangeFilterFields(), true)) {
+                $rangeValue = is_array($filterValue) ? $filterValue : ['from' => '', 'to' => ''];
+                $this->applyDateRangeFilter($query, $filterField, $rangeValue, $filterBlank);
+                continue;
+            }
+            if (array_key_exists($filterField, $this->getDateRangeRelationFields())) {
+                $relation = $this->getDateRangeRelationFields()[$filterField]['relation'];
+                $column = $this->getDateRangeRelationFields()[$filterField]['column'];
+                $rangeValue = is_array($filterValue) ? $filterValue : ['from' => '', 'to' => ''];
+                $this->applyRelationDateRangeFilter($query, $relation, $column, $rangeValue, $filterBlank);
                 continue;
             }
 
@@ -190,6 +205,12 @@ class ProgressList extends Component
             $query->orderBy(
                 GeProgress::select('next_action')
                     ->whereColumn('ge_progresses.progress_id', 'progresses.id'),
+                $sortOrder
+            );
+        } elseif ($sortField === 'cancellation_date') {
+            $query->orderBy(
+                InvestmentEmptyRoom::select('cancellation_date')
+                    ->whereColumn('investment_empty_rooms.id', 'progresses.investment_empty_room_id'),
                 $sortOrder
             );
         } else {
@@ -252,9 +273,16 @@ class ProgressList extends Component
         if (!is_array($filter)) {
             return false;
         }
-        $value = trim((string) ($filter['value'] ?? ''));
+        $rawValue = $filter['value'] ?? '';
+        if (is_array($rawValue)) {
+            $from = trim((string) ($rawValue['from'] ?? ''));
+            $to = trim((string) ($rawValue['to'] ?? ''));
+            $value = $from !== '' || $to !== '';
+        } else {
+            $value = trim((string) $rawValue) !== '';
+        }
         $blank = $this->normalizeFilterBlank($filter['blank'] ?? '');
-        return $value !== '' || $blank !== '';
+        return $value || $blank !== '';
     }
 
     protected function normalizeFilters($filters)
@@ -277,7 +305,21 @@ class ProgressList extends Component
             if (!is_array($filter)) {
                 continue;
             }
-            $value = trim((string) ($filter['value'] ?? ''));
+            $valueRaw = $filter['value'] ?? '';
+            if (is_object($valueRaw)) {
+                $valueRaw = (array) $valueRaw;
+            }
+            if (is_array($valueRaw)) {
+                if (
+                    !in_array($field, $this->getDateRangeFilterFields(), true)
+                    && !array_key_exists($field, $this->getDateRangeRelationFields())
+                ) {
+                    continue;
+                }
+                $value = $this->normalizeDateRangeValue($valueRaw);
+            } else {
+                $value = trim((string) $valueRaw);
+            }
             $blank = $this->normalizeFilterBlank($filter['blank'] ?? '');
             if ($value === '' && $blank === '') {
                 continue;
@@ -301,6 +343,8 @@ class ProgressList extends Component
             'investment_room_number',
             'executor_user_id',
             'next_action',
+            ...$this->getDateRangeFilterFields(),
+            ...array_keys($this->getDateRangeRelationFields()),
         ]);
     }
 
@@ -311,5 +355,113 @@ class ProgressList extends Component
             'investment_id',
             'genpuku_responsible_id',
         ];
+    }
+
+    protected function getDateRangeFilterFields()
+    {
+        return [
+            'ge_application_date',
+            'ge_complete_date',
+            'genpuku_shiryou_soushin_date',
+            'notice_of_intent_to_vacate_date',
+            'taikyo_yotei_date',
+            'taikyo_date',
+            'genpuku_mitsumori_recieved_date',
+            'tsuden',
+            'tenant_charge_confirmed_date',
+            'genpuku_teian_date',
+            'genpuku_teian_kyodaku_date',
+            'genpuku_kouji_hachu_date',
+            'kanko_yotei_date',
+            'kanko_jyushin_date',
+            'owner_kanko_houkoku_date',
+            'kakumei_koujo_touroku_date',
+            'taikyo_uketuke_date',
+            'kaiyaku_date',
+            'last_import_date',
+        ];
+    }
+
+    protected function getDateRangeRelationFields()
+    {
+        return [
+            'cancellation_date' => [
+                'relation' => 'investmentEmptyRoom',
+                'column' => 'cancellation_date',
+            ],
+        ];
+    }
+
+    protected function normalizeDateRangeValue($value)
+    {
+        $from = trim((string) ($value['from'] ?? ''));
+        $to = trim((string) ($value['to'] ?? ''));
+        if ($from === '' && $to === '') {
+            return '';
+        }
+        return [
+            'from' => $from,
+            'to' => $to,
+        ];
+    }
+
+    protected function applyDateRangeFilter($query, $column, $filterValue, $filterBlank)
+    {
+        $from = $filterValue['from'] ?? '';
+        $to = $filterValue['to'] ?? '';
+        if ($from !== '' || $to !== '') {
+            if ($from !== '' && $to !== '') {
+                $query->whereDate($column, '>=', $from)
+                    ->whereDate($column, '<=', $to);
+                return;
+            }
+            if ($from !== '') {
+                $query->whereDate($column, '>=', $from);
+                return;
+            }
+            $query->whereDate($column, '<=', $to);
+            return;
+        }
+        if ($filterBlank === 'blank') {
+            $query->where(function ($q) use ($column) {
+                $q->whereNull($column)
+                    ->orWhere($column, '');
+            });
+        } elseif ($filterBlank === 'not_blank') {
+            $query->whereNotNull($column)
+                ->where($column, '!=', '');
+        }
+    }
+
+    protected function applyRelationDateRangeFilter($query, $relation, $column, $filterValue, $filterBlank)
+    {
+        $from = $filterValue['from'] ?? '';
+        $to = $filterValue['to'] ?? '';
+        if ($from !== '' || $to !== '') {
+            $query->whereHas($relation, function ($q) use ($column, $from, $to) {
+                if ($from !== '' && $to !== '') {
+                    $q->whereDate($column, '>=', $from)
+                        ->whereDate($column, '<=', $to);
+                    return;
+                }
+                if ($from !== '') {
+                    $q->whereDate($column, '>=', $from);
+                    return;
+                }
+                $q->whereDate($column, '<=', $to);
+            });
+            return;
+        }
+        if ($filterBlank === 'blank') {
+            $query->whereHas($relation, function ($q) use ($column) {
+                $q->whereNull($column)
+                    ->orWhere($column, '');
+            });
+        } elseif ($filterBlank === 'not_blank') {
+            $query->whereHas($relation, function ($q) use ($column) {
+                $q->whereNotNull($column)
+                    ->where($column, '!=', '');
+            });
+        }
     }
 }

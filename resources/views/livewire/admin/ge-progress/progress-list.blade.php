@@ -37,7 +37,7 @@
                 </td>
                 <td class="tw:pl-[10px]" rowspan="2">
                     案件数  {{ $progresses->count() }}
-                    <button type="button" class="tw:ml-2 tw:text-xs tw:px-2 tw:py-0.5 tw:border tw:rounded" x-on:click="clearAllFilters()">フィルタークリア</button>
+                    <button type="button" class="tw:ml-2 tw:text-xs tw:px-2 tw:py-0.5 tw:border tw:rounded tw:cursor-pointer" x-on:click="clearAllFilters()">フィルタークリア</button>
                 </td>
                 <td rowspan="2" colspan="4"></td>
                 <td></td>
@@ -185,20 +185,146 @@
                         @class(['tw:text-red-600' => $this->hasFilter('next_action')])
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="退去受付"
+                        data-sort-field="taikyo_uketuke_date"
+                        data-filter-field="taikyo_uketuke_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('taikyo_uketuke_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="解約日"
+                        data-sort-field="cancellation_date"
+                        data-filter-field="cancellation_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('cancellation_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="退去日"
+                        data-sort-field="taikyo_date"
+                        data-filter-field="taikyo_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('taikyo_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="下代"
+                        data-sort-field="genpuku_mitsumori_recieved_date"
+                        data-filter-field="genpuku_mitsumori_recieved_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_mitsumori_recieved_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="通電"
+                        data-sort-field="tsuden"
+                        data-filter-field="tsuden"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('tsuden')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="借主負担"
+                        data-sort-field="tenant_charge_confirmed_date"
+                        data-filter-field="tenant_charge_confirmed_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('tenant_charge_confirmed_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="貸主提案"
+                        data-sort-field="genpuku_teian_date"
+                        data-filter-field="genpuku_teian_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_teian_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="貸主承諾"
+                        data-sort-field="genpuku_teian_kyodaku_date"
+                        data-filter-field="genpuku_teian_kyodaku_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_teian_kyodaku_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="発注"
+                        data-sort-field="genpuku_kouji_hachu_date"
+                        data-filter-field="genpuku_kouji_hachu_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_kouji_hachu_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="完工予定"
+                        data-sort-field="kanko_yotei_date"
+                        data-filter-field="kanko_yotei_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('kanko_yotei_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="完工受信"
+                        data-sort-field="kanko_jyushin_date"
+                        data-filter-field="kanko_jyushin_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('kanko_jyushin_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="完工報告"
+                        data-sort-field="owner_kanko_houkoku_date"
+                        data-filter-field="owner_kanko_houkoku_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('owner_kanko_houkoku_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="革命控除"
+                        data-sort-field="kakumei_koujo_touroku_date"
+                        data-filter-field="kakumei_koujo_touroku_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('kakumei_koujo_touroku_date')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="完了"
+                        data-sort-field="ge_complete_date"
+                        data-filter-field="ge_complete_date"
+                        data-filter-type="date-range"
+                        @class(['tw:text-red-600' => $this->hasFilter('ge_complete_date')])
+                    >▼</div>
+                </td>
             </tr>
         </thead>
         <tbody>
@@ -381,6 +507,15 @@
         blank-model="filterBlank"
         sort-model="sortOrderDraft"
     />
+    <x-admin.sort-filter-dialog.date-range
+        x-show="isDateRangeFilter()"
+        x-ref="filterPopupDateRange"
+        x-bind:style="popupStyleForFilter('date-range')"
+        x-title="filterTitle"
+        filter-model="filterValue"
+        blank-model="filterBlank"
+        sort-model="sortOrderDraft"
+    />
 </div>
 
 @once
@@ -522,7 +657,8 @@
                         const nextFilterField = trigger.dataset.filterField ?? this.filterField ?? 'id';
                         this.filterField = nextFilterField;
                         const currentFilter = this.filters[this.filterField] ?? {};
-                        this.filterValue = currentFilter.value ?? '';
+                        const currentValue = currentFilter.value ?? '';
+                        this.filterValue = currentValue;
                         this.filterBlank = currentFilter.blank ?? '';
                         const nextSortField = trigger.dataset.sortField;
                         const hasSortField = !!nextSortField;
@@ -530,7 +666,18 @@
                         this.sortOrderDraft = hasSortField && this.sortFieldDraft === this.sortField ? this.sortOrder : '';
 
                         const nextFilterType = trigger.dataset.filterType;
-                        this.filterType = nextFilterType === 'select' ? 'select' : 'text';
+                        if (nextFilterType === 'select') {
+                            this.filterType = 'select';
+                        } else if (nextFilterType === 'date-range') {
+                            this.filterType = 'date-range';
+                        } else {
+                            this.filterType = 'text';
+                        }
+                        if (this.filterType === 'date-range') {
+                            if (!currentValue || typeof currentValue !== 'object') {
+                                this.filterValue = { from: '', to: '' };
+                            }
+                        }
 
                         this.filterSelectName = trigger.dataset.filterSelectName ?? '';
                         if (this.filterType !== 'select') {
@@ -548,7 +695,9 @@
                             }
                         }
                         this.filterOpen = true;
-                        const popupRef = this.filterType === 'select' ? 'filterPopupSelect' : 'filterPopupText';
+                        const popupRef = this.filterType === 'select'
+                            ? 'filterPopupSelect'
+                            : (this.filterType === 'date-range' ? 'filterPopupDateRange' : 'filterPopupText');
                         this.setPopupPosition(event, popupRef, 260, 'filterPopupStyle');
                     },
 
@@ -558,6 +707,12 @@
 
                     handleFilterInput(event) {
                         const value = event?.target?.value ?? '';
+                        if (this.isFilterValueFilled()) {
+                            if (this.filterBlank !== 'not_blank') {
+                                this.filterBlank = 'not_blank';
+                            }
+                            return;
+                        }
                         if (String(value).trim() !== '' && this.filterBlank !== 'not_blank') {
                             this.filterBlank = 'not_blank';
                         }
@@ -566,8 +721,21 @@
                     handleFilterBlankChange(event) {
                         const value = event?.target?.value ?? '';
                         if (value === 'blank') {
-                            this.filterValue = '';
+                            if (this.filterType === 'date-range' && this.filterValue && typeof this.filterValue === 'object') {
+                                this.filterValue = { from: '', to: '' };
+                            } else {
+                                this.filterValue = '';
+                            }
                         }
+                    },
+
+                    isFilterValueFilled() {
+                        if (this.filterType === 'date-range') {
+                            const from = this.filterValue?.from ?? '';
+                            const to = this.filterValue?.to ?? '';
+                            return String(from).trim() !== '' || String(to).trim() !== '';
+                        }
+                        return String(this.filterValue ?? '').trim() !== '';
                     },
 
                     applySortFilter() {
@@ -576,7 +744,7 @@
                             const nextSortField = this.sortOrderDraft ? this.sortFieldDraft : this.sortField;
                             this.sortOrder = nextSortOrder;
                             this.sortField = nextSortField;
-                            if (this.filterValue === '' && this.filterBlank === '') {
+                            if (!this.isFilterValueFilled() && this.filterBlank === '') {
                                 const nextFilters = { ...(this.filters ?? {}) };
                                 delete nextFilters[this.filterField];
                                 this.filters = nextFilters;
@@ -595,7 +763,11 @@
                     },
 
                     resetSortFilter() {
-                        this.filterValue = '';
+                        if (this.filterType === 'date-range') {
+                            this.filterValue = { from: '', to: '' };
+                        } else {
+                            this.filterValue = '';
+                        }
                         this.filterBlank = '';
                         const nextFilters = { ...(this.filters ?? {}) };
                         delete nextFilters[this.filterField];
@@ -617,6 +789,10 @@
 
                     isSelectFilter() {
                         return this.filterOpen && this.filterType === 'select';
+                    },
+
+                    isDateRangeFilter() {
+                        return this.filterOpen && this.filterType === 'date-range';
                     },
 
                     popupStyleForFilter(type) {
