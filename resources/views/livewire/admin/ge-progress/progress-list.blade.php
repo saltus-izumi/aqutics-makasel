@@ -1,6 +1,6 @@
 <div
     class="tw:relative"
-    x-data="tablePopup(@js($sortOrder ?? 'asc'), @js($sortField ?? 'id'), @js($filterField ?? 'id'), @js($filterValue ?? ''), @js($filterBlank ?? ''))"
+    x-data="tablePopup(@js($sortOrder ?? 'asc'), @js($sortField ?? 'id'), @js($filters ?? []))"
     x-on:click="handleClick($event)"
     x-on:input="handleDateInput($event)"
     x-on:calendar-input.window="handleCalendarInput($event)"
@@ -37,6 +37,7 @@
                 </td>
                 <td class="tw:pl-[10px]" rowspan="2">
                     案件数  {{ $progresses->count() }}
+                    <button type="button" class="tw:ml-2 tw:text-xs tw:px-2 tw:py-0.5 tw:border tw:rounded" x-on:click="clearAllFilters()">フィルタークリア</button>
                 </td>
                 <td rowspan="2" colspan="4"></td>
                 <td></td>
@@ -367,7 +368,7 @@
         placeholder="担当者を選択"
         :options="$genpukuResponsibleOptions ?? []"
         select-name="select_filter"
-        :select-value="$filterValue ?? ''"
+        :select-value="''"
         :select-empty="true"
         filter-model="filterValue"
         blank-model="filterBlank"
@@ -492,9 +493,7 @@
                 const useFilter = ({
                     initialSortOrder = 'asc',
                     initialSortField = 'id',
-                    initialFilterField = 'id',
-                    initialFilterValue = '',
-                    initialFilterBlank = '',
+                    initialFilters = {},
                 } = {}) => ({
                     filterOpen: false,
                     filterPopupStyle: '',
@@ -505,24 +504,23 @@
                     sortField: initialSortField ?? 'id',
                     sortOrderDraft: initialSortOrder ?? 'asc',
                     sortFieldDraft: initialSortField ?? 'id',
-                    filterField: initialFilterField ?? 'id',
-                    filterValue: initialFilterValue ?? '',
-                    filterBlank: initialFilterBlank ?? '',
+                    filters: Array.isArray(initialFilters) ? {} : (initialFilters ?? {}),
+                    filterField: 'id',
+                    filterValue: '',
+                    filterBlank: '',
 
                     openFilterPopup(trigger, event) {
                         this.close();
                         this.filterTitle = trigger.dataset.filterTitle ?? '';
                         const nextFilterField = trigger.dataset.filterField ?? this.filterField ?? 'id';
-                        if (nextFilterField !== this.filterField) {
-                            this.filterValue = '';
-                            this.filterBlank = '';
-                        }
                         this.filterField = nextFilterField;
+                        const currentFilter = this.filters[this.filterField] ?? {};
+                        this.filterValue = currentFilter.value ?? '';
+                        this.filterBlank = currentFilter.blank ?? '';
                         const nextSortField = trigger.dataset.sortField;
                         const hasSortField = !!nextSortField;
                         this.sortFieldDraft = hasSortField ? nextSortField : '';
                         this.sortOrderDraft = hasSortField && this.sortFieldDraft === this.sortField ? this.sortOrder : '';
-console.log(nextSortField);
 
                         const nextFilterType = trigger.dataset.filterType;
                         this.filterType = nextFilterType === 'select' ? 'select' : 'text';
@@ -536,16 +534,11 @@ console.log(nextSortField);
                             try {
                                 const options = JSON.parse(filterOptionsRaw);
                                 window.dispatchEvent(new CustomEvent('select-search-options', {
-                                    detail: { name: this.filterSelectName, options },
+                                    detail: { name: this.filterSelectName, options, value: this.filterValue },
                                 }));
                             } catch (error) {
                                 console.warn('Invalid filter options JSON', error);
                             }
-                        }
-                        if (this.filterType === 'select' && this.filterSelectName && this.filterValue === '') {
-                            window.dispatchEvent(new CustomEvent('select-search-clear', {
-                                detail: { name: this.filterSelectName },
-                            }));
                         }
                         this.filterOpen = true;
                         const popupRef = this.filterType === 'select' ? 'filterPopupSelect' : 'filterPopupText';
@@ -576,26 +569,33 @@ console.log(nextSortField);
                             const nextSortField = this.sortOrderDraft ? this.sortFieldDraft : this.sortField;
                             this.sortOrder = nextSortOrder;
                             this.sortField = nextSortField;
-                            this.$wire.updateSortFilter(
-                                nextSortOrder,
-                                nextSortField,
-                                this.filterField,
-                                this.filterValue,
-                                this.filterBlank
-                            );
+                            if (this.filterValue === '' && this.filterBlank === '') {
+                                delete this.filters[this.filterField];
+                            } else {
+                                this.filters[this.filterField] = {
+                                    value: this.filterValue,
+                                    blank: this.filterBlank,
+                                };
+                            }
+console.log(this.filters);
+                            this.$wire.updateSortFilter(nextSortOrder, nextSortField, this.filters);
                         }
                         this.closeFilter();
                     },
 
                     resetSortFilter() {
-                        this.sortOrder = 'asc';
-                        this.sortField = 'id';
-                        this.sortOrderDraft = 'asc';
-                        this.sortFieldDraft = 'id';
-                        this.filterField = 'id';
                         this.filterValue = '';
                         this.filterBlank = '';
-                        this.applySortFilter();
+                        delete this.filters[this.filterField];
+                        if (this.filterType === 'select' && this.filterSelectName) {
+                            window.dispatchEvent(new CustomEvent('select-search-clear', {
+                                detail: { name: this.filterSelectName },
+                            }));
+                        }
+                        if (this.$wire?.updateSortFilter) {
+                            this.$wire.updateSortFilter(this.sortOrder, this.sortField, this.filters);
+                        }
+                        this.closeFilter();
                     },
 
                     isTextFilter() {
@@ -609,16 +609,29 @@ console.log(nextSortField);
                     popupStyleForFilter(type) {
                         return this.filterOpen && this.filterType === type ? this.filterPopupStyle : 'display: none;';
                     },
+
+                    clearAllFilters() {
+                        this.sortOrder = 'asc';
+                        this.sortField = 'id';
+                        this.sortOrderDraft = 'asc';
+                        this.sortFieldDraft = 'id';
+                        this.filters = {};
+                        this.filterField = 'id';
+                        this.filterValue = '';
+                        this.filterBlank = '';
+                        if (this.$wire?.updateSortFilter) {
+                            this.$wire.updateSortFilter(this.sortOrder, this.sortField, this.filters);
+                        }
+                        this.closeFilter();
+                    },
                 });
 
-                Alpine.data('tablePopup', (initialSortOrder = 'asc', initialSortField = 'id', initialFilterField = 'id', initialFilterValue = '', initialFilterBlank = '') => ({
+                Alpine.data('tablePopup', (initialSortOrder = 'asc', initialSortField = 'id', initialFilters = {}) => ({
                     ...usePopup('popup_date'),
                     ...useFilter({
                         initialSortOrder,
                         initialSortField,
-                        initialFilterField,
-                        initialFilterValue,
-                        initialFilterBlank,
+                        initialFilters,
                     }),
 
                     handleClick(event) {
