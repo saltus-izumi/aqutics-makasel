@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\GeProgress;
 
+use App\Models\GeProgress;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\Progress;
@@ -21,12 +22,28 @@ class ProgressList extends Component
     public string $filterValue = '';
     public string $filterBlank = '';
     public array $genpukuResponsibleOptions = [];
+    public array $nextActionOptions = [];
 
     public function mount()
     {
         $this->incompleteOnly = true;
-        $this->genpukuResponsibleOptions = User::getOptions();
+        $this->genpukuResponsibleOptions = User::getOptions(User::DEPARTMENT_GE);
         $this->refreshGeProgresses();
+        $this->nextActionOptions = [
+            '1' => '解約日',
+            '2' => '退去日',
+            '3' => '下代',
+            '4' => '通電',
+            '5' => '借主負担',
+            '6' => '貸主提案',
+            '7' => '貸主承諾',
+            '8' => '発注',
+            '9' => '完工予定',
+            '10' => '完工受信',
+            '11' => '完工報告',
+            '12' => '革命控除',
+            '13' => '完了',
+        ];
     }
 
     public function render()
@@ -44,23 +61,7 @@ class ProgressList extends Component
             ])
             ->whereNull('kaiyaku_cancellation_date');
 
-        $sortOrder = $this->normalizeSortOrder($this->sortOrder);
-        $sortField = $this->normalizeSortField($this->sortField);
-        if ($sortField === 'investment_name') {
-            $query->orderBy(
-                Investment::select('investment_name')
-                    ->whereColumn('investments.id', 'progresses.investment_id'),
-                $sortOrder
-            );
-        } elseif ($sortField === 'investment_room_number') {
-            $query->orderBy(
-                InvestmentRoom::select('investment_room_number')
-                    ->whereColumn('investment_rooms.id', 'progresses.investment_room_uid'),
-                $sortOrder
-            );
-        } else {
-            $query->orderBy($sortField, $sortOrder);
-        }
+        $query = $this->setOrder($query);
 
         $query = $this->setCondition($query);
 
@@ -189,6 +190,35 @@ class ProgressList extends Component
             } else {
                 $query->whereNotNull($filterField);
             }
+        }
+
+        return $query;
+    }
+
+    protected function setOrder($query)
+    {
+        $sortOrder = $this->normalizeSortOrder($this->sortOrder);
+        $sortField = $this->normalizeSortField($this->sortField);
+        if ($sortField === 'investment_name') {
+            $query->orderBy(
+                Investment::select('investment_name')
+                    ->whereColumn('investments.id', 'progresses.investment_id'),
+                $sortOrder
+            );
+        } elseif ($sortField === 'investment_room_number') {
+            $query->orderBy(
+                InvestmentRoom::select('investment_room_number')
+                    ->whereColumn('investment_rooms.id', 'progresses.investment_room_uid'),
+                $sortOrder
+            );
+        } elseif ($sortField === 'executor_user_id') {
+            $query->orderBy(
+                GeProgress::select('executor_user_id')
+                    ->whereColumn('ge_progresses.progress_id', 'progresses.id'),
+                $sortOrder
+            );
+        } else {
+            $query->orderBy($sortField, $sortOrder);
         }
 
         return $query;

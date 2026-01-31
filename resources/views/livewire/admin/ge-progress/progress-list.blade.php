@@ -150,11 +150,30 @@
                         data-filter-title="責任者"
                         data-filter-field="genpuku_responsible_id"
                         data-filter-type="select"
-                        data-filter-select-name="genpuku_responsible_id_filter"
+                        data-filter-select-name="select_filter"
+                        data-filter-options='@json($genpukuResponsibleOptions ?? [])'
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="実行者"
+                        data-filter-field="executor_user_id"
+                        data-filter-type="select"
+                        data-filter-select-name="select_filter"
+                        data-filter-options='@json($genpukuResponsibleOptions ?? [])'
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="ネクストアクション"
+                        data-filter-field="status"
+                        data-filter-type="select"
+                        data-filter-select-name="select_filter"
+                        data-filter-options='@json($nextActionOptions ?? [])'
+                    >▼</div>
+                </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
@@ -344,7 +363,7 @@
         x-title="filterTitle"
         placeholder="担当者を選択"
         :options="$genpukuResponsibleOptions ?? []"
-        select-name="genpuku_responsible_id_filter"
+        select-name="select_filter"
         :select-value="$filterValue ?? ''"
         :select-empty="true"
         filter-model="filterValue"
@@ -504,6 +523,17 @@
                         this.filterSelectName = trigger.dataset.filterSelectName ?? '';
                         if (this.filterType !== 'select') {
                             this.filterSelectName = '';
+                        }
+                        const filterOptionsRaw = trigger.dataset.filterOptions ?? '';
+                        if (this.filterType === 'select' && this.filterSelectName && filterOptionsRaw) {
+                            try {
+                                const options = JSON.parse(filterOptionsRaw);
+                                window.dispatchEvent(new CustomEvent('select-search-options', {
+                                    detail: { name: this.filterSelectName, options },
+                                }));
+                            } catch (error) {
+                                console.warn('Invalid filter options JSON', error);
+                            }
                         }
                         if (this.filterType === 'select' && this.filterSelectName && this.filterValue === '') {
                             window.dispatchEvent(new CustomEvent('select-search-clear', {

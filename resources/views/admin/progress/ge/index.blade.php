@@ -11,7 +11,7 @@
                 <x-form.checkbox id="ge-progress-incomplete-only" class="tw:text-[1.1rem]" :checked="true">未完了のみ表示</x-form.checkbox>
             </div>
         </div>
-        <div class="tw:h-[45px] tw:w-full tw:ml-[26px] tw:flex tw:items-end tw:border-b tw:mb-[21px]">
+        <div class="tw:h-[45px] tw:w-[calc(100%-40px)] tw:ml-[26px] tw:flex tw:items-end tw:border-b tw:mb-[21px]">
             <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#d9d9d9] tw:border-b tw:border-b-3 tw:border-b-pm_blue_001">原復</div>
             <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">LE</div>
             <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">TE</div>

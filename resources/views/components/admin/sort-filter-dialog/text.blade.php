@@ -37,11 +37,11 @@
             <div class="tw:text-xs tw:text-gray-600 tw:mb-1">{{ $sortLabel }}</div>
             <div class="tw:flex tw:gap-2">
                 <label class="tw:inline-flex tw:items-center tw:gap-1">
-                    <input type="radio" class="tw:accent-blue-600" value="asc" x-model="{{ $sortModel }}">
+                    <input type="radio" name="sort" class="tw:accent-blue-600" value="asc" x-model="{{ $sortModel }}">
                     <span class="tw:text-sm">{{ $ascLabel }}</span>
                 </label>
                 <label class="tw:inline-flex tw:items-center tw:gap-1">
-                    <input type="radio" class="tw:accent-blue-600" value="desc" x-model="{{ $sortModel }}">
+                    <input type="radio" name="sort" class="tw:accent-blue-600" value="desc" x-model="{{ $sortModel }}">
                     <span class="tw:text-sm">{{ $descLabel }}</span>
                 </label>
             </div>
@@ -50,11 +50,11 @@
             <div class="tw:text-xs tw:text-gray-600 tw:mb-1">{{ $label }}</div>
             <div class="tw:flex tw:gap-3 tw:mb-2">
                 <label class="tw:inline-flex tw:items-center tw:gap-1">
-                    <input type="radio" class="tw:accent-blue-600" value="blank" x-model="{{ $blankModel }}" x-on:change="handleFilterBlankChange($event)">
+                    <input type="radio" name="empty" class="tw:accent-blue-600" value="blank" x-model="{{ $blankModel }}" x-on:change="handleFilterBlankChange($event)">
                     <span class="tw:text-sm">{{ $blankLabel }}</span>
                 </label>
                 <label class="tw:inline-flex tw:items-center tw:gap-1">
-                    <input type="radio" class="tw:accent-blue-600" value="not_blank" x-model="{{ $blankModel }}">
+                    <input type="radio" name="empty" class="tw:accent-blue-600" value="not_blank" x-model="{{ $blankModel }}">
                     <span class="tw:text-sm">{{ $notBlankLabel }}</span>
                 </label>
             </div>

@@ -72,7 +72,7 @@
                 name="{{ $selectName }}"
                 :value="$selectValue"
                 :options="$options"
-                :empty="$selectEmpty"
+                {{-- :empty="$selectEmpty" --}}
                 placeholder="{{ $placeholder }}"
                 class="tw:w-full"
                 x-on:input="{{ $filterModel }} = $event.target.value; handleFilterInput($event)"
