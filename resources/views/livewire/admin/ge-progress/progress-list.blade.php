@@ -111,6 +111,7 @@
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
+                        data-filter-title="原復ID"
                         data-sort-field="id"
                         data-filter-field="id"
                         data-filter-type="text"
@@ -119,6 +120,7 @@
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
+                        data-filter-title="物件ID"
                         data-sort-field="investment_id"
                         data-filter-field="investment_id"
                         data-filter-type="text"
@@ -127,6 +129,7 @@
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
+                        data-filter-title="物件名"
                         data-sort-field="investment_name"
                         data-filter-field="investment_name"
                         data-filter-type="text"
@@ -135,12 +138,21 @@
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
+                        data-filter-title="号室"
                         data-sort-field="investment_room_number"
                         data-filter-field="investment_room_number"
                         data-filter-type="text"
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="責任者"
+                        data-filter-field="genpuku_responsible_id"
+                        data-filter-type="select"
+                        data-filter-select-name="genpuku_responsible_id_filter"
+                    >▼</div>
+                </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
@@ -315,12 +327,26 @@
         <div class="tw:text-sm tw:font-semibold tw:text-gray-800 tw:mb-2" x-text="popupTitle"></div>
         <x-form.calendar name="popup_date" />
     </div>
-    <x-admin.sort-filter-dialog
-        x-show="filterOpen"
-        x-ref="filterPopup"
-        x-bind:style="filterPopupStyle"
-        id-label="原復ID / 物件ID"
+    <x-admin.sort-filter-dialog.text
+        x-show="isTextFilter()"
+        x-ref="filterPopupText"
+        x-bind:style="popupStyleForFilter('text')"
+        x-title="filterTitle"
         placeholder="IDで絞り込み"
+        filter-model="filterValue"
+        blank-model="filterBlank"
+        sort-model="sortOrderDraft"
+    />
+    <x-admin.sort-filter-dialog.select
+        x-show="isSelectFilter()"
+        x-ref="filterPopupSelect"
+        x-bind:style="popupStyleForFilter('select')"
+        x-title="filterTitle"
+        placeholder="担当者を選択"
+        :options="$genpukuResponsibleOptions ?? []"
+        select-name="genpuku_responsible_id_filter"
+        :select-value="$filterValue ?? ''"
+        :select-empty="true"
         filter-model="filterValue"
         blank-model="filterBlank"
         sort-model="sortOrderDraft"
@@ -331,34 +357,12 @@
     @push('scripts')
         <script>
             document.addEventListener('alpine:init', () => {
-                Alpine.data('tablePopup', (initialSortOrder = 'asc', initialSortField = 'id', initialFilterField = 'id', initialFilterValue = '', initialFilterBlank = '') => ({
+                const usePopup = (calendarName = 'popup_date') => ({
                     open: false,
                     popupTitle: '',
                     popupStyle: '',
                     activeTarget: null,
-                    calendarName: 'popup_date',
-                    filterOpen: false,
-                    filterPopupStyle: '',
-                    sortOrder: initialSortOrder ?? 'asc',
-                    sortField: initialSortField ?? 'id',
-                    sortOrderDraft: initialSortOrder ?? 'asc',
-                    sortFieldDraft: initialSortField ?? 'id',
-                    filterField: initialFilterField ?? 'id',
-                    filterValue: initialFilterValue ?? '',
-                    filterBlank: initialFilterBlank ?? '',
-                    handleClick(event) {
-                        const filterTrigger = event.target.closest('[data-filter-trigger]');
-                        if (filterTrigger) {
-                            this.openFilterPopup(filterTrigger, event);
-                            return;
-                        }
-                        const trigger = event.target.closest('[data-popup-title]');
-                        if (trigger) {
-                            this.openPopup(trigger, event);
-                            return;
-                        }
-                        this.closeAll();
-                    },
+                    calendarName,
 
                     openPopup(trigger, event) {
                         this.filterOpen = false;
@@ -367,20 +371,6 @@
                         this.open = true;
                         this.setPopupPosition(event, 'popup', 320, 'popupStyle');
                         this.setCalendarFromTarget(trigger);
-                    },
-
-                    openFilterPopup(trigger, event) {
-                        this.close();
-                        const nextFilterField = trigger.dataset.filterField ?? this.filterField ?? 'id';
-                        if (nextFilterField !== this.filterField) {
-                            this.filterValue = '';
-                            this.filterBlank = '';
-                        }
-                        this.filterField = nextFilterField;
-                        this.sortFieldDraft = trigger.dataset.sortField ?? this.sortField ?? this.filterField ?? 'id';
-                        this.sortOrderDraft = this.sortFieldDraft === this.sortField ? this.sortOrder : '';
-                        this.filterOpen = true;
-                        this.setPopupPosition(event, 'filterPopup', 260, 'filterPopupStyle');
                     },
 
                     handleDateInput(event) {
@@ -439,13 +429,94 @@
                         this.activeTarget = null;
                     },
 
-                    closeFilter() {
-                        this.filterOpen = false;
+                    normalizeDate(value) {
+                        const raw = String(value ?? '').trim();
+                        if (!raw) {
+                            return '';
+                        }
+                        if (raw === 'ー') {
+                            return 'ー';
+                        }
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                            return raw;
+                        }
+                        const fullDate = raw.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+                        if (fullDate) {
+                            const year = fullDate[1];
+                            const month = String(fullDate[2]).padStart(2, '0');
+                            const day = String(fullDate[3]).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                        }
+                        const match = raw.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
+                        if (match) {
+                            const year = new Date().getFullYear();
+                            const month = String(match[1]).padStart(2, '0');
+                            const day = String(match[2]).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                        }
+                        return '';
                     },
 
-                    closeAll() {
+                    formatMonthDay(value) {
+                        const raw = String(value ?? '').trim();
+                        const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                        if (!match) {
+                            return '';
+                        }
+                        return `${match[2]}/${match[3]}`;
+                    },
+                });
+
+                const useFilter = ({
+                    initialSortOrder = 'asc',
+                    initialSortField = 'id',
+                    initialFilterField = 'id',
+                    initialFilterValue = '',
+                    initialFilterBlank = '',
+                } = {}) => ({
+                    filterOpen: false,
+                    filterPopupStyle: '',
+                    filterTitle: '',
+                    filterType: 'text',
+                    filterSelectName: '',
+                    sortOrder: initialSortOrder ?? 'asc',
+                    sortField: initialSortField ?? 'id',
+                    sortOrderDraft: initialSortOrder ?? 'asc',
+                    sortFieldDraft: initialSortField ?? 'id',
+                    filterField: initialFilterField ?? 'id',
+                    filterValue: initialFilterValue ?? '',
+                    filterBlank: initialFilterBlank ?? '',
+
+                    openFilterPopup(trigger, event) {
                         this.close();
-                        this.closeFilter();
+                        this.filterTitle = trigger.dataset.filterTitle ?? '';
+                        const nextFilterField = trigger.dataset.filterField ?? this.filterField ?? 'id';
+                        if (nextFilterField !== this.filterField) {
+                            this.filterValue = '';
+                            this.filterBlank = '';
+                        }
+                        this.filterField = nextFilterField;
+                        this.sortFieldDraft = trigger.dataset.sortField ?? this.sortField ?? this.filterField ?? 'id';
+                        this.sortOrderDraft = this.sortFieldDraft === this.sortField ? this.sortOrder : '';
+                        const nextFilterType = trigger.dataset.filterType;
+                        this.filterType = nextFilterType === 'select' ? 'select' : 'text';
+
+                        this.filterSelectName = trigger.dataset.filterSelectName ?? '';
+                        if (this.filterType !== 'select') {
+                            this.filterSelectName = '';
+                        }
+                        if (this.filterType === 'select' && this.filterSelectName && this.filterValue === '') {
+                            window.dispatchEvent(new CustomEvent('select-search-clear', {
+                                detail: { name: this.filterSelectName },
+                            }));
+                        }
+                        this.filterOpen = true;
+                        const popupRef = this.filterType === 'select' ? 'filterPopupSelect' : 'filterPopupText';
+                        this.setPopupPosition(event, popupRef, 260, 'filterPopupStyle');
+                    },
+
+                    closeFilter() {
+                        this.filterOpen = false;
                     },
 
                     handleFilterInput(event) {
@@ -490,6 +561,48 @@
                         this.applySortFilter();
                     },
 
+                    isTextFilter() {
+                        return this.filterOpen && this.filterType === 'text';
+                    },
+
+                    isSelectFilter() {
+                        return this.filterOpen && this.filterType === 'select';
+                    },
+
+                    popupStyleForFilter(type) {
+                        return this.filterOpen && this.filterType === type ? this.filterPopupStyle : 'display: none;';
+                    },
+                });
+
+                Alpine.data('tablePopup', (initialSortOrder = 'asc', initialSortField = 'id', initialFilterField = 'id', initialFilterValue = '', initialFilterBlank = '') => ({
+                    ...usePopup('popup_date'),
+                    ...useFilter({
+                        initialSortOrder,
+                        initialSortField,
+                        initialFilterField,
+                        initialFilterValue,
+                        initialFilterBlank,
+                    }),
+
+                    handleClick(event) {
+                        const filterTrigger = event.target.closest('[data-filter-trigger]');
+                        if (filterTrigger) {
+                            this.openFilterPopup(filterTrigger, event);
+                            return;
+                        }
+                        const trigger = event.target.closest('[data-popup-title]');
+                        if (trigger) {
+                            this.openPopup(trigger, event);
+                            return;
+                        }
+                        this.closeAll();
+                    },
+
+                    closeAll() {
+                        this.close();
+                        this.closeFilter();
+                    },
+
                     setPopupPosition(event, refName, fallbackWidth, styleKey) {
                         const x = event.clientX + 12;
                         const y = event.clientY + 12;
@@ -511,43 +624,6 @@
                             }
                             this[styleKey] = `left: ${left}px; top: ${top}px;`;
                         });
-                    },
-
-                    normalizeDate(value) {
-                        const raw = String(value ?? '').trim();
-                        if (!raw) {
-                            return '';
-                        }
-                        if (raw === 'ー') {
-                            return 'ー';
-                        }
-                        if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-                            return raw;
-                        }
-                        const fullDate = raw.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
-                        if (fullDate) {
-                            const year = fullDate[1];
-                            const month = String(fullDate[2]).padStart(2, '0');
-                            const day = String(fullDate[3]).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                        }
-                        const match = raw.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
-                        if (match) {
-                            const year = new Date().getFullYear();
-                            const month = String(match[1]).padStart(2, '0');
-                            const day = String(match[2]).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                        }
-                        return '';
-                    },
-
-                    formatMonthDay(value) {
-                        const raw = String(value ?? '').trim();
-                        const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-                        if (!match) {
-                            return '';
-                        }
-                        return `${Number(match[2])}/${Number(match[3])}`;
                     },
                 }));
             });

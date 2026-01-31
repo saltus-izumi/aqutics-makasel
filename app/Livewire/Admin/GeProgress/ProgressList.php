@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\GeProgress;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\Progress;
+use App\Models\User;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -19,10 +20,12 @@ class ProgressList extends Component
     public string $filterField = 'id';
     public string $filterValue = '';
     public string $filterBlank = '';
+    public array $genpukuResponsibleOptions = [];
 
     public function mount()
     {
         $this->incompleteOnly = true;
+        $this->genpukuResponsibleOptions = User::getOptions();
         $this->refreshGeProgresses();
     }
 
@@ -198,12 +201,12 @@ class ProgressList extends Component
 
     protected function normalizeFilterField($field)
     {
-        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number'], true) ? $field : 'id';
+        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number', 'genpuku_responsible_id'], true) ? $field : 'id';
     }
 
     protected function normalizeSortField($field)
     {
-        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number'], true) ? $field : 'id';
+        return in_array($field, ['id', 'investment_id', 'investment_name', 'investment_room_number', 'genpuku_responsible_id'], true) ? $field : 'id';
     }
 
     protected function normalizeFilterBlank($value)

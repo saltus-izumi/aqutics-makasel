@@ -1,7 +1,8 @@
 @props([
     'title' => '並び順 / ID絞り込み',
+    'xTitle' => null,
     'sortLabel' => '並び順',
-    'idLabel' => '原復ID',
+    'label' => '値入力',
     'blankLabel' => '空白',
     'notBlankLabel' => '空白以外',
     'placeholder' => 'IDで絞り込み',
@@ -27,7 +28,10 @@
     x-on:click.stop
     x-cloak
 >
-    <div class="tw:text-sm tw:font-semibold tw:text-gray-800 tw:mb-2">{{ $title }}</div>
+    <div
+        class="tw:text-sm tw:font-semibold tw:text-gray-800 tw:mb-2"
+        @if($xTitle) x-text="{{ $xTitle }}" @endif
+    >{{ $title }}</div>
     <div class="tw:space-y-2">
         <div>
             <div class="tw:text-xs tw:text-gray-600 tw:mb-1">{{ $sortLabel }}</div>
@@ -43,7 +47,7 @@
             </div>
         </div>
         <div>
-            <div class="tw:text-xs tw:text-gray-600 tw:mb-1">{{ $idLabel }}</div>
+            <div class="tw:text-xs tw:text-gray-600 tw:mb-1">{{ $label }}</div>
             <div class="tw:flex tw:gap-3 tw:mb-2">
                 <label class="tw:inline-flex tw:items-center tw:gap-1">
                     <input type="radio" class="tw:accent-blue-600" value="blank" x-model="{{ $blankModel }}" x-on:change="handleFilterBlankChange($event)">
