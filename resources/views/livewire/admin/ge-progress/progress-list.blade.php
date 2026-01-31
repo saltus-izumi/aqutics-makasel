@@ -116,6 +116,7 @@
                         data-sort-field="id"
                         data-filter-field="id"
                         data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('id')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -125,6 +126,7 @@
                         data-sort-field="investment_id"
                         data-filter-field="investment_id"
                         data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('investment_id')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -134,6 +136,7 @@
                         data-sort-field="investment_name"
                         data-filter-field="investment_name"
                         data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('investment_name')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -143,6 +146,7 @@
                         data-sort-field="investment_room_number"
                         data-filter-field="investment_room_number"
                         data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('investment_room_number')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -154,6 +158,7 @@
                         data-filter-type="select"
                         data-filter-select-name="select_filter"
                         data-filter-options='@json($genpukuResponsibleOptions ?? [])'
+                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_responsible_id')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -165,6 +170,7 @@
                         data-filter-type="select"
                         data-filter-select-name="select_filter"
                         data-filter-options='@json($genpukuResponsibleOptions ?? [])'
+                        @class(['tw:text-red-600' => $this->hasFilter('executor_user_id')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -176,6 +182,7 @@
                         data-filter-type="select"
                         data-filter-select-name="select_filter"
                         data-filter-options='@json($nextActionOptions ?? [])'
+                        @class(['tw:text-red-600' => $this->hasFilter('next_action')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">▼</td>
@@ -570,14 +577,18 @@
                             this.sortOrder = nextSortOrder;
                             this.sortField = nextSortField;
                             if (this.filterValue === '' && this.filterBlank === '') {
-                                delete this.filters[this.filterField];
+                                const nextFilters = { ...(this.filters ?? {}) };
+                                delete nextFilters[this.filterField];
+                                this.filters = nextFilters;
                             } else {
-                                this.filters[this.filterField] = {
-                                    value: this.filterValue,
-                                    blank: this.filterBlank,
+                                this.filters = {
+                                    ...(this.filters ?? {}),
+                                    [this.filterField]: {
+                                        value: this.filterValue,
+                                        blank: this.filterBlank,
+                                    },
                                 };
                             }
-console.log(this.filters);
                             this.$wire.updateSortFilter(nextSortOrder, nextSortField, this.filters);
                         }
                         this.closeFilter();
@@ -586,7 +597,9 @@ console.log(this.filters);
                     resetSortFilter() {
                         this.filterValue = '';
                         this.filterBlank = '';
-                        delete this.filters[this.filterField];
+                        const nextFilters = { ...(this.filters ?? {}) };
+                        delete nextFilters[this.filterField];
+                        this.filters = nextFilters;
                         if (this.filterType === 'select' && this.filterSelectName) {
                             window.dispatchEvent(new CustomEvent('select-search-clear', {
                                 detail: { name: this.filterSelectName },

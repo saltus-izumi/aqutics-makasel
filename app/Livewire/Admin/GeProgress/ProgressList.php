@@ -107,7 +107,6 @@ class ProgressList extends Component
 
     public function updateSortFilter($sortOrder, $sortField, $filters)
     {
-Log::debug($filters);
         $this->sortOrder = $this->normalizeSortOrder($sortOrder);
         $this->sortField = $sortField;
         $this->filters = $this->normalizeFilters($filters);
@@ -142,81 +141,23 @@ Log::debug($filters);
             }
 
             if ($filterField === 'investment_name') {
-                if ($filterValue !== '') {
-                    $query->whereHas('investment', function ($q) use ($filterValue) {
-                        $q->where('investment_name', 'like', '%' . $filterValue . '%');
-                    });
-                } elseif ($filterBlank === 'blank') {
-                    $query->whereHas('investment', function ($q) {
-                        $q->whereNull('investment_name')
-                            ->orWhere('investment_name', '');
-                    });
-                } elseif ($filterBlank === 'not_blank') {
-                    $query->whereHas('investment', function ($q) {
-                        $q->whereNotNull('investment_name')
-                            ->where('investment_name', '!=', '');
-                    });
-                }
+                $this->applyRelationFilter($query, 'investment', 'investment_name', $filterValue, $filterBlank, true);
             } elseif ($filterField === 'investment_room_number') {
                 if ($filterValue !== '') {
                     if ($filterValue === '共用部') {
                         $query->where('investment_room_number', 0);
                     } else {
-                        $query->whereHas('investmentRoom', function ($q) use ($filterValue) {
-                            $q->where('investment_room_number', $filterValue);
-                        });
+                        $this->applyRelationFilter($query, 'investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
                     }
-                } elseif ($filterBlank === 'blank') {
-                    $query->whereHas('investmentRoom', function ($q) {
-                        $q->whereNull('investment_room_number')
-                            ->orWhere('investment_room_number', '');
-                    });
-                } elseif ($filterBlank === 'not_blank') {
-                    $query->whereHas('investmentRoom', function ($q) {
-                        $q->whereNotNull('investment_room_number')
-                            ->where('investment_room_number', '!=', '');
-                    });
+                } else {
+                    $this->applyRelationFilter($query, 'investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
                 }
             } elseif ($filterField === 'executor_user_id') {
-                if ($filterValue !== '') {
-                    $query->whereHas('geProgress', function ($q) use ($filterValue) {
-                        $q->where('executor_user_id', $filterValue);
-                    });
-                } elseif ($filterBlank === 'blank') {
-                    $query->whereHas('geProgress', function ($q) {
-                        $q->whereNull('executor_user_id')
-                            ->orWhere('executor_user_id', '');
-                    });
-                } elseif ($filterBlank === 'not_blank') {
-                    $query->whereHas('geProgress', function ($q) {
-                        $q->whereNotNull('executor_user_id')
-                            ->where('executor_user_id', '!=', '');
-                    });
-                }
+                $this->applyRelationFilter($query, 'geProgress', 'executor_user_id', $filterValue, $filterBlank);
             } elseif ($filterField === 'next_action') {
-                if ($filterValue !== '') {
-                    $query->whereHas('geProgress', function ($q) use ($filterValue) {
-                        $q->where('next_action', $filterValue);
-                    });
-                } elseif ($filterBlank === 'blank') {
-                    $query->whereHas('geProgress', function ($q) {
-                        $q->whereNull('next_action')
-                            ->orWhere('next_action', '');
-                    });
-                } elseif ($filterBlank === 'not_blank') {
-                    $query->whereHas('geProgress', function ($q) {
-                        $q->whereNotNull('next_action')
-                            ->where('next_action', '!=', '');
-                    });
-                }
+                $this->applyRelationFilter($query, 'geProgress', 'next_action', $filterValue, $filterBlank);
             } elseif (in_array($filterField, $this->getSimpleFilterFields(), true)) {
-                if ($filterValue !== '') {
-                    $query->where($filterField, $filterValue);
-                } elseif ($filterBlank === 'blank') {
-                    $query->whereNull($filterField);
-                } elseif ($filterBlank === 'not_blank') {
-                    $query->whereNotNull($filterField);
-                }
+                $this->applyColumnFilter($query, $filterField, $filterValue, $filterBlank);
             }
         }
 
@@ -268,8 +209,59 @@ Log::debug($filters);
         return in_array($value, ['blank', 'not_blank'], true) ? $value : '';
     }
 
+    protected function applyColumnFilter($query, $column, $filterValue, $filterBlank)
+    {
+        if ($filterValue !== '') {
+            $query->where($column, $filterValue);
+        } elseif ($filterBlank === 'blank') {
+            $query->whereNull($column);
+        } elseif ($filterBlank === 'not_blank') {
+            $query->whereNotNull($column);
+        }
+    }
+
+    protected function applyRelationFilter($query, $relation, $column, $filterValue, $filterBlank, $like = false)
+    {
+        if ($filterValue !== '') {
+            $query->whereHas($relation, function ($q) use ($column, $filterValue, $like) {
+                if ($like) {
+                    $q->where($column, 'like', '%' . $filterValue . '%');
+                } else {
+                    $q->where($column, $filterValue);
+                }
+            });
+        } elseif ($filterBlank === 'blank') {
+            $query->whereHas($relation, function ($q) use ($column) {
+                $q->whereNull($column)
+                    ->orWhere($column, '');
+            });
+        } elseif ($filterBlank === 'not_blank') {
+            $query->whereHas($relation, function ($q) use ($column) {
+                $q->whereNotNull($column)
+                    ->where($column, '!=', '');
+            });
+        }
+    }
+
+    public function hasFilter($field)
+    {
+        if (!is_string($field) || $field === '') {
+            return false;
+        }
+        $filter = $this->filters[$field] ?? null;
+        if (!is_array($filter)) {
+            return false;
+        }
+        $value = trim((string) ($filter['value'] ?? ''));
+        $blank = $this->normalizeFilterBlank($filter['blank'] ?? '');
+        return $value !== '' || $blank !== '';
+    }
+
     protected function normalizeFilters($filters)
     {
+        if (is_object($filters)) {
+            $filters = (array) $filters;
+        }
         if (!is_array($filters)) {
             return [];
         }
@@ -278,6 +270,9 @@ Log::debug($filters);
         foreach ($filters as $field => $filter) {
             if (!is_string($field)) {
                 continue;
+            }
+            if (is_object($filter)) {
+                $filter = (array) $filter;
             }
             if (!is_array($filter)) {
                 continue;
