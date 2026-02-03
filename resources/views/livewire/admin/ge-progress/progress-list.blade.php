@@ -12,8 +12,8 @@
             <col class="tw:w-[52px]">
             <col class="tw:w-[182px]">
             <col class="tw:w-[52px]">
-            <col class="tw:w-[52px]">
-            <col class="tw:w-[52px]">
+            <col class="tw:w-[78px]">
+            <col class="tw:w-[78px]">
             <col class="tw:w-[182px]">
             <col class="tw:w-[52px]">
             <col class="tw:w-[52px]">
@@ -95,18 +95,18 @@
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center" colspan="2">実質LT</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">0日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">3日</td>
-                <td class="tw:bg-[#c9daf8] tw:text-center">ー</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">2日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">2日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">2日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">1日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">0日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">0日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">0日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">0日</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">0日</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['taikyo'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_mitsumori_recieved'] ?? 'ー' }}</td>
+                <td class="tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['tsuden'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['tenant_charge_confirmed'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_teian'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_teian_kyodaku'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_kouji_hachu'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kanko_yotei'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kanko_jyushin_date'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['owner_kanko_houkoku'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kakumei_koujo_touroku'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['ge_complete'] ?? 'ー' }}</td>
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -334,8 +334,28 @@
                     <td class="tw:text-center">{{ $progress->investment_id }}</td>
                     <td>{{ $progress?->investment?->investment_name }}</td>
                     <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
-                    <td class="tw:text-center">児玉</td>
-                    <td class="tw:text-center">脇谷</td>
+                    <td class="tw:text-center tw:px-[3px]">
+                        <x-form.select-search
+                            :options="$genpukuResponsibleShortOptions"
+                            :empty="true"
+                            :value="$progress->genpuku_responsible_id"
+                            :border="false"
+                            placeholder=" "
+                            wire:key="progress-genpuku-responsible-{{ $progress->id }}-{{ $selectRefreshToken }}"
+                            wire:input="updateSelectValue({{ $progress->id }}, 'genpuku_responsible_id', $event.target.value)"
+                        />
+                    </td>
+                    <td class="tw:text-center tw:px-[3px]">
+                        <x-form.select-search
+                            :options="$genpukuResponsibleShortOptions"
+                            :empty="true"
+                            :value="$progress->geProgress->executor_user_id"
+                            :border="false"
+                            placeholder=" "
+                            wire:key="progress-executor-{{ $progress->id }}-{{ $selectRefreshToken }}"
+                            wire:input="updateSelectValue({{ $progress->id }}, 'executor_user_id', $event.target.value)"
+                        />
+                    </td>
                     <td class="tw:text-center">{{ App\Models\GeProgress::NEXT_ACTIONS[$progress?->geProgress?->next_action] ?? '' }}</td>
                     <td class="tw:text-center">
                         <x-tooltip :text="$progress?->taikyo_uketuke_date?->format('Y/m/d')">

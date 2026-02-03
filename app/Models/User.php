@@ -112,6 +112,22 @@ class User extends Authenticatable
         return $options;
     }
 
+    public static function getShortOptions($department = null)
+    {
+        $query = self::where('is_hidden', false);
+        if ($department) {
+            $query->whereRaw('FIND_IN_SET(?, departments)', [$department]);
+        }
+        $users = $query->get();
+
+        $options = [];
+        foreach ($users as $user) {
+            $options[$user->id] = $user->user_name;
+        }
+
+        return $options;
+    }
+
     protected function departmentsArray(): Attribute
     {
         return Attribute::get(function () {

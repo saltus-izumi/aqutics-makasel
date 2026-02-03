@@ -8,6 +8,8 @@ use App\Models\InvestmentEmptyRoom;
 use App\Models\InvestmentRoom;
 use App\Models\Progress;
 use App\Models\User;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
@@ -23,14 +25,27 @@ class ProgressList extends Component
     public string $sortField = 'id';
     public array $filters = [];
     public array $genpukuResponsibleOptions = [];
+    public array $genpukuResponsibleShortOptions = [];
     public array $nextActionOptions = [];
+    public array $averageLt = [];
+    public int $selectRefreshToken = 0;
 
     public function mount()
     {
         $this->incompleteOnly = true;
         $this->genpukuResponsibleOptions = User::getOptions(User::DEPARTMENT_GE);
-        $this->refreshGeProgresses();
+        $this->genpukuResponsibleShortOptions = User::getShortOptions(User::DEPARTMENT_GE);
         $this->nextActionOptions = GeProgress::NEXT_ACTIONS;
+
+        // フィルター初期値
+        $this->filters = $this->normalizeFilters([
+            'ge_complete_date' => [
+                'value' => '',
+                'blank' => 'blank',
+            ],
+        ]);
+
+        $this->refreshGeProgresses();
     }
 
     public function render()
@@ -53,6 +68,80 @@ class ProgressList extends Component
         $query = $this->setCondition($query);
 
         $this->progresses = $query->get();
+        $this->averageLt = $this->buildAverageLt($this->progresses);
+        $this->selectRefreshToken++;
+    }
+
+    protected function buildAverageLt($progresses): array
+    {
+        $pairs = [
+            'cancellation' => ['taikyo_uketuke_date', 'investmentEmptyRoom.cancellation_date'],
+            'taikyo' => ['investmentEmptyRoom.cancellation_date', 'taikyo_date'],
+            'genpuku_mitsumori_recieved' => ['taikyo_date', 'genpuku_mitsumori_recieved_date'],
+            // 'tsuden' => ['genpuku_mitsumori_recieved_date', 'tenant_charge_confirmed_date'],
+            'tenant_charge_confirmed' => ['genpuku_mitsumori_recieved_date', 'tenant_charge_confirmed_date'],
+            'genpuku_teian' => ['tenant_charge_confirmed_date', 'genpuku_teian_date'],
+            'genpuku_teian_kyodaku' => ['genpuku_teian_date', 'genpuku_teian_kyodaku_date'],
+            'genpuku_kouji_hachu' => ['genpuku_teian_kyodaku_date', 'genpuku_kouji_hachu_date'],
+            'kanko_yotei' => ['genpuku_kouji_hachu_date', 'kanko_yotei_date'],
+            'kanko_jyushin_date' => ['kanko_yotei_date', 'kanko_jyushin_date'],
+            'owner_kanko_houkoku' => ['kanko_jyushin_date', 'owner_kanko_houkoku_date'],
+            'kakumei_koujo_touroku' => ['owner_kanko_houkoku_date', 'kakumei_koujo_touroku_date'],
+            'ge_complete' => ['kakumei_koujo_touroku_date', 'ge_complete_date'],
+        ];
+
+        $averages = $this->averageDaysBatch($progresses, $pairs);
+        $labels = [];
+        foreach ($pairs as $key => $_pair) {
+            $labels[$key] = $averages[$key] === null ? 'ー' : ($averages[$key] . '日');
+        }
+
+        return $labels;
+    }
+
+    protected function averageDaysBatch($progresses, array $pairs): array
+    {
+        $totals = [];
+        $counts = [];
+        foreach ($pairs as $key => $_pair) {
+            $totals[$key] = 0;
+            $counts[$key] = 0;
+        }
+
+        foreach ($progresses as $progress) {
+            foreach ($pairs as $key => [$startPath, $endPath]) {
+                $start = $this->normalizeDate(data_get($progress, $startPath));
+                $end = $this->normalizeDate(data_get($progress, $endPath));
+                if (!$start || !$end) {
+                    continue;
+                }
+                $totals[$key] += $start->diffInDays($end);
+                $counts[$key]++;
+            }
+        }
+
+        $averages = [];
+        foreach ($pairs as $key => $_pair) {
+            if ($counts[$key] === 0) {
+                $averages[$key] = null;
+                continue;
+            }
+            $averages[$key] = (int) round($totals[$key] / $counts[$key]);
+        }
+
+        return $averages;
+    }
+
+    protected function normalizeDate($value): ?CarbonInterface
+    {
+        if (!$value) {
+            return null;
+        }
+        if ($value instanceof CarbonInterface) {
+            return $value;
+        }
+
+        return Carbon::parse($value);
     }
 
     public function updateDate($progressId, $field, $date)
@@ -92,6 +181,32 @@ class ProgressList extends Component
         $this->refreshGeProgresses();
     }
 
+    public function updateSelectValue($progressId, $field, $id) {
+        DB::transaction(function() use ($progressId, $field, $id) {
+            $id = empty($id) ? null : $id;
+
+            $progress = Progress::query()
+                ->with([
+                    'investment',
+                    'investmentRoom',
+                    'investmentEmptyRoom',
+                    'GeProgress',
+                ])
+                ->find($progressId);
+
+            if ($field == 'executor_user_id') {
+                $progress->geProgress->{$field} = $id;
+                $progress->geProgress->save();
+            } else {
+                $progress->{$field} = $id;
+                $progress->save();
+            }
+        });
+
+        $this->refreshGeProgresses();
+    }
+
+
     #[On('ge-progress:incomplete-only-changed')]
     public function updateIncompleteOnly($incompleteOnly)
     {
@@ -108,6 +223,7 @@ class ProgressList extends Component
 
     public function updateSortFilter($sortOrder, $sortField, $filters)
     {
+        Log::debug('sortField=' . $this->sortField);
         $this->sortOrder = $this->normalizeSortOrder($sortOrder);
         $this->sortField = $sortField;
         $this->filters = $this->normalizeFilters($filters);

@@ -4,6 +4,7 @@
     'empty' => false,
     'options' => [],
     'placeholder' => '選択してください',
+    'border' => true,
     'is_error' => false,
     'disabled' => false,
     'readonly' => false,
@@ -61,14 +62,14 @@
         'tw:w-full' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:w-'),
         $attributes->get('class'),
     ])
-    {{ $attributes->except('class')->whereDoesntStartWith('wire:model') }}
+    {{ $attributes->except('class')->whereDoesntStartWith('wire:') }}
 >
     <input
         type="hidden"
         name="{{ $name }}"
         x-ref="hiddenInput"
         x-model="selectedValue"
-        {{ $attributes->whereStartsWith('wire:model') }}
+        {{ $attributes->whereStartsWith('wire:') }}
         @disabled($disabled)
     >
 
@@ -77,7 +78,13 @@
         x-ref="button"
         x-on:click="toggle()"
         @disabled($disabled || $readonly)
-        class="tw:w-full tw:flex tw:items-center tw:justify-between tw:border tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer hover:tw:border-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 {{ $is_error ? 'tw:border-red-500' : 'tw:border-gray-300' }} {{ $disabled ? 'tw:opacity-50 tw:cursor-not-allowed' : '' }}"
+        @class([
+            'tw:w-full tw:flex tw:items-center tw:justify-between tw:rounded tw:px-3 tw:py-2 tw:bg-white tw:text-left tw:cursor-pointer focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+            'tw:border hover:tw:border-gray-400' => $border,
+            'tw:border-red-500' => $border && $is_error,
+            'tw:border-gray-300' => $border && ! $is_error,
+            'tw:opacity-50 tw:cursor-not-allowed' => $disabled,
+        ])
     >
         <span
             class="tw:block tw:truncate {{ $hasValue ? '' : 'tw:text-gray-400' }}"
@@ -176,7 +183,7 @@
 
                     handleOptionsUpdate(event) {
                         const detail = event?.detail ?? {};
-                        if (detail.name && this.name && detail.name !== this.name) {
+                        if (detail.name && detail.name !== this.name) {
                             return;
                         }
                         this.setOptions(detail.options ?? [], detail.value);
@@ -289,7 +296,7 @@
 
                     clearSelection(event) {
                         const detail = event?.detail ?? {};
-                        if (detail.name && this.name && detail.name !== this.name) {
+                        if (detail.name && detail.name !== this.name) {
                             return;
                         }
                         this.selectedValue = '';
