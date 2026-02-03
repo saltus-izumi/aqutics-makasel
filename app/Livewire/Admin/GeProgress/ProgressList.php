@@ -28,7 +28,6 @@ class ProgressList extends Component
     public array $genpukuResponsibleShortOptions = [];
     public array $nextActionOptions = [];
     public array $averageLt = [];
-    public int $selectRefreshToken = 0;
 
     public function mount()
     {
@@ -69,7 +68,6 @@ class ProgressList extends Component
 
         $this->progresses = $query->get();
         $this->averageLt = $this->buildAverageLt($this->progresses);
-        $this->selectRefreshToken++;
     }
 
     protected function buildAverageLt($progresses): array

@@ -336,23 +336,23 @@
                     <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:text-center tw:px-[3px]">
                         <x-form.select-search
+                            name="genpuku_responsible_id_{{ $progress->id }}"
                             :options="$genpukuResponsibleShortOptions"
                             :empty="true"
                             :value="$progress->genpuku_responsible_id"
                             :border="false"
                             placeholder=" "
-                            wire:key="progress-genpuku-responsible-{{ $progress->id }}-{{ $selectRefreshToken }}"
                             wire:input="updateSelectValue({{ $progress->id }}, 'genpuku_responsible_id', $event.target.value)"
                         />
                     </td>
                     <td class="tw:text-center tw:px-[3px]">
                         <x-form.select-search
+                            name="executor_user_id_{{ $progress->id }}"
                             :options="$genpukuResponsibleShortOptions"
                             :empty="true"
                             :value="$progress->geProgress->executor_user_id"
                             :border="false"
                             placeholder=" "
-                            wire:key="progress-executor-{{ $progress->id }}-{{ $selectRefreshToken }}"
                             wire:input="updateSelectValue({{ $progress->id }}, 'executor_user_id', $event.target.value)"
                         />
                     </td>

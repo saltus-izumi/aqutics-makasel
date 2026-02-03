@@ -183,7 +183,8 @@
 
                     handleOptionsUpdate(event) {
                         const detail = event?.detail ?? {};
-                        if (detail.name && detail.name !== this.name) {
+console.log(detail);
+                        if (detail.name && this.name && detail.name !== this.name) {
                             return;
                         }
                         this.setOptions(detail.options ?? [], detail.value);
@@ -296,7 +297,8 @@
 
                     clearSelection(event) {
                         const detail = event?.detail ?? {};
-                        if (detail.name && detail.name !== this.name) {
+console.log(detail);
+                        if (detail.name && this.name && detail.name !== this.name) {
                             return;
                         }
                         this.selectedValue = '';
