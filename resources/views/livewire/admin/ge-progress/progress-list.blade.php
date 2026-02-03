@@ -335,24 +335,20 @@
                     <td>{{ $progress?->investment?->investment_name }}</td>
                     <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:text-center tw:px-[3px]">
-                        <x-form.select-search
-                            name="genpuku_responsible_id_{{ $progress->id }}"
+                        <x-form.select
+                            name="genpuku_responsible_id"
                             :options="$genpukuResponsibleShortOptions"
-                            :empty="true"
+                            empty="　"
                             :value="$progress->genpuku_responsible_id"
-                            :border="false"
-                            placeholder=" "
                             wire:input="updateSelectValue({{ $progress->id }}, 'genpuku_responsible_id', $event.target.value)"
                         />
                     </td>
                     <td class="tw:text-center tw:px-[3px]">
-                        <x-form.select-search
-                            name="executor_user_id_{{ $progress->id }}"
+                        <x-form.select
+                            name="executor_user_id"
                             :options="$genpukuResponsibleShortOptions"
-                            :empty="true"
+                            empty="　"
                             :value="$progress->geProgress->executor_user_id"
-                            :border="false"
-                            placeholder=" "
                             wire:input="updateSelectValue({{ $progress->id }}, 'executor_user_id', $event.target.value)"
                         />
                     </td>
