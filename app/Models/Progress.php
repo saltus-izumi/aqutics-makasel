@@ -69,6 +69,11 @@ class Progress extends Model
         return $this->belongsTo(InvestmentRoom::class, 'investment_room_uid', 'id');
     }
 
+    public function investmentRoomRedidentHistory()
+    {
+        return $this->belongsTo(InvestmentRoomResidentHistory::class, 'contractor_no', 'contractor_no');
+    }
+
     public function investmentEmptyRoom()
     {
         return $this->belongsTo(InvestmentEmptyRoom::class);
@@ -77,6 +82,11 @@ class Progress extends Model
     public function geProgress()
     {
         return $this->hasOne(GeProgress::class);
+    }
+
+    public function genpukuResponsible()
+    {
+        return $this->belongsTo(User::class, 'genpuku_responsible_id');
     }
 
     protected function geNextAction(): Attribute

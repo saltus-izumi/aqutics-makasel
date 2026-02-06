@@ -21,7 +21,7 @@
         </div>
         <div class="tw:h-[calc(100%-165px)]">
             <div class="tw:px-[52px]">
-                <livewire:admin.ge-progress.progress-list />
+                <livewire:admin.progress.ge.progress-list />
             </div>
         </div>
     </div>

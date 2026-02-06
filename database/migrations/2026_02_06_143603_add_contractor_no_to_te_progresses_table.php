@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('ge_progresses', function (Blueprint $table) {
-            $table->integer('trading_company_id')->nullable()->comment('工事会社')->after('executor_user_id');
+        Schema::table('te_progresses', function (Blueprint $table) {
+            $table->integer('contractor_no')->nullable()->comment('契約者No')->after('procall_case_no');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('ge_progresses', function (Blueprint $table) {
-            $table->dropColumn('trading_company_id');
+        Schema::table('te_progresses', function (Blueprint $table) {
+            $table->dropColumn('contractor_no');
         });
     }
 };

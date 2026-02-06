@@ -10,6 +10,7 @@ use App\Models\FortificationsProposal;
 use App\Models\GeProgress;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
+use App\Models\InvestmentRoomResident;
 use App\Models\Onsite;
 use App\Models\Procall;
 use App\Models\Progress;
@@ -125,9 +126,15 @@ class ImportProcall extends Component
                     $this->errorCount++;
                     return "部屋が見つかりません（物件：{$investmentName}({$inventment->id})、部屋：{$roomNumber}）";
                 }
+
+                // 現時点の入居者情報を取得
+                $investmentRoomResident = InvestmentRoomResident::query()
+                    ->where('investment_room_uid', $inventmentRoom->id)
+                    ->first();
             }
             else {
                 $inventmentRoom = new InvestmentRoom();
+                $investmentRoomResident = null;
             }
 
             if ($record[18] == '') {
@@ -144,6 +151,7 @@ class ImportProcall extends Component
                         'investment_id' => $inventment->id,
                         'investment_room_id' => $inventmentRoom->investment_room_id ?? 0,
                         'investment_room_uid' => $inventmentRoom?->id ?? null,
+                        'contractor_no' => $investmentRoomResident?->contractor_no ?? null,
                         'investment_name' => $record[17],
                         'investment_room_name' => $record[18],
                         'procall_deal_id' => $record[0],
@@ -267,6 +275,7 @@ class ImportProcall extends Component
                     $progress = new TeProgress([
                         'investment_id' => $inventment->id,
                         'investment_room_id' => $inventmentRoom->investment_room_id,
+                        'contractor_no' => $investmentRoomResident?->contractor_no ?? null,
                         'investment_name' => $record[17],
                         'investment_room_name' => $record[18],
                         'procall_deal_id' => $record[0],

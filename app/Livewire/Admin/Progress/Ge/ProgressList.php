@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\GeProgress;
+namespace App\Livewire\Admin\Progress\Ge;
 
 use App\Models\GeProgress;
 use App\Models\Investment;
@@ -49,7 +49,7 @@ class ProgressList extends Component
 
     public function render()
     {
-        return view('livewire.admin.ge-progress.progress-list');
+        return view('livewire.admin.progress.ge.progress-list');
     }
 
     protected function refreshGeProgresses() {

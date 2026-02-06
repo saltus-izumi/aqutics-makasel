@@ -54,4 +54,9 @@ class GeProgress extends Model
     {
         return $this->belongsTo(Progress::class);
     }
+
+    public function executorUser()
+    {
+        return $this->belongsTo(User::class, 'executor_user_id');
+    }
 }

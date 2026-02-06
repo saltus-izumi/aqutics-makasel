@@ -27,6 +27,12 @@ class Investment extends Model
         return $this->hasMany(InvestmentRoom::class);
     }
 
+    public function restorationCompany()
+    {
+        return $this->belongsTo(TradingCompany::class);
+    }
+
+
     /**
      * オーナーに紐づく物件のオプションを取得（Owner→Landlord→Investment）
      *

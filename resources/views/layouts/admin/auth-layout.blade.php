@@ -55,7 +55,7 @@
                                 <li><a href="/app/admin/CsvImports/5">イタンジ（内見予約くん）</a></li>
                                 <li><a href="/app/admin/CsvImports/7">個人申込</a></li>
                                 <li><a href="/app/admin/CsvImports/8">法人申込</a></li>
-                                <li><a href="/app/admin/CsvImports/6">PMView（新規）</a></li>
+                                <li><a href="{{ route('admin.import.procall-add') }}">PMView（新規）</a></li>
                                 <li><a href="/app/admin/CsvImports/11">PMView（更新）</a></li>
                                 <li><a href="/app/admin/CsvImports/9">入居者状況一覧</a></li>
                                 <li><a href="/app/admin/CsvImports/12">解約予定一覧</a></li>

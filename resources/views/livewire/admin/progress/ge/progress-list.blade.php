@@ -330,7 +330,9 @@
         <tbody>
             @foreach ($progresses as $progress)
                 <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">{{ $progress->id }}</td>
+                    <td class="tw:text-center">
+                        <a href="{{ route('admin.progress.ge.detail', ['progressId' => $progress->id]) }}" class="tw:text-pm_blue_001">{{ $progress->id }}</a>
+                    </td>
                     <td class="tw:text-center">{{ $progress->investment_id }}</td>
                     <td>{{ $progress?->investment?->investment_name }}</td>
                     <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
