@@ -5,7 +5,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
+use App\Models\GeProgressFile;
 use App\Models\Progress;
 
 class GeProgressController
@@ -19,8 +21,9 @@ class GeProgressController
     {
         $progress = Progress::query()
             ->with([
-                'GeProgress',
-                'GeProgress.executorUser',
+                'geProgress',
+                'geProgress.step1Files',
+                'geProgress.executorUser',
                 'genpukuResponsible',
                 'investment',
                 'investment.restorationCompany',
@@ -39,6 +42,24 @@ class GeProgressController
             ->with(compact(
                 'progress',
             ));
+    }
+
+    public function preview(Request $request, $geProgressFileId)
+    {
+        $file = GeProgressFile::query()->find($geProgressFileId);
+        if (!$file) {
+            abort(404);
+        }
+
+        $filePath = $file->file_path;
+        $fileName = $file->file_name ?? 'file';
+        if (!$filePath || !Storage::disk('local')->exists($filePath)) {
+            abort(404);
+        }
+
+        return response()->file(Storage::disk('local')->path($filePath), [
+            'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+        ]);
     }
 
 }

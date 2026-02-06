@@ -59,4 +59,17 @@ class GeProgress extends Model
     {
         return $this->belongsTo(User::class, 'executor_user_id');
     }
+
+    public function geProgressFiles()
+    {
+        return $this->hasMany(GeProgressFile::class);
+    }
+
+    // STEP1ファイル
+    public function step1Files()
+    {
+        return $this->hasMany(GeProgressFile::class)
+            ->where('file_kind', GeProgressFile::FILE_KIND_STEP1);
+    }
+
 }

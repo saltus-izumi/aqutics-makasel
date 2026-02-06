@@ -64,10 +64,19 @@
             <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">退去時精算書</x-button.black>
         </div>
         <div class="tw:mb-[21px]">
-            <div class="tw:text-[0.9rem] tw:text-[#999999]">
+            <div class="tw:h-[21px] tw:text-[0.9rem] tw:text-[#999999]">
                 添付ファイル・画像、ＰＤＦ、Excel、Wordファイルが送信可能です。（可能ファイル数：20個／1ファイルの最大サイズ：25MB）
             </div>
-            <div class="tw:w-full tw:h-[42px] tw:bg-[#cfe2f3]"></div>
+            <div class="tw:w-full">
+                <x-form.multi_file_upload2
+                    name="operation_files"
+                    instanceId="ge-progress-step1-{{ $progress->id }}"
+                    class="tw:h-[84px]"
+                    maxFileCount="20"
+                    maxFileSize="25MB"
+                    :files="$step1Files"
+                />
+            </div>
         </div>
         <div class="tw:mb-[21px]">
             立会依頼メッセージ<br>
@@ -83,3 +92,51 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+    <script>
+        const initGeProgressStep1Uploader = () => {
+            const componentId = @js($componentId);
+            const instanceId = @js('ge-progress-step1-' . $progress->id);
+            const component = Livewire.find(componentId);
+console.log(component);
+
+            if (!component) {
+                return;
+            }
+
+            const handleSelect = (event) => {
+console.log(event);
+                if (event?.detail?.name !== 'operation_files') {
+                    return;
+                }
+                if (event?.detail?.instanceId !== instanceId) {
+                    return;
+                }
+                const files = event.detail.files || [];
+                if (files.length === 0) {
+                    return;
+                }
+                component.uploadMultiple('step1Uploads', files, () => {
+                    component.call('saveStep1Uploads');
+                });
+            };
+
+            const handleRemove = (event) => {
+                if (event?.detail?.name !== 'operation_files') {
+                    return;
+                }
+                if (event?.detail?.instanceId !== instanceId) {
+                    return;
+                }
+                const fileId = event?.detail?.file?.id || null;
+                component.call('removeStep1File', fileId);
+            };
+
+            window.addEventListener('multi-file-upload2:selected', handleSelect);
+            window.addEventListener('multi-file-upload2:removed', handleRemove);
+        };
+
+        document.addEventListener('livewire:initialized', initGeProgressStep1Uploader);
+    </script>
+@endpush

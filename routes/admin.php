@@ -27,6 +27,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::prefix('progress')->name('progress.')->group(function () {
             Route::prefix('ge')->name('ge.')->group(function () {
                 Route::get('/', [AdminGeProgress::class, 'index'])->name('index');
+                Route::get('/files/{geProgressFileId}', [AdminGeProgress::class, 'preview'])->name('preview');
                 Route::get('/{progressId}', [AdminGeProgress::class, 'detail'])->name('detail');
             });
         });
