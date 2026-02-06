@@ -21,9 +21,9 @@ class Step1 extends Component
     protected function rules(): array
     {
         return [
-            'securityDepositAmount' => ['nullable', 'regex:/^\d+$/'],
-            'proratedRentAmount' => ['nullable', 'regex:/^\d+$/'],
-            'penaltyForfeitureAmount' => ['nullable', 'regex:/^\d+$/'],
+            'securityDepositAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
+            'proratedRentAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
+            'penaltyForfeitureAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
             'inspectionRequestMessage' => ['nullable', 'string'],
         ];
     }
@@ -31,9 +31,9 @@ class Step1 extends Component
     protected function messages(): array
     {
         return [
-            'securityDepositAmount.regex' => '敷金預託等は半角数字で入力してください。',
-            'proratedRentAmount.regex' => '日割り家賃は半角数字で入力してください。',
-            'penaltyForfeitureAmount.regex' => '違約金（償却）は半角数字で入力してください。',
+            'securityDepositAmount.regex' => '敷金預託等は半角数字とカンマで入力してください。',
+            'proratedRentAmount.regex' => '日割り家賃は半角数字とカンマで入力してください。',
+            'penaltyForfeitureAmount.regex' => '違約金（償却）は半角数字とカンマで入力してください。',
         ];
     }
 
@@ -58,6 +58,16 @@ class Step1 extends Component
         }
 
         $this->validateOnly($propertyName);
+
+        switch($propertyName) {
+            case 'securityDepositAmount':
+            case 'proratedRentAmount':
+            case 'penaltyForfeitureAmount':
+                $value = str_replace(',', '', (string) $value);
+                break;
+        }
+
+        $value = $value ? $value : null;
 
         $column = $this->geProgressMap[$propertyName];
         $this->progress->geProgress->{$column} = $value;

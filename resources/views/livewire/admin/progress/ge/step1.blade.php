@@ -8,15 +8,15 @@
             <tr class="tw:h-[42px]">
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">敷金預託等</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input name="securityDepositAmount" :border="false" wire:model.live="securityDepositAmount" :is_error="$errors->has('securityDepositAmount')" />
+                    <x-form.input-number name="securityDepositAmount" :border="false" wire:model.live="securityDepositAmount" />
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">日割り家賃</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input name="proratedRentAmount" :border="false" wire:model.live="proratedRentAmount" :is_error="$errors->has('proratedRentAmount')" />
+                    <x-form.input-number name="proratedRentAmount" :border="false" wire:model.live="proratedRentAmount" />
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">違約金（償却）</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input name="penaltyForfeitureAmount" :border="false" wire:model.live="penaltyForfeitureAmount" :is_error="$errors->has('penaltyForfeitureAmount')" />
+                    <x-form.input-number name="penaltyForfeitureAmount" :border="false" wire:model.live="penaltyForfeitureAmount" />
                 </td>
             </tr>
         </table>
