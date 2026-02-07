@@ -39,9 +39,9 @@ class Step1 extends Component
     protected function messages(): array
     {
         return [
-            'securityDepositAmount.regex' => '敷金預託等は半角数字とカンマで入力してください。',
-            'proratedRentAmount.regex' => '日割り家賃は半角数字とカンマで入力してください。',
-            'penaltyForfeitureAmount.regex' => '違約金（償却）は半角数字とカンマで入力してください。',
+            'securityDepositAmount.regex' => '敷金預託等は半角数字で入力してください。',
+            'proratedRentAmount.regex' => '日割り家賃は半角数字で入力してください。',
+            'penaltyForfeitureAmount.regex' => '違約金（償却）は半角数字で入力してください。',
         ];
     }
 
@@ -77,7 +77,7 @@ class Step1 extends Component
                 break;
         }
 
-        $value = $value ? $value : null;
+        $value = trim($value) ? trim($value) : null;
 
         $column = $this->geProgressMap[$propertyName];
         $this->progress->geProgress->{$column} = $value;
@@ -158,15 +158,6 @@ class Step1 extends Component
                 'mime_type' => $this->getFileMimeType($file),
             ];
         })->all();
-    }
-
-    protected function getFileUrl(GeProgressFile $file): ?string
-    {
-        if (!$file->file_path) {
-            return null;
-        }
-
-        return Storage::disk('local')->url($file->file_path);
     }
 
     protected function getFileMimeType(GeProgressFile $file): string

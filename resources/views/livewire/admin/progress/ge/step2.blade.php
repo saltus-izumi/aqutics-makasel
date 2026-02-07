@@ -12,7 +12,9 @@
                 <td class="tw:w-[130px] tw:text-center tw:bg-black tw:text-[1.3rem] tw:font-bold tw:text-white tw:border tw:border-[#cccccc]">返金額</td>
                 <td class="tw:border tw:border-[#cccccc]"></td>
                 <td class="tw:w-[130px] tw:text-center tw:bg-black tw:text-[1.3rem] tw:font-bold tw:text-white tw:border tw:border-[#cccccc]">振込期日</td>
-                <td class="tw:border tw:border-[#cccccc]"></td>
+                <td class="tw:border tw:border-[#cccccc]">
+                    <x-form.input type="date" class="tw:text-[1.8rem] tw:font-bold" wire:model.lazy="transferDueDate" />
+                </td>
             </tr>
         </table>
         <div class="tw:mt-[21px]">
@@ -20,25 +22,31 @@
             <table class="tw:w-full tw:table-fixed tw:mt-[px]">
                 <tr class="tw:h-[42px]">
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">小計A</td>
-                    <td class="tw:border tw:border-[#cccccc]"></td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">敷金預託等</td>
                     <td class="tw:border tw:border-[#cccccc]">
+                        <x-form.input-number name="subtotalAAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="subtotalAAmount" />
+                    </td>
+                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">敷金預託等</td>
+                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
                         {{ number_format($progress->geProgress?->security_deposit_amount)}}
                     </td>
                 </tr>
                 <tr class="tw:h-[42px]">
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">小計B</td>
-                    <td class="tw:border tw:border-[#cccccc]"></td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">日割り家賃</td>
                     <td class="tw:border tw:border-[#cccccc]">
+                        <x-form.input-number name="subtotalBAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="subtotalBAmount" />
+                    </td>
+                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">日割り家賃</td>
+                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
                         {{ number_format($progress->geProgress?->prorated_rent_amount) }}
                     </td>
                 </tr>
                 <tr class="tw:h-[42px]">
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">小計C</td>
-                    <td class="tw:border tw:border-[#cccccc]"></td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">違約金（償却等）</td>
                     <td class="tw:border tw:border-[#cccccc]">
+                        <x-form.input-number name="subtotalCAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="subtotalCAmount" />
+                    </td>
+                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">違約金（償却等）</td>
+                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
                         {{ number_format($progress->geProgress?->penalty_forfeiture_amount) }}
                     </td>
                 </tr>
@@ -46,7 +54,9 @@
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">工事負担額（税抜）</td>
                     <td class="tw:border tw:border-[#cccccc]"></td>
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">その他</td>
-                    <td class="tw:border tw:border-[#cccccc]"></td>
+                    <td class="tw:border tw:border-[#cccccc]">
+                        <x-form.input-number name="otherAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="otherAmount" />
+                    </td>
                 </tr>
                 <tr class="tw:h-[42px]">
                     <td class="tw:text-[1.2rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">工事負担額（税込）</td>
@@ -63,19 +73,94 @@
             </div>
             <div class="tw:flex tw:gap-x-[26px]">
                 <div class="tw:flex-1">
-                    <div class="tw:w-full tw:h-[42px] tw:bg-[#cfe2f3]"></div>
+                    <div class="tw:w-full">
+                        <x-form.multi_file_upload2
+                            name="move_out_settlement"
+                            title="退去時清算書"
+                            instanceId="ge-progress-move-out-settlement-{{ $progress->id }}"
+                            class="tw:h-[42px]"
+                            maxFileCount="20"
+                            maxFileSize="25MB"
+                            :allowMimeTypes="[
+                                'image/jpeg',
+                                'image/png',
+                                'image/gif',
+                                'image/webp',
+                                'image/bmp',
+                                'image/tiff',
+                                'image/heic',
+                                'image/heif',
+                                'application/pdf',
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/msword',
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            ]"
+                            :files="$moveOutSettlementFiles"
+                        />
+                    </div>
                 </div>
                 <div class="tw:flex-1">
-                    <div class="tw:w-full tw:h-[42px] tw:bg-[#cfe2f3]"></div>
+                    <div class="tw:w-full">
+                        <x-form.multi_file_upload2
+                            name="move_out_settlement"
+                            title="下代見積もり"
+                            instanceId="ge-progress-move-out-settlement-{{ $progress->id }}"
+                            class="tw:h-[42px]"
+                            maxFileCount="20"
+                            maxFileSize="25MB"
+                            :allowMimeTypes="[
+                                'image/jpeg',
+                                'image/png',
+                                'image/gif',
+                                'image/webp',
+                                'image/bmp',
+                                'image/tiff',
+                                'image/heic',
+                                'image/heif',
+                                'application/pdf',
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/msword',
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            ]"
+                            :files="$moveOutSettlementFiles"
+                        />
+                    </div>
                 </div>
                 <div class="tw:flex-1">
-                    <div class="tw:w-full tw:h-[42px] tw:bg-[#cfe2f3]"></div>
+                    <div class="tw:w-full">
+                        <x-form.multi_file_upload2
+                            name="move_out_settlement"
+                            title="立会写真"
+                            instanceId="ge-progress-move-out-settlement-{{ $progress->id }}"
+                            class="tw:h-[42px]"
+                            maxFileCount="20"
+                            maxFileSize="25MB"
+                            :allowMimeTypes="[
+                                'image/jpeg',
+                                'image/png',
+                                'image/gif',
+                                'image/webp',
+                                'image/bmp',
+                                'image/tiff',
+                                'image/heic',
+                                'image/heif',
+                                'application/pdf',
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/msword',
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            ]"
+                            :files="$moveOutSettlementFiles"
+                        />
+                    </div>
                 </div>
             </div>
         </div>
         <div class="tw:mt-[21px]">
             立会完了メッセージ<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント"></x-form.textarea>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="inspectionCompletedMessage"></x-form.textarea>
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>

@@ -1,5 +1,6 @@
 @props([
     'name' => 'files',
+    'title' => '添付ファイル',
     'files' => [],
     'maxFileCount' => 0,
     'maxFileSize' => 0,
@@ -38,7 +39,7 @@
     data-existing-count="{{ $existingFiles->count() }}"
     data-instance-id="{{ $instanceId ?? $attributes->get('id') ?? $name }}"
 >
-    <div class="tw:mb-[6px]">
+    <div class="">
         <button
             type="button"
             class="tw:text-[11pt] tw:text-blue-600 disabled:tw:text-gray-400 disabled:tw:no-underline"
@@ -55,13 +56,13 @@
         @dragover.prevent
         @dragenter.prevent
         @class([
-            'tw:p-[10px] tw:bg-[#ecf8fa9e] tw:border tw:border-gray-300 tw:mb-[5px] tw:text-[#909090] tw:cursor-pointer tw:flex tw:items-center tw:justify-center',
+            'tw:bg-[#cfe2f3] tw:border tw:border-gray-300 tw:mb-[5px] tw:text-[##666666] tw:cursor-pointer tw:flex tw:items-center tw:justify-center',
             $attributes->get('class'),
         ])
     >
-        <div>
-            <i class="tw:text-[1.5rem] far fa-cloud-upload"></i>
-            <div>参照</div>
+        <div class="tw:text-center tw:text-[0.8rem]">
+            <div>{{ $title }}</div>
+            <i class="far fa-cloud-upload"></i>
         </div>
     </div>
 
@@ -73,60 +74,108 @@
         class="tw:hidden"
     >
 
-    <div
-        x-cloak
-        x-show="isModalOpen"
-        x-transition.opacity
-        class="tw:fixed tw:inset-0 tw:z-[300] tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:px-[16px]"
-        role="dialog"
-        aria-modal="true"
-        @click.self="closeModal"
-    >
+    <template x-teleport="body">
         <div
+            x-cloak
             x-show="isModalOpen"
-            x-transition
-            class="tw:w-full tw:max-w-[640px] tw:max-h-[80vh] tw:overflow-y-auto tw:rounded-[8px] tw:bg-white tw:shadow-lg"
+            x-transition.opacity
+            class="tw:fixed tw:inset-0 tw:z-[300] tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:px-[16px]"
+            role="dialog"
+            aria-modal="true"
+            @click.self="closeModal"
         >
-            <div class="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-b-gray-200 tw:px-[16px] tw:py-[12px]">
-                <div class="tw:text-[1.2rem] tw:font-bold">ファイル一覧</div>
-                <button
-                    type="button"
-                    class="tw:text-[1.4rem] tw:text-gray-500"
-                    @click="closeModal"
-                    aria-label="閉じる"
-                >
-                    ×
-                </button>
-            </div>
-            <div class="tw:px-[16px] tw:py-[12px]">
-                @if($existingFiles->isEmpty())
-                    <div class="tw:text-[10pt] tw:text-gray-500">ファイルがありません</div>
-                @else
-                    @foreach($existingFiles as $index => $file)
-                        <div class="tw:flex tw:items-center tw:gap-[8px] tw:py-[6px] tw:border-b tw:border-gray-100">
-                            <div class="tw:w-[16px]">
-                                <i class="far" :class="iconClass(@js($file['mime_type']))"></i>
+            <div
+                x-show="isModalOpen"
+                x-transition
+                class="tw:w-full tw:max-w-[640px] tw:max-h-[80vh] tw:overflow-y-auto tw:rounded-[8px] tw:bg-white tw:shadow-lg"
+            >
+                <div class="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-b-gray-200 tw:px-[16px] tw:py-[12px]">
+                    <div class="tw:text-[1.2rem] tw:font-bold">ファイル一覧</div>
+                    <button
+                        type="button"
+                        class="tw:text-[1.4rem] tw:text-gray-500"
+                        @click="closeModal"
+                        aria-label="閉じる"
+                    >
+                        ×
+                    </button>
+                </div>
+                <div class="tw:px-[16px] tw:py-[12px]">
+                    @if($existingFiles->isEmpty())
+                        <div class="tw:text-[10pt] tw:text-gray-500">ファイルがありません</div>
+                    @else
+                        @foreach($existingFiles as $index => $file)
+                            <div class="tw:flex tw:items-center tw:gap-[8px] tw:py-[6px] tw:border-b tw:border-gray-100">
+                                <div class="tw:w-[16px]">
+                                    <i class="far" :class="iconClass(@js($file['mime_type']))"></i>
+                                </div>
+                                <div class="tw:flex-1 tw:truncate">
+                                    <button
+                                        type="button"
+                                        class="tw:text-blue-600 tw:underline tw:truncate"
+                                        @click="openFile(@js($file))"
+                                    >
+                                        {{ $file['file_name'] }}
+                                    </button>
+                                </div>
+                                <div class="tw:w-[22px] tw:text-right">
+                                    <button type="button" class="tw:text-red-500" @click="requestRemove(@js($file))">
+                                        <i class="fas fa-minus-circle"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="tw:flex-1 tw:truncate">
-                                <button
-                                    type="button"
-                                    class="tw:text-blue-600 tw:underline tw:truncate"
-                                    @click="openFile(@js($file))"
-                                >
-                                    {{ $file['file_name'] }}
-                                </button>
-                            </div>
-                            <div class="tw:w-[22px] tw:text-right">
-                                <button type="button" class="tw:text-red-500" @click="requestRemove(@js($file))">
-                                    <i class="fas fa-minus-circle"></i>
-                                </button>
-                            </div>
-                        </div>
-                    @endforeach
-                @endif
+                        @endforeach
+                    @endif
+                </div>
             </div>
         </div>
-    </div>
+    </template>
+
+    <template x-teleport="body">
+        <div
+            x-cloak
+            x-show="isPreviewOpen"
+            x-transition.opacity
+            class="tw:fixed tw:inset-0 tw:z-[320] tw:flex tw:items-center tw:justify-center tw:bg-black/50 tw:px-[16px]"
+            role="dialog"
+            aria-modal="true"
+            @click.self="closePreview"
+        >
+            <div
+                x-show="isPreviewOpen"
+                x-transition
+                class="tw:w-[80vw] tw:h-[80vh] tw:max-w-[1200px] tw:max-h-[80vh] tw:rounded-[8px] tw:bg-white tw:shadow-lg tw:flex tw:flex-col tw:overflow-hidden"
+            >
+                <div class="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-b-gray-200 tw:px-[16px] tw:py-[12px]">
+                    <div class="tw:text-[1rem] tw:font-bold tw:truncate" x-text="previewFile ? (previewFile.file_name || 'プレビュー') : 'プレビュー'"></div>
+                    <button
+                        type="button"
+                        class="tw:text-[1.4rem] tw:text-gray-500"
+                        @click="closePreview"
+                        aria-label="閉じる"
+                    >
+                        ×
+                    </button>
+                </div>
+                <div class="tw:flex-1 tw:bg-gray-50 tw:overflow-hidden">
+                    <template x-if="previewFile && isImage(previewFile)">
+                        <img
+                            :src="previewFile.url"
+                            :alt="previewFile.file_name || 'preview'"
+                            class="tw:w-full tw:h-full tw:object-contain"
+                        >
+                    </template>
+                    <template x-if="previewFile && isPdf(previewFile)">
+                        <iframe
+                            :src="previewFile.url"
+                            class="tw:w-full tw:h-full"
+                            title="PDF Preview"
+                        ></iframe>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 @once
     @push('scripts')
@@ -134,6 +183,8 @@
             function multiFileUpload2Component({ name, instanceId, maxFileCount, maxFileSize, allowMimeTypes, selectEvent, removeEvent }) {
                 return {
                     isModalOpen: false,
+                    isPreviewOpen: false,
+                    previewFile: null,
                     maxFileSizeBytes: 0,
                     instanceId: instanceId || null,
 
@@ -148,6 +199,16 @@
 
                     closeModal() {
                         this.isModalOpen = false;
+                    },
+
+                    openPreview(file) {
+                        this.previewFile = file || null;
+                        this.isPreviewOpen = !!this.previewFile;
+                    },
+
+                    closePreview() {
+                        this.isPreviewOpen = false;
+                        this.previewFile = null;
                     },
 
                     triggerFileInput() {
@@ -228,7 +289,7 @@
                             return;
                         }
                         if (this.isPreviewable(file)) {
-                            window.open(file.url, '_blank', 'noopener');
+                            this.openPreview(file);
                             return;
                         }
 
@@ -242,13 +303,25 @@
                     },
 
                     isPreviewable(file) {
+                        return this.isPdf(file) || this.isImage(file);
+                    },
+
+                    isPdf(file) {
                         const mime = (file.mime_type || '').toLowerCase();
-                        if (mime === 'application/pdf' || mime.includes('image')) {
+                        if (mime === 'application/pdf') {
                             return true;
                         }
-
                         const name = (file.file_name || '').toLowerCase();
-                        return name.endsWith('.pdf') || name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.bmp');
+                        return name.endsWith('.pdf');
+                    },
+
+                    isImage(file) {
+                        const mime = (file.mime_type || '').toLowerCase();
+                        if (mime.includes('image')) {
+                            return true;
+                        }
+                        const name = (file.file_name || '').toLowerCase();
+                        return name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.gif') || name.endsWith('.webp') || name.endsWith('.bmp');
                     },
 
                     iconClass(mimeType) {

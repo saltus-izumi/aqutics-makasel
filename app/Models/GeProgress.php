@@ -72,4 +72,25 @@ class GeProgress extends Model
             ->where('file_kind', GeProgressFile::FILE_KIND_STEP1);
     }
 
+    // 退去時清算書ファイル
+    public function moveOutSettlementFiles()
+    {
+        return $this->hasMany(GeProgressFile::class)
+            ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT);
+    }
+
+    // 下代見積もりファイル
+    public function costEstimateFiles()
+    {
+        return $this->hasMany(GeProgressFile::class)
+            ->where('file_kind', GeProgressFile::FILE_KIND_COST_ESTIMATE);
+    }
+
+    // 立会写真ファイル
+    public function walkthroughPhotoFiles()
+    {
+        return $this->hasMany(GeProgressFile::class)
+            ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO);
+    }
+
 }

@@ -8,15 +8,15 @@
             <tr class="tw:h-[42px]">
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">敷金預託等</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="securityDepositAmount" :border="false" wire:model.live="securityDepositAmount" />
+                    <x-form.input-number name="securityDepositAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="securityDepositAmount" />
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">日割り家賃</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="proratedRentAmount" :border="false" wire:model.live="proratedRentAmount" />
+                    <x-form.input-number name="proratedRentAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="proratedRentAmount" />
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">違約金（償却）</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="penaltyForfeitureAmount" :border="false" wire:model.live="penaltyForfeitureAmount" />
+                    <x-form.input-number name="penaltyForfeitureAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="penaltyForfeitureAmount" />
                 </td>
             </tr>
         </table>
@@ -69,11 +69,26 @@
             </div>
             <div class="tw:w-full">
                 <x-form.multi_file_upload2
-                    name="operation_files"
+                    name="step1_files"
                     instanceId="ge-progress-step1-{{ $progress->id }}"
-                    class="tw:h-[84px]"
+                    class="tw:h-[42px]"
                     maxFileCount="20"
                     maxFileSize="25MB"
+                    :allowMimeTypes="[
+                        'image/jpeg',
+                        'image/png',
+                        'image/gif',
+                        'image/webp',
+                        'image/bmp',
+                        'image/tiff',
+                        'image/heic',
+                        'image/heif',
+                        'application/pdf',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    ]"
                     :files="$step1Files"
                 />
             </div>
@@ -99,14 +114,12 @@
             const componentId = @js($componentId);
             const instanceId = @js('ge-progress-step1-' . $progress->id);
             const component = Livewire.find(componentId);
-console.log(component);
 
             if (!component) {
                 return;
             }
 
             const handleSelect = (event) => {
-console.log(event);
                 if (event?.detail?.name !== 'operation_files') {
                     return;
                 }
