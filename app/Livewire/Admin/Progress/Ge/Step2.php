@@ -6,9 +6,12 @@ use App\Models\GeProgressFile;
 use App\Models\Progress;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Step2 extends Component
 {
+    use WithFileUploads;
+
     public $progress = null;
     public $transferDueDate;
     public $subtotalAAmount;
@@ -16,12 +19,23 @@ class Step2 extends Component
     public $subtotalCAmount;
     public $otherAmount;
     public $inspectionCompletedMessage;
+
+    public $constructionCostExclTax;        // 工事負担額（税抜）
+    public $constructionCostInclTax;        // 工事負担額（税込）
+    public $settlementAmount;               // 精算額
+
+    // 退去時清算書
     public array $moveOutSettlementUploads = [];
     public array $moveOutSettlementFiles = [];
+
+    // 下代見積もり
     public array $costEstimateUploads = [];
     public array $costEstimateFiles = [];
+
+    // 立会写真
     public array $walkthroughPhotoUploads = [];
     public array $walkthroughPhotoFiles = [];
+    public string $componentId = '';
 
     protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
     protected array $geProgressMap = [
@@ -35,9 +49,10 @@ class Step2 extends Component
     protected function rules(): array
     {
         return [
-            'subtotalAAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
-            'subtotalBAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
-            'subtotalCAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
+            'subtotalAAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'subtotalBAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'subtotalCAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'otherAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
             'inspectionCompletedMessage' => ['nullable', 'string'],
         ];
     }
@@ -62,6 +77,11 @@ class Step2 extends Component
         $this->subtotalCAmount = $progress->geProgress?->subtotal_c_amount;
         $this->otherAmount = $progress->geProgress?->other_amount;
         $this->inspectionCompletedMessage = $progress->geProgress?->inspection_completed_message;
+        $this->componentId = $this->getId();
+        $this->loadMoveOutSettlementFiles();
+        $this->loadCostEstimateFiles();
+        $this->loadWalkthroughPhotoFiles();
+        $this->calcConstructionCost();
     }
 
     public function updated($propertyName, $value)
@@ -93,6 +113,174 @@ class Step2 extends Component
         $this->progress->geProgress->save();
 
         $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->calcConstructionCost();
+    }
+
+    public function saveMoveOutSettlementUploads(): void
+    {
+        $geProgress = $this->progress?->geProgress;
+        if (!$geProgress) {
+            return;
+        }
+
+        foreach ($this->moveOutSettlementUploads as $file) {
+            $original = $file->getClientOriginalName();
+            $path = $file->store("progress/ge/{$geProgress->id}");
+
+            GeProgressFile::create([
+                'ge_progress_id' => $geProgress->id,
+                'file_kind' => GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT,
+                'file_name' => $original,
+                'file_path' => $path,
+                'upload_at' => now(),
+            ]);
+        }
+
+        $this->moveOutSettlementUploads = [];
+        $this->loadMoveOutSettlementFiles();
+    }
+
+    public function removeMoveOutSettlementFile($fileId): void
+    {
+        $geProgress = $this->progress?->geProgress;
+        if (!$geProgress || !$fileId) {
+            return;
+        }
+
+        $file = GeProgressFile::query()
+            ->where('ge_progress_id', $geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT)
+            ->where('id', $fileId)
+            ->first();
+
+        if (!$file) {
+            return;
+        }
+
+        if ($file->file_path && Storage::disk('local')->exists($file->file_path)) {
+            Storage::disk('local')->delete($file->file_path);
+        }
+
+        $file->delete();
+        $this->loadMoveOutSettlementFiles();
+    }
+
+    public function saveCostEstimateUploads(): void
+    {
+        $geProgress = $this->progress?->geProgress;
+        if (!$geProgress) {
+            return;
+        }
+
+        foreach ($this->costEstimateUploads as $file) {
+            $original = $file->getClientOriginalName();
+            $path = $file->store("progress/ge/{$geProgress->id}");
+
+            GeProgressFile::create([
+                'ge_progress_id' => $geProgress->id,
+                'file_kind' => GeProgressFile::FILE_KIND_COST_ESTIMATE,
+                'file_name' => $original,
+                'file_path' => $path,
+                'upload_at' => now(),
+            ]);
+        }
+
+        // ファイルがなければ見積書受信日をNULLにする
+        if (count($this->costEstimateUploads) > 0 && !$this->progress->genpuku_mitsumori_recieved_date) {
+            $this->progress->genpuku_mitsumori_recieved_date = now();
+            $this->progress->save();
+            $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        }
+
+        $this->costEstimateUploads = [];
+        $this->loadCostEstimateFiles();
+    }
+
+    public function removeCostEstimateFile($fileId): void
+    {
+        $geProgress = $this->progress?->geProgress;
+        if (!$geProgress || !$fileId) {
+            return;
+        }
+
+        $file = GeProgressFile::query()
+            ->where('ge_progress_id', $geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_COST_ESTIMATE)
+            ->where('id', $fileId)
+            ->first();
+
+        if (!$file) {
+            return;
+        }
+
+        if ($file->file_path && Storage::disk('local')->exists($file->file_path)) {
+            Storage::disk('local')->delete($file->file_path);
+        }
+
+        $file->delete();
+
+        $fileCount = GeProgressFile::query()
+            ->where('ge_progress_id', $geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_COST_ESTIMATE)
+            ->count();
+
+        // ファイルがなければ見積書受信日をNULLにする
+        if ($fileCount == 0 && $this->progress->genpuku_mitsumori_recieved_date) {
+            $this->progress->genpuku_mitsumori_recieved_date = null;
+            $this->progress->save();
+            $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        }
+
+        $this->loadCostEstimateFiles();
+    }
+
+    public function saveWalkthroughPhotoUploads(): void
+    {
+        $geProgress = $this->progress?->geProgress;
+        if (!$geProgress) {
+            return;
+        }
+
+        foreach ($this->walkthroughPhotoUploads as $file) {
+            $original = $file->getClientOriginalName();
+            $path = $file->store("progress/ge/{$geProgress->id}");
+
+            GeProgressFile::create([
+                'ge_progress_id' => $geProgress->id,
+                'file_kind' => GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO,
+                'file_name' => $original,
+                'file_path' => $path,
+                'upload_at' => now(),
+            ]);
+        }
+
+        $this->walkthroughPhotoUploads = [];
+        $this->loadWalkthroughPhotoFiles();
+    }
+
+    public function removeWalkthroughPhotoFile($fileId): void
+    {
+        $geProgress = $this->progress?->geProgress;
+        if (!$geProgress || !$fileId) {
+            return;
+        }
+
+        $file = GeProgressFile::query()
+            ->where('ge_progress_id', $geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO)
+            ->where('id', $fileId)
+            ->first();
+
+        if (!$file) {
+            return;
+        }
+
+        if ($file->file_path && Storage::disk('local')->exists($file->file_path)) {
+            Storage::disk('local')->delete($file->file_path);
+        }
+
+        $file->delete();
+        $this->loadWalkthroughPhotoFiles();
     }
 
     public function reloadProgress($progressId = null)
@@ -108,6 +296,8 @@ class Step2 extends Component
         $this->progress = Progress::query()
             ->with('geProgress')
             ->find($this->progress->id);
+
+        $this->calcConstructionCost();
     }
 
     protected function loadMoveOutSettlementFiles(): void
@@ -193,6 +383,17 @@ class Step2 extends Component
 
         $fullPath = Storage::disk('local')->path($file->file_path);
         return mime_content_type($fullPath) ?: '';
+    }
+
+    protected function calcConstructionCost() {
+        $this->constructionCostExclTax = (int)$this->subtotalAAmount + (int)$this->subtotalBAmount + (int)$this->subtotalCAmount;
+        $this->constructionCostInclTax = floor($this->constructionCostExclTax * 1.1);
+
+        $this->settlementAmount = $this->constructionCostInclTax +
+            (int)$this->progress->geProgress?->security_deposit_amount +
+            (int)$this->progress->geProgress?->prorated_rent_amount -
+            (int)$this->progress->geProgress?->penalty_forfeiture_amount +
+            (int)$this->otherAmount;
     }
 
     public function render()

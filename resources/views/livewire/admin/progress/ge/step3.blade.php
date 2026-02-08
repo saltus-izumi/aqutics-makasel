@@ -11,11 +11,36 @@
             <div class="tw:text-[0.9rem] tw:text-[#999999]">
                 添付ファイル・画像、ＰＤＦ、Excel、Wordファイルが送信可能です。（可能ファイル数：20個／1ファイルの最大サイズ：25MB）
             </div>
-            <div class="tw:w-full tw:h-[42px] tw:bg-[#cfe2f3]"></div>
+            <div class="tw:w-full">
+                <x-form.multi_file_upload2
+                    name="other_completion_photo"
+                    title="その他完工写真"
+                    instanceId="ge-progress-other-completion-photo-{{ $progress->id }}"
+                    class="tw:h-[42px]"
+                    maxFileCount="20"
+                    maxFileSize="25MB"
+                    :allowMimeTypes="[
+                        'image/jpeg',
+                        'image/png',
+                        'image/gif',
+                        'image/webp',
+                        'image/bmp',
+                        'image/tiff',
+                        'image/heic',
+                        'image/heif',
+                        'application/pdf',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    ]"
+                    :files="$otherCompletionPhotoFiles"
+                />
+            </div>
         </div>
         <div class="tw:mt-[21px]">
             完工メッセージ<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント"></x-form.textarea>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="completionMessage"></x-form.textarea>
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
@@ -24,3 +49,51 @@
         </div>
     </div>
 </div>
+@push('scripts')
+    <script>
+        const initGeProgressStep3Uploader = () => {
+            const componentId = @js($componentId);
+            const component = Livewire.find(componentId);
+            const instanceMap = [
+                {
+                    instanceId: @js('ge-progress-other-completion-photo-' . $progress->id),
+                    uploadProperty: 'otherCompletionPhotoUploads',
+                    saveMethod: 'saveOtherCompletionPhotoUploads',
+                    removeMethod: 'removeOtherCompletionPhotoFile',
+                },
+            ];
+
+            if (!component) {
+                return;
+            }
+
+            const handleSelect = (event) => {
+                const target = instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                if (!target) {
+                    return;
+                }
+                const files = event.detail.files || [];
+                if (files.length === 0) {
+                    return;
+                }
+                component.uploadMultiple(target.uploadProperty, files, () => {
+                    component.call(target.saveMethod);
+                });
+            };
+
+            const handleRemove = (event) => {
+                const target = instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                if (!target) {
+                    return;
+                }
+                const fileId = event?.detail?.file?.id || null;
+                component.call(target.removeMethod, fileId);
+            };
+
+            window.addEventListener('multi-file-upload2:selected', handleSelect);
+            window.addEventListener('multi-file-upload2:removed', handleRemove);
+        };
+
+        document.addEventListener('livewire:initialized', initGeProgressStep3Uploader);
+    </script>
+@endpush

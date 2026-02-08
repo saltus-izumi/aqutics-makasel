@@ -52,7 +52,9 @@
                 </tr>
                 <tr class="tw:h-[42px]">
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">工事負担額（税抜）</td>
-                    <td class="tw:border tw:border-[#cccccc]"></td>
+                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
+                        {{ number_format($constructionCostExclTax) }}
+                    </td>
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">その他</td>
                     <td class="tw:border tw:border-[#cccccc]">
                         <x-form.input-number name="otherAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="otherAmount" />
@@ -60,9 +62,13 @@
                 </tr>
                 <tr class="tw:h-[42px]">
                     <td class="tw:text-[1.2rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">工事負担額（税込）</td>
-                    <td class="tw:border tw:border-[#cccccc]"></td>
+                    <td class="tw:text-right tw:pr-3 tw:text-[1.5rem] tw:font-bold tw:border tw:border-[#cccccc]">
+                        {{ number_format($constructionCostInclTax) }}
+                    </td>
                     <td class="tw:text-[1.2rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">精算額</td>
-                    <td class="tw:border tw:border-[#cccccc]"></td>
+                    <td class="tw:text-right tw:pr-3 tw:text-[1.5rem] tw:font-bold tw:border tw:border-[#cccccc]">
+                        {{ number_format($settlementAmount) }}
+                    </td>
                 </tr>
             </table>
         </div>
@@ -94,7 +100,7 @@
                                 'application/vnd.ms-excel',
                                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                 'application/msword',
-                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                             ]"
                             :files="$moveOutSettlementFiles"
                         />
@@ -103,9 +109,9 @@
                 <div class="tw:flex-1">
                     <div class="tw:w-full">
                         <x-form.multi_file_upload2
-                            name="move_out_settlement"
+                            name="cost_estimate"
                             title="下代見積もり"
-                            instanceId="ge-progress-move-out-settlement-{{ $progress->id }}"
+                            instanceId="ge-progress-cost-estimate-{{ $progress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -124,16 +130,16 @@
                                 'application/msword',
                                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                             ]"
-                            :files="$moveOutSettlementFiles"
+                            :files="$costEstimateFiles"
                         />
                     </div>
                 </div>
                 <div class="tw:flex-1">
                     <div class="tw:w-full">
                         <x-form.multi_file_upload2
-                            name="move_out_settlement"
+                            name="walkthrough_photo"
                             title="立会写真"
-                            instanceId="ge-progress-move-out-settlement-{{ $progress->id }}"
+                            instanceId="ge-progress-walkthrough-photo-{{ $progress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -152,7 +158,7 @@
                                 'application/msword',
                                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                             ]"
-                            :files="$moveOutSettlementFiles"
+                            :files="$walkthroughPhotoFiles"
                         />
                     </div>
                 </div>
@@ -169,3 +175,64 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+    <script>
+        const initGeProgressStep2Uploader = () => {
+            const componentId = @js($componentId);
+            const component = Livewire.find(componentId);
+            const instanceMap = [
+                {
+                    instanceId: @js('ge-progress-move-out-settlement-' . $progress->id),
+                    uploadProperty: 'moveOutSettlementUploads',
+                    saveMethod: 'saveMoveOutSettlementUploads',
+                    removeMethod: 'removeMoveOutSettlementFile',
+                },
+                {
+                    instanceId: @js('ge-progress-cost-estimate-' . $progress->id),
+                    uploadProperty: 'costEstimateUploads',
+                    saveMethod: 'saveCostEstimateUploads',
+                    removeMethod: 'removeCostEstimateFile',
+                },
+                {
+                    instanceId: @js('ge-progress-walkthrough-photo-' . $progress->id),
+                    uploadProperty: 'walkthroughPhotoUploads',
+                    saveMethod: 'saveWalkthroughPhotoUploads',
+                    removeMethod: 'removeWalkthroughPhotoFile',
+                },
+            ];
+
+            if (!component) {
+                return;
+            }
+
+            const handleSelect = (event) => {
+                const target = instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                if (!target) {
+                    return;
+                }
+                const files = event.detail.files || [];
+                if (files.length === 0) {
+                    return;
+                }
+                component.uploadMultiple(target.uploadProperty, files, () => {
+                    component.call(target.saveMethod);
+                });
+            };
+
+            const handleRemove = (event) => {
+                const target = instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                if (!target) {
+                    return;
+                }
+                const fileId = event?.detail?.file?.id || null;
+                component.call(target.removeMethod, fileId);
+            };
+
+            window.addEventListener('multi-file-upload2:selected', handleSelect);
+            window.addEventListener('multi-file-upload2:removed', handleRemove);
+        };
+
+        document.addEventListener('livewire:initialized', initGeProgressStep2Uploader);
+    </script>
+@endpush

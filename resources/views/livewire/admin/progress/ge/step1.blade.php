@@ -42,6 +42,7 @@
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">退去報告</td>
                 <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
+                    {{ $progress->geProgress?->move_out_report_date?->format('Y/m/d') }}
                 </td>
             </tr>
             <tr class="tw:h-[42px]">
@@ -99,10 +100,24 @@
         </div>
         <div class="tw:h-[42px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
-                <x-form.checkbox label_class="tw:!text-[1.1rem]">立会パッケージ、退去時清算書格納の確認</x-form.checkbox>
+                <x-form.checkbox
+                    name="step1Confirmed"
+                    :checked="$step1Confirmed"
+                    label_class="tw:!text-[1.1rem]"
+                    wire:model.live="step1Confirmed"
+                >
+                    立会パッケージ、退去時清算書格納の確認
+                </x-form.checkbox>
             </div>
             <div>
-                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">立会依頼送信</x-button.blue>
+                <x-button.blue
+                    class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                    :disabled="!$step1Confirmed"
+                    type="button"
+                    wire:click="updateMoveOutReportDate"
+                >
+                    立会依頼送信
+                </x-button.blue>
             </div>
         </div>
     </div>

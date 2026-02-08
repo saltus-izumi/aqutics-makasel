@@ -13,7 +13,7 @@
                         <livewire:admin.progress.ge.step2 :progress="$progress" />
                     </div>
                     <div class="tw:mt-[21px] tw:pb-[21px]">
-                        <livewire:admin.progress.ge.step3 />
+                        <livewire:admin.progress.ge.step3 :progress="$progress" />
                     </div>
                 </div>
             </div>

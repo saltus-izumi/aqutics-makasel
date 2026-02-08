@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Progress\Ge;
 
 use App\Models\GeProgressFile;
+use App\Models\Progress;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -17,22 +18,27 @@ class Step1 extends Component
     public $proratedRentAmount = null;
     public $penaltyForfeitureAmount = null;
     public $inspectionRequestMessage = null;
+    public $step1Confirmed = false;
     public array $step1Uploads = [];
     public array $step1Files = [];
     public string $componentId = '';
+
+    protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
     protected array $geProgressMap = [
         'securityDepositAmount' => 'security_deposit_amount',
         'proratedRentAmount' => 'prorated_rent_amount',
         'penaltyForfeitureAmount' => 'penalty_forfeiture_amount',
         'inspectionRequestMessage' => 'inspection_request_message',
+        'step1Confirmed' => 'step1_confirmed',
     ];
     protected function rules(): array
     {
         return [
-            'securityDepositAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
-            'proratedRentAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
-            'penaltyForfeitureAmount' => ['nullable', 'regex:/^[0-9,]+$/'],
+            'securityDepositAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'proratedRentAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'penaltyForfeitureAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
             'inspectionRequestMessage' => ['nullable', 'string'],
+            'step1Confirmed' => ['boolean'],
         ];
     }
 
@@ -52,6 +58,7 @@ class Step1 extends Component
         $this->proratedRentAmount = $progress->geProgress?->prorated_rent_amount;
         $this->penaltyForfeitureAmount = $progress->geProgress?->penalty_forfeiture_amount;
         $this->inspectionRequestMessage = $progress->geProgress?->inspection_request_message;
+        $this->step1Confirmed = $progress->geProgress?->step1_confirmed;
         $this->componentId = $this->getId();
         $this->loadStep1Files();
     }
@@ -69,21 +76,38 @@ class Step1 extends Component
 
         $this->validateOnly($propertyName);
 
-        switch($propertyName) {
-            case 'securityDepositAmount':
-            case 'proratedRentAmount':
-            case 'penaltyForfeitureAmount':
-                $value = str_replace(',', '', (string) $value);
-                break;
-        }
+        if ($propertyName === 'step1Confirmed') {
+            $value = (bool) $value;
+        } else {
+            switch($propertyName) {
+                case 'securityDepositAmount':
+                case 'proratedRentAmount':
+                case 'penaltyForfeitureAmount':
+                    $value = str_replace(',', '', (string) $value);
+                    break;
+            }
 
-        $value = trim($value) ? trim($value) : null;
+            if (is_string($value)) {
+                $value = trim($value) !== '' ? trim($value) : null;
+            }
+        }
 
         $column = $this->geProgressMap[$propertyName];
         $this->progress->geProgress->{$column} = $value;
         $this->progress->geProgress->save();
 
         $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+    }
+
+    public function updateMoveOutReportDate(): void
+    {
+        $geProgress = $this->progress?->geProgress;
+        if (!$geProgress || $geProgress->move_out_report_date) {
+            return;
+        }
+
+        $geProgress->move_out_report_date = now();
+        $geProgress->save();
     }
 
     public function saveStep1Uploads(): void
@@ -169,6 +193,22 @@ class Step1 extends Component
         $fullPath = Storage::disk('local')->path($file->file_path);
         return mime_content_type($fullPath) ?: '';
     }
+
+    public function reloadProgress($progressId = null)
+    {
+        if (!$this->progress) {
+            return;
+        }
+
+        if ($progressId !== null && (int) $progressId !== (int) $this->progress->id) {
+            return;
+        }
+
+        $this->progress = Progress::query()
+            ->with('geProgress')
+            ->find($this->progress->id);
+    }
+
 
     public function render()
     {

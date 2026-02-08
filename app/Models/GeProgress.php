@@ -50,6 +50,19 @@ class GeProgress extends Model
         'id'
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'move_out_report_date' => 'date',
+            'transfer_due_date' => 'date',
+        ];
+    }
+
     public function progress()
     {
         return $this->belongsTo(Progress::class);
@@ -91,6 +104,13 @@ class GeProgress extends Model
     {
         return $this->hasMany(GeProgressFile::class)
             ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO);
+    }
+
+    // その他完工写真
+    public function otherCompletionPhotoFiles()
+    {
+        return $this->hasMany(GeProgressFile::class)
+            ->where('file_kind', GeProgressFile::FILE_KIND_OTHER_COMPLETION_PHOTO);
     }
 
 }

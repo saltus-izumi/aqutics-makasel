@@ -33,20 +33,35 @@
             document.addEventListener('alpine:init', () => {
                 Alpine.data('numberInput', () => ({
                     toHalfWidthDigits(value) {
-                        return String(value ?? '').replace(/[０-９]/g, (ch) =>
-                            String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
-                        );
+                        return String(value ?? '')
+                            .replace(/[０-９]/g, (ch) =>
+                                String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
+                            )
+                            .replace(/[＋]/g, '+')
+                            .replace(/[－−]/g, '-');
+                    },
+                    extractSignAndDigits(value) {
+                        const cleaned = this.toHalfWidthDigits(value).replace(/[^\d+-]/g, '');
+                        if (cleaned === '') {
+                            return { sign: '', digits: '' };
+                        }
+                        const sign = cleaned.startsWith('-') ? '-' : cleaned.startsWith('+') ? '+' : '';
+                        const digits = cleaned.replace(/[+-]/g, '');
+                        return { sign, digits };
                     },
                     normalize(value) {
-                        const halfWidth = this.toHalfWidthDigits(value);
-                        return halfWidth.replace(/[^\d]/g, '');
+                        const { sign, digits } = this.extractSignAndDigits(value);
+                        if (digits === '') {
+                            return sign;
+                        }
+                        return sign + digits;
                     },
                     formatComma(value) {
-                        const digits = this.normalize(value);
+                        const { sign, digits } = this.extractSignAndDigits(value);
                         if (digits === '') {
-                            return '';
+                            return sign;
                         }
-                        return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        return sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                     },
                     onInput(event) {
                         event.target.value = this.normalize(event.target.value);
