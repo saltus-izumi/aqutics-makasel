@@ -1,4 +1,9 @@
-<div class="tw:w-[832px]">
+<div
+    class="tw:w-[832px]"
+    x-data="geProgressStep1"
+    @multi-file-upload2:selected.window="handleSelect($event)"
+    @multi-file-upload2:removed.window="handleRemove($event)"
+>
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP１（退去立会依頼）
     </div>
@@ -125,46 +130,35 @@
 
 @push('scripts')
     <script>
-        const initGeProgressStep1Uploader = () => {
-            const componentId = @js($componentId);
-            const instanceId = @js('ge-progress-step1-' . $progress->id);
-            const component = Livewire.find(componentId);
-
-            if (!component) {
-                return;
-            }
-
-            const handleSelect = (event) => {
-                if (event?.detail?.name !== 'operation_files') {
-                    return;
-                }
-                if (event?.detail?.instanceId !== instanceId) {
-                    return;
-                }
-                const files = event.detail.files || [];
-                if (files.length === 0) {
-                    return;
-                }
-                component.uploadMultiple('step1Uploads', files, () => {
-                    component.call('saveStep1Uploads');
-                });
-            };
-
-            const handleRemove = (event) => {
-                if (event?.detail?.name !== 'operation_files') {
-                    return;
-                }
-                if (event?.detail?.instanceId !== instanceId) {
-                    return;
-                }
-                const fileId = event?.detail?.file?.id || null;
-                component.call('removeStep1File', fileId);
-            };
-
-            window.addEventListener('multi-file-upload2:selected', handleSelect);
-            window.addEventListener('multi-file-upload2:removed', handleRemove);
-        };
-
-        document.addEventListener('livewire:initialized', initGeProgressStep1Uploader);
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('geProgressStep1', () => ({
+                instanceId: @js('ge-progress-step1-' . $progress->id),
+                handleSelect(event) {
+                    if (event?.detail?.name !== 'operation_files') {
+                        return;
+                    }
+                    if (event?.detail?.instanceId !== this.instanceId) {
+                        return;
+                    }
+                    const files = event.detail?.files || [];
+                    if (files.length === 0) {
+                        return;
+                    }
+                    this.$wire.uploadMultiple('step1Uploads', files, () => {
+                        this.$wire.call('saveStep1Uploads');
+                    });
+                },
+                handleRemove(event) {
+                    if (event?.detail?.name !== 'operation_files') {
+                        return;
+                    }
+                    if (event?.detail?.instanceId !== this.instanceId) {
+                        return;
+                    }
+                    const fileId = event?.detail?.file?.id || null;
+                    this.$wire.call('removeStep1File', fileId);
+                },
+            }));
+        });
     </script>
 @endpush

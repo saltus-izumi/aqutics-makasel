@@ -1,4 +1,9 @@
-<div class="tw:w-[806px]">
+<div
+    class="tw:w-[806px]"
+    x-data="geProgressStep2"
+    @multi-file-upload2:selected.window="handleSelect($event)"
+    @multi-file-upload2:removed.window="handleRemove($event)"
+>
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP２（退去立会報告）
     </div>
@@ -178,61 +183,50 @@
 
 @push('scripts')
     <script>
-        const initGeProgressStep2Uploader = () => {
-            const componentId = @js($componentId);
-            const component = Livewire.find(componentId);
-            const instanceMap = [
-                {
-                    instanceId: @js('ge-progress-move-out-settlement-' . $progress->id),
-                    uploadProperty: 'moveOutSettlementUploads',
-                    saveMethod: 'saveMoveOutSettlementUploads',
-                    removeMethod: 'removeMoveOutSettlementFile',
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('geProgressStep2', () => ({
+                instanceMap: [
+                    {
+                        instanceId: @js('ge-progress-move-out-settlement-' . $progress->id),
+                        uploadProperty: 'moveOutSettlementUploads',
+                        saveMethod: 'saveMoveOutSettlementUploads',
+                        removeMethod: 'removeMoveOutSettlementFile',
+                    },
+                    {
+                        instanceId: @js('ge-progress-cost-estimate-' . $progress->id),
+                        uploadProperty: 'costEstimateUploads',
+                        saveMethod: 'saveCostEstimateUploads',
+                        removeMethod: 'removeCostEstimateFile',
+                    },
+                    {
+                        instanceId: @js('ge-progress-walkthrough-photo-' . $progress->id),
+                        uploadProperty: 'walkthroughPhotoUploads',
+                        saveMethod: 'saveWalkthroughPhotoUploads',
+                        removeMethod: 'removeWalkthroughPhotoFile',
+                    },
+                ],
+                handleSelect(event) {
+                    const target = this.instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                    if (!target) {
+                        return;
+                    }
+                    const files = event.detail?.files || [];
+                    if (files.length === 0) {
+                        return;
+                    }
+                    this.$wire.uploadMultiple(target.uploadProperty, files, () => {
+                        this.$wire.call(target.saveMethod);
+                    });
                 },
-                {
-                    instanceId: @js('ge-progress-cost-estimate-' . $progress->id),
-                    uploadProperty: 'costEstimateUploads',
-                    saveMethod: 'saveCostEstimateUploads',
-                    removeMethod: 'removeCostEstimateFile',
+                handleRemove(event) {
+                    const target = this.instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                    if (!target) {
+                        return;
+                    }
+                    const fileId = event?.detail?.file?.id || null;
+                    this.$wire.call(target.removeMethod, fileId);
                 },
-                {
-                    instanceId: @js('ge-progress-walkthrough-photo-' . $progress->id),
-                    uploadProperty: 'walkthroughPhotoUploads',
-                    saveMethod: 'saveWalkthroughPhotoUploads',
-                    removeMethod: 'removeWalkthroughPhotoFile',
-                },
-            ];
-
-            if (!component) {
-                return;
-            }
-
-            const handleSelect = (event) => {
-                const target = instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
-                if (!target) {
-                    return;
-                }
-                const files = event.detail.files || [];
-                if (files.length === 0) {
-                    return;
-                }
-                component.uploadMultiple(target.uploadProperty, files, () => {
-                    component.call(target.saveMethod);
-                });
-            };
-
-            const handleRemove = (event) => {
-                const target = instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
-                if (!target) {
-                    return;
-                }
-                const fileId = event?.detail?.file?.id || null;
-                component.call(target.removeMethod, fileId);
-            };
-
-            window.addEventListener('multi-file-upload2:selected', handleSelect);
-            window.addEventListener('multi-file-upload2:removed', handleRemove);
-        };
-
-        document.addEventListener('livewire:initialized', initGeProgressStep2Uploader);
+            }));
+        });
     </script>
 @endpush
