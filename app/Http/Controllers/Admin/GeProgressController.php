@@ -44,6 +44,33 @@ class GeProgressController
             ));
     }
 
+    public function ownerSettlement(Request $request, $progressId)
+    {
+        $progress = Progress::query()
+            ->with([
+                'geProgress',
+                'geProgress.step1Files',
+                'geProgress.executorUser',
+                'genpukuResponsible',
+                'investment',
+                'investment.restorationCompany',
+                'investment.landlord.owner',
+                'investmentRoom',
+                'investmentRoomRedidentHistory',
+                'investmentEmptyRoom',
+            ])
+            ->find($progressId);
+
+        if (!$progress) {
+            abort(404);
+        }
+
+        return view('admin.progress.ge.owner-settlement')
+            ->with(compact(
+                'progress',
+            ));
+    }
+
     public function preview(Request $request, $geProgressFileId)
     {
         $file = GeProgressFile::query()->find($geProgressFileId);

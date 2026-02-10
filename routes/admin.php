@@ -29,6 +29,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/', [AdminGeProgress::class, 'index'])->name('index');
                 Route::get('/files/{geProgressFileId}', [AdminGeProgress::class, 'preview'])->name('preview');
                 Route::get('/{progressId}', [AdminGeProgress::class, 'detail'])->name('detail');
+                Route::get('/{progressId}/owner-settlement', [AdminGeProgress::class, 'ownerSettlement'])->name('owner-settlement');
             });
         });
 

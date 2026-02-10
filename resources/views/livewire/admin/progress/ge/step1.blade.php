@@ -1,5 +1,5 @@
 <div class="tw:w-[832px]">
-    <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3]">
+    <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP１（退去立会依頼）
     </div>
     <div class="tw:w-full tw:px-[26px] tw:pt-[26px]">

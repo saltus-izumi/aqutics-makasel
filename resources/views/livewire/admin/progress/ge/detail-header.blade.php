@@ -11,12 +11,24 @@
             {{ $progress->investment->investment_name }}　{{ $progress->investmentRoom->investment_room_number }}（{{ $progress->investmentRoomResidentHisotry?->contractor_name }}さま）
         </div>
         <div class="tw:h-[42px] tw:flex">
-            <div class="tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]">
-                退去精算
-            </div>
-            <div class="tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">
-                貸主精算
-            </div>
+            <a href="{{ route('admin.progress.ge.detail', ['progressId' => $progress->id]) }}">
+                <div @class([
+                    'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
+                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'move-out-settlement'),
+                    'tw:bg-[#efefef]' => ($mode == 'owner-settlement'),
+                ])>
+                    退去精算
+                </div>
+            </a>
+            <a href="{{ route('admin.progress.ge.owner-settlement', ['progressId' => $progress->id]) }}">
+                <div @class([
+                    'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
+                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'owner-settlement'),
+                    'tw:bg-[#efefef]' => ($mode == 'move-out-settlement'),
+                ])>
+                    貸主精算
+                </div>
+            </a>
         </div>
     </div>
     <div>

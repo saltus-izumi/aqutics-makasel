@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Progress\Ge;
 
 use App\Models\GeProgressFile;
 use App\Models\Progress;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -49,6 +50,7 @@ class Step2 extends Component
     protected function rules(): array
     {
         return [
+            'transferDueDate' => ['nullable', 'date'],
             'subtotalAAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
             'subtotalBAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
             'subtotalCAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
@@ -61,8 +63,8 @@ class Step2 extends Component
     {
         return [
             'subtotalAAmount.regex' => '小計Aは半角数字で入力してください。',
-            'subtotalBAmount.regex' => '小計は半角数字で入力してください。',
-            'subtotalCAmount.regex' => '小計Aは半角数字で入力してください。',
+            'subtotalBAmount.regex' => '小計Bは半角数字で入力してください。',
+            'subtotalCAmount.regex' => '小計Cは半角数字で入力してください。',
             'otherAmount.regex' => 'その他は半角数字で入力してください。',
         ];
     }
@@ -71,7 +73,9 @@ class Step2 extends Component
     public function mount($progress)
     {
         $this->progress = $progress;
-        $this->transferDueDate = $progress->geProgress?->transfer_due_date;
+        $this->transferDueDate = $progress->geProgress?->transfer_due_date?->format('Y-m-d');
+Log::debug($this->transferDueDate);
+
         $this->subtotalAAmount = $progress->geProgress?->subtotal_a_amount;
         $this->subtotalBAmount = $progress->geProgress?->subtotal_b_amount;
         $this->subtotalCAmount = $progress->geProgress?->subtotal_c_amount;

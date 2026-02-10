@@ -39,16 +39,6 @@
     data-existing-count="{{ $existingFiles->count() }}"
     data-instance-id="{{ $instanceId ?? $attributes->get('id') ?? $name }}"
 >
-    <div class="">
-        <button
-            type="button"
-            class="tw:text-[11pt] tw:text-blue-600 disabled:tw:text-gray-400 disabled:tw:no-underline"
-            @click="openModal"
-            @if($existingFiles->count() === 0) disabled @endif
-        >
-            ファイル数: {{ $existingFiles->count() }}件
-        </button>
-    </div>
 
     <div
         @click="triggerFileInput"
@@ -56,7 +46,7 @@
         @dragover.prevent
         @dragenter.prevent
         @class([
-            'tw:bg-[#cfe2f3] tw:border tw:border-gray-300 tw:mb-[5px] tw:text-[##666666] tw:cursor-pointer tw:flex tw:items-center tw:justify-center',
+            'tw:bg-[#cfe2f3] tw:border tw:border-gray-300 tw:text-[##666666] tw:cursor-pointer tw:flex tw:items-center tw:justify-center',
             $attributes->get('class'),
         ])
     >
@@ -64,6 +54,16 @@
             <div>{{ $title }}</div>
             <i class="far fa-cloud-upload"></i>
         </div>
+    </div>
+    <div class="">
+        <button
+            type="button"
+            class="tw:text-blue-600 disabled:tw:text-gray-400 disabled:tw:no-underline"
+            @click="openModal"
+            @if($existingFiles->count() === 0) disabled @endif
+        >
+            ファイル数: {{ $existingFiles->count() }}件
+        </button>
     </div>
 
     <input

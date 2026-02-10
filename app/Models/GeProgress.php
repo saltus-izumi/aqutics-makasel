@@ -59,7 +59,7 @@ class GeProgress extends Model
     {
         return [
             'move_out_report_date' => 'date',
-            'transfer_due_date' => 'date',
+            'transfer_due_date' => 'date:Y/m/d',
         ];
     }
 

@@ -8,6 +8,7 @@ class DetailHeader extends Component
 {
     public $progress = null;
     public array $averageLt = [];
+    public $mode = 'move-out-settlement';
 
     public function mount()
     {
