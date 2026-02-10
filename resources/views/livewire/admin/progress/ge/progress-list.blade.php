@@ -376,8 +376,52 @@
                         </div>
                     </td>
                     <td class="tw:text-center">
-                        <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center">
-                            <x-admin.progress.date :progress="$progress" field="genpuku_mitsumori_recieved_date" />
+                        @php
+                            $costEstimateFileList = collect($progress?->geProgress?->costEstimateFiles ?? [])
+                                ->filter(fn($file) => !empty($file?->id))
+                                ->mapWithKeys(fn($file) => [route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]) => $file->file_name ?? ''])
+                                ->all();
+                            $costEstimateFileCount = count($costEstimateFileList);
+                        @endphp
+                        <div class="tw:flex tw:flex-col tw:items-center tw:gap-[4px]" x-data="{ fileListOpen: false }">
+                            <div
+                                class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
+                                @click="if ({{ $costEstimateFileCount }} > 0) { fileListOpen = true }"
+                            >
+                                <x-admin.progress.date :progress="$progress" field="genpuku_mitsumori_recieved_date" />
+                            </div>
+                            <template x-teleport="body">
+                                <div
+                                    x-cloak
+                                    x-show="fileListOpen"
+                                    x-transition.opacity
+                                    class="tw:fixed tw:inset-0 tw:z-[300] tw:flex tw:items-center tw:justify-center tw:bg-black/40 tw:px-[16px]"
+                                    role="dialog"
+                                    aria-modal="true"
+                                    @click.self="fileListOpen = false"
+                                >
+                                    <div
+                                        x-show="fileListOpen"
+                                        x-transition
+                                        class="tw:w-full tw:max-w-[640px] tw:max-h-[80vh] tw:overflow-y-auto tw:rounded-[8px] tw:bg-white tw:shadow-lg"
+                                    >
+                                        <div class="tw:flex tw:items-center tw:justify-between tw:border-b tw:border-b-gray-200 tw:px-[16px] tw:py-[12px]">
+                                            <div class="tw:text-[1.2rem] tw:font-bold">ファイル一覧</div>
+                                            <button
+                                                type="button"
+                                                class="tw:text-[1.4rem] tw:text-gray-500"
+                                                @click="fileListOpen = false"
+                                                aria-label="閉じる"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                        <div class="tw:px-[16px] tw:py-[12px]">
+                                            <x-file-list :files="$costEstimateFileList" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </td>
                     <td class="tw:text-center">

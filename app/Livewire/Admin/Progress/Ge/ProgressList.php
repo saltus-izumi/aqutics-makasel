@@ -38,10 +38,10 @@ class ProgressList extends Component
 
         // フィルター初期値
         $this->filters = $this->normalizeFilters([
-            'ge_complete_date' => [
-                'value' => '',
-                'blank' => 'blank',
-            ],
+            // 'ge_complete_date' => [
+            //     'value' => '',
+            //     'blank' => 'blank',
+            // ],
         ]);
 
         $this->refreshGeProgresses();
@@ -55,6 +55,8 @@ class ProgressList extends Component
     protected function refreshGeProgresses() {
         $query = Progress::query()
             ->with([
+                'GeProgress',
+                'GeProgress.costEstimateFiles',
                 'investment',
                 'investment.landlord.owner',
                 'investmentRoom',
