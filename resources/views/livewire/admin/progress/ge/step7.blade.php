@@ -5,9 +5,9 @@
     <div class="tw:w-full tw:mt-[42px] tw:px-[26px]">
         <div class="tw:w-full">
             <x-form.multi_file_upload2
-                name="other_completion_photo"
+                name="purchase_order"
                 title="発注書"
-                instanceId="ge-progress-other-completion-photo-{{ $progress->id }}"
+                instanceId="ge-progress-purchase-order-{{ $progress->id }}"
                 class="tw:h-[42px]"
                 maxFileCount="20"
                 maxFileSize="25MB"
@@ -26,12 +26,12 @@
                     'application/msword',
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 ]"
-                :files="$otherCompletionPhotoFiles"
+                :files="$purchaseOrderFiles"
             />
         </div>
         <div class="tw:mt-[21px]">
             実行担当 ⇒ 原復会社<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="completionMessage"></x-form.textarea>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="restorationCompanyMessage"></x-form.textarea>
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
@@ -42,15 +42,15 @@
 </div>
 @push('scripts')
     <script>
-        const initGeProgressStep3Uploader = () => {
+        const initGeProgressStep7Uploader = () => {
             const componentId = @js($componentId);
             const component = Livewire.find(componentId);
             const instanceMap = [
                 {
-                    instanceId: @js('ge-progress-other-completion-photo-' . $progress->id),
-                    uploadProperty: 'otherCompletionPhotoUploads',
-                    saveMethod: 'saveOtherCompletionPhotoUploads',
-                    removeMethod: 'removeOtherCompletionPhotoFile',
+                    instanceId: @js('ge-progress-purchase-order-' . $progress->id),
+                    uploadProperty: 'purchaseOrderUploads',
+                    saveMethod: 'savePurchaseOrderUploads',
+                    removeMethod: 'removePurchaseOrderFile',
                 },
             ];
 
@@ -85,6 +85,6 @@
             window.addEventListener('multi-file-upload2:removed', handleRemove);
         };
 
-        document.addEventListener('livewire:initialized', initGeProgressStep3Uploader);
+        document.addEventListener('livewire:initialized', initGeProgressStep7Uploader);
     </script>
 @endpush

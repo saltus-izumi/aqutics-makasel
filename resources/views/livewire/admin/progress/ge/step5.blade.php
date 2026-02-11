@@ -9,7 +9,7 @@
                     適正工事(負担)
                 </div>
                 <div class="tw:w-[234px] tw:h-[42px] tw:border tw:border-[#cccccc] tw:border-l-0 tw:p-[1px]">
-                    <x-form.select class="tw:!w-full tw:h-full" />
+                    <x-form.select name="is_proper_work_burden" :options="App\Models\GeProgress::IS_PROPER_WORK_BURDEN" empty=" " class="tw:!w-full tw:h-full tw:text-[1.2rem]" wire:model.live="isProperWorkBurden" />
                 </div>
             </div>
             <div class="tw:flex-1 tw:flex">
@@ -17,17 +17,17 @@
                     適正価格
                 </div>
                 <div class="tw:w-[234px] tw:h-[42px] tw:border tw:border-[#cccccc] tw:border-l-0 tw:p-[1px]">
-                    <x-form.select class="tw:!w-full tw:h-full" />
+                    <x-form.select name="is_proper_price" :options="App\Models\GeProgress::IS_PROPER_PRICE" empty=" " class="tw:!w-full tw:h-full tw:text-[1.2rem]" wire:model.live="isProperPrice" />
                 </div>
             </div>
         </div>
         <div class="tw:mt-[21px]">
             実行担当へ修正指示<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="completionMessage"></x-form.textarea>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="correctionInstructionMessage"></x-form.textarea>
         </div>
         <div class="tw:mt-[21px]">
             見積書備考入力内容<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="completionMessage"></x-form.textarea>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="estimateNoteMessage"></x-form.textarea>
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
