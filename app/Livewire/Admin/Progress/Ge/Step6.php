@@ -16,12 +16,6 @@ class Step6 extends Component
 
     public string $componentId = '';
 
-    protected function messages(): array
-    {
-        return [
-        ];
-    }
-
     public function mount($progress)
     {
         $this->progress = $progress;
