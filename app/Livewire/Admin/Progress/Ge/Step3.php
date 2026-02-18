@@ -15,8 +15,8 @@ class Step3 extends Component
     public $progress = null;
     public $completionMessage;
 
-    public array $otherCompletionPhotoUploads = [];
-    public array $otherCompletionPhotoFiles = [];
+    public array $completionPhotoUploads = [];
+    public array $completionPhotoFiles = [];
     public string $componentId = '';
 
     protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
@@ -41,7 +41,7 @@ class Step3 extends Component
         $this->progress = $progress;
         $this->completionMessage = $progress->geProgress?->completion_message;
         $this->componentId = $this->getId();
-        $this->loadOtherCompletionPhotoFiles();
+        $this->loadCompletionPhotoFiles();
     }
 
     public function updated($propertyName, $value)
@@ -66,31 +66,31 @@ class Step3 extends Component
         $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
     }
 
-    public function saveOtherCompletionPhotoUploads(): void
+    public function saveCompletionPhotoUploads(): void
     {
         $geProgress = $this->progress?->geProgress;
         if (!$geProgress) {
             return;
         }
 
-        foreach ($this->otherCompletionPhotoUploads as $file) {
+        foreach ($this->completionPhotoUploads as $file) {
             $original = $file->getClientOriginalName();
             $path = $file->store("progress/ge/{$geProgress->id}");
 
             GeProgressFile::create([
                 'ge_progress_id' => $geProgress->id,
-                'file_kind' => GeProgressFile::FILE_KIND_OTHER_COMPLETION_PHOTO,
+                'file_kind' => GeProgressFile::FILE_KIND_COMPLETION_PHOTO,
                 'file_name' => $original,
                 'file_path' => $path,
                 'upload_at' => now(),
             ]);
         }
 
-        $this->otherCompletionPhotoUploads = [];
-        $this->loadOtherCompletionPhotoFiles();
+        $this->completionPhotoUploads = [];
+        $this->loadCompletionPhotoFiles();
     }
 
-    public function removeOtherCompletionPhotoFile($fileId): void
+    public function removeCompletionPhotoFile($fileId): void
     {
         $geProgress = $this->progress?->geProgress;
         if (!$geProgress || !$fileId) {
@@ -99,7 +99,7 @@ class Step3 extends Component
 
         $file = GeProgressFile::query()
             ->where('ge_progress_id', $geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_OTHER_COMPLETION_PHOTO)
+            ->where('file_kind', GeProgressFile::FILE_KIND_COMPLETION_PHOTO)
             ->where('id', $fileId)
             ->first();
 
@@ -112,7 +112,7 @@ class Step3 extends Component
         }
 
         $file->delete();
-        $this->loadOtherCompletionPhotoFiles();
+        $this->loadCompletionPhotoFiles();
     }
 
     public function reloadProgress($progressId = null)
@@ -130,21 +130,21 @@ class Step3 extends Component
             ->find($this->progress->id);
     }
 
-    protected function loadOtherCompletionPhotoFiles(): void
+    protected function loadCompletionPhotoFiles(): void
     {
         $geProgress = $this->progress?->geProgress;
         if (!$geProgress) {
-            $this->otherCompletionPhotoFiles = [];
+            $this->completionPhotoFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
             ->where('ge_progress_id', $geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_OTHER_COMPLETION_PHOTO)
+            ->where('file_kind', GeProgressFile::FILE_KIND_COMPLETION_PHOTO)
             ->orderBy('id')
             ->get();
 
-        $this->otherCompletionPhotoFiles = $files->map(function (GeProgressFile $file) {
+        $this->completionPhotoFiles = $files->map(function (GeProgressFile $file) {
             return [
                 'id' => $file->id,
                 'file_name' => $file->file_name ?? '',

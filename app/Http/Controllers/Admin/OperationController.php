@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 use App\Http\Requests\Admin\Operation\StoreRequest;
+use App\Models\GeProgress;
 use App\Models\Operation;
 use App\Models\OperationFile;
 use App\Models\OperationKind;
@@ -67,12 +68,14 @@ class OperationController
     {
         $teProgressId = null;
         $geProgressId = null;
+        $geProgressStep = null;
 
         return view('admin.operation.create')
             ->with(compact(
                 'operationId',
                 'teProgressId',
                 'geProgressId',
+                'geProgressStep',
             ));
     }
 
@@ -80,16 +83,18 @@ class OperationController
     {
         $operationId = null;
         $geProgressId = null;
+        $geProgressStep = null;
 
         return view('admin.operation.create')
             ->with(compact(
                 'operationId',
                 'teProgressId',
                 'geProgressId',
+                'geProgressStep',
             ));
     }
 
-    public function createGe($geProgressId = null)
+    public function createGe($geProgressId = null, $geProgressStep = null)
     {
         $operationId = null;
         $teProgressId = null;
@@ -99,19 +104,32 @@ class OperationController
                 'operationId',
                 'teProgressId',
                 'geProgressId',
+                'geProgressStep',
             ));
     }
 
     public function store(StoreRequest $request)
     {
-        $teProgress = TeProgress::findOrNew($request->input('te_progress_id'));
+        DB::transaction(function () use ($request) {
+            $teProgress = TeProgress::find($request->input('te_progress_id'));
 
-        DB::transaction(function () use ($request, $teProgress) {
+            $geProgress = GeProgress::query()
+                ->with(['progress'])
+                ->find($request->input('ge_progress_id'));
+
+            $userId = Auth::id();
+            if ($teProgress && $teProgress->responsible_id ) {
+                $userId = $teProgress->responsible_id;
+            }
+            if ($geProgress && $geProgress->progress?->genpuku_responsible_id ) {
+                $userId = $geProgress->progress?->genpuku_responsible_id;
+            }
+
             $thread = Thread::findOrNew($request->input('thread_id'));
             if (!$thread->exists) {
                 $thread->fill([
                     'thread_type' => Thread::THREAD_TYPE_OPERATION,
-                    'user_id' => $teProgress->exists ? $teProgress->responsible_id : Auth::id(),
+                    'user_id' => $userId,
                     'owner_id' => $request->input('owner_id'),
                     'investment_id' => $request->input('investment_id'),
                     'investment_room_id' => $request->input('investment_room_id'),
@@ -151,12 +169,13 @@ class OperationController
                     'thread_message_id' => $threadMessage->id,
                     'operation_kind_id' => $request->input('operation_kind_id'),
                     'operation_template_id' => $request->input('operation_template_id'),
-                    'assigned_user_id' => $teProgress->exists ? $teProgress->responsible_id : Auth::id(),
+                    'assigned_user_id' => $userId,
                     'created_user_id' => Auth::id(),
                     'owner_id' => $request->input('owner_id'),
                     'investment_id' => $request->input('investment_id'),
                     'investment_room_id' => $request->input('investment_room_id'),
-                    'te_progress_id' => $teProgress->exists ? $teProgress->id : null,
+                    'te_progress_id' => $teProgress ? $teProgress->id : null,
+                    'ge_progress_id' => $geProgress ? $geProgress->id : null,
                 ]);
             } else {
                 $operation->operation_kind_id = $request->input('operation_kind_id');
@@ -207,11 +226,19 @@ class OperationController
             // 上代見積もり
             if ($request->input('retail_estimate_files')) {
                 foreach($request->input('retail_estimate_files') as $retailEstimateFileId) {
-                    OperationFile::create([
-                        'operation_id' => $operation->id,
-                        'file_kind' => OperationFile::FILE_KIND_RETAIL_ESTIMATE,
-                        'te_progress_file_id' => $retailEstimateFileId
-                    ]);
+                    if ($teProgress) {
+                        OperationFile::create([
+                            'operation_id' => $operation->id,
+                            'file_kind' => OperationFile::FILE_KIND_RETAIL_ESTIMATE,
+                            'te_progress_file_id' => $retailEstimateFileId
+                        ]);
+                    } elseif ($geProgress) {
+                        OperationFile::create([
+                            'operation_id' => $operation->id,
+                            'file_kind' => OperationFile::FILE_KIND_RETAIL_ESTIMATE,
+                            'ge_progress_file_id' => $retailEstimateFileId
+                        ]);
+                    }
                 }
             }
 
@@ -227,13 +254,36 @@ class OperationController
             // 完工写真
             if ($request->input('completion_photo_files')) {
                 foreach($request->input('completion_photo_files') as $completionPhotoFileId) {
-                    OperationFile::create([
-                        'operation_id' => $operation->id,
-                        'file_kind' => OperationFile::FILE_KIND_COMPLETION_PHOTO,
-                        'te_progress_file_id' => $completionPhotoFileId
-                    ]);
+                    if ($teProgress) {
+                        OperationFile::create([
+                            'operation_id' => $operation->id,
+                            'file_kind' => OperationFile::FILE_KIND_COMPLETION_PHOTO,
+                            'te_progress_file_id' => $completionPhotoFileId
+                        ]);
+                    } elseif ($geProgress) {
+                        OperationFile::create([
+                            'operation_id' => $operation->id,
+                            'file_kind' => OperationFile::FILE_KIND_COMPLETION_PHOTO,
+                            'ge_progress_file_id' => $completionPhotoFileId
+                        ]);
+                    }
                 }
             }
+
+            if ($geProgress) {
+                if ($geProgressStep = $request->input('ge_progress_step')) {
+                    switch ($geProgressStep) {
+                        case 'owner_proposal':          // オーナー提案
+                            $geProgress->owner_proposal_operation_id = $operation->id;
+                            break;
+                        case 'completion_report':       // 完了報告
+                            $geProgress->completion_report_operation_id = $operation->id;
+                            break;
+                    }
+                    $geProgress->save();
+                }
+            }
+
 
         });
 

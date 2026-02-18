@@ -119,7 +119,7 @@
                     class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
                     :disabled="!$step1Confirmed"
                     type="button"
-                    wire:click="updateMoveOutReportDate"
+                    x-on:click="if (!confirm('立会依頼送信します。よろしいですか。')) { return; } $wire.updateMoveOutReportDate();"
                 >
                     立会依頼送信
                 </x-button.blue>

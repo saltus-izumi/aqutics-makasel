@@ -14,8 +14,12 @@
         </div>
         <table class="tw:w-full tw:table-fixed">
             <tr class="tw:h-[42px]">
-                <td class="tw:w-[130px] tw:text-center tw:bg-black tw:text-[1.3rem] tw:font-bold tw:text-white tw:border tw:border-[#cccccc]">返金額</td>
-                <td class="tw:border tw:border-[#cccccc]"></td>
+                <td class="tw:w-[130px] tw:text-center tw:bg-black tw:text-[1.3rem] tw:font-bold tw:text-white tw:border tw:border-[#cccccc]">
+                    {{ $settlementAmount >= 0 ? '振込額' : '返金額' }}
+                </td>
+                <td class="tw:pr-5 tw:border tw:border-[#cccccc] tw:text-[1.8rem] tw:text-right tw:font-bold">
+                    {{ number_format($settlementAmount) }}
+                </td>
                 <td class="tw:w-[130px] tw:text-center tw:bg-black tw:text-[1.3rem] tw:font-bold tw:text-white tw:border tw:border-[#cccccc]">振込期日</td>
                 <td class="tw:border tw:border-[#cccccc]">
                     <x-form.input type="date" class="tw:text-[1.8rem] tw:font-bold" wire:model.lazy="transferDueDate" />
@@ -114,9 +118,9 @@
                 <div class="tw:flex-1">
                     <div class="tw:w-full">
                         <x-form.multi_file_upload2
-                            name="cost_estimate"
+                            name="lower_estimate"
                             title="下代見積もり"
-                            instanceId="ge-progress-cost-estimate-{{ $progress->id }}"
+                            instanceId="ge-progress-lower-estimate-{{ $progress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -135,7 +139,7 @@
                                 'application/msword',
                                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                             ]"
-                            :files="$costEstimateFiles"
+                            :files="$lowerEstimateFiles"
                         />
                     </div>
                 </div>
@@ -193,10 +197,10 @@
                         removeMethod: 'removeMoveOutSettlementFile',
                     },
                     {
-                        instanceId: @js('ge-progress-cost-estimate-' . $progress->id),
-                        uploadProperty: 'costEstimateUploads',
-                        saveMethod: 'saveCostEstimateUploads',
-                        removeMethod: 'removeCostEstimateFile',
+                        instanceId: @js('ge-progress-lower-estimate-' . $progress->id),
+                        uploadProperty: 'lowerEstimateUploads',
+                        saveMethod: 'saveLowerEstimateUploads',
+                        removeMethod: 'removeLowerEstimateFile',
                     },
                     {
                         instanceId: @js('ge-progress-walkthrough-photo-' . $progress->id),

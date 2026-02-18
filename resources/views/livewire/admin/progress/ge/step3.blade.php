@@ -18,9 +18,9 @@
             </div>
             <div class="tw:w-full">
                 <x-form.multi_file_upload2
-                    name="other_completion_photo"
+                    name="completion_photo"
                     title="その他完工写真"
-                    instanceId="ge-progress-other-completion-photo-{{ $progress->id }}"
+                    instanceId="ge-progress-completion-photo-{{ $progress->id }}"
                     class="tw:h-[42px]"
                     maxFileCount="20"
                     maxFileSize="25MB"
@@ -39,7 +39,7 @@
                         'application/msword',
                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                     ]"
-                    :files="$otherCompletionPhotoFiles"
+                    :files="$completionPhotoFiles"
                 />
             </div>
         </div>
@@ -60,10 +60,10 @@
             Alpine.data('geProgressStep3', () => ({
                 instanceMap: [
                     {
-                        instanceId: @js('ge-progress-other-completion-photo-' . $progress->id),
-                        uploadProperty: 'otherCompletionPhotoUploads',
-                        saveMethod: 'saveOtherCompletionPhotoUploads',
-                        removeMethod: 'removeOtherCompletionPhotoFile',
+                        instanceId: @js('ge-progress-completion-photo-' . $progress->id),
+                        uploadProperty: 'completionPhotoUploads',
+                        saveMethod: 'saveCompletionPhotoUploads',
+                        removeMethod: 'removeCompletionPhotoFile',
                     },
                 ],
                 handleSelect(event) {

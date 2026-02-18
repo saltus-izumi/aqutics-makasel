@@ -11,7 +11,21 @@
                 </div>
             </div>
             <div class="tw:h-full tw:flex tw:items-center">
-                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">オペレーション作成</x-button.blue>
+                @if ($progress->geProgress?->completion_report_operation_id)
+                    <a href="{{ route('admin.operation.edit', [
+                        'operationId' => $progress->geProgress?->completion_report_operation_id,
+                    ]) }}">
+                        <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">オペレーション編集</x-button.blue>
+                    </a>
+                @else
+                    <a href="{{ route('admin.operation.create.ge', [
+                        'geProgressId' => $progress->geProgress?->id,
+                        'geProgressStep' => 'completion_report',
+                    ]) }}">
+                        <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">オペレーション作成</x-button.blue>
+                    </a>
+                @endif
+
             </div>
         </div>
     </div>

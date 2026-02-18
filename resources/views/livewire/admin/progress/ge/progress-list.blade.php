@@ -36,7 +36,7 @@
                     <x-button.blue class="tw:!h-[21px] tw:!w-[104px] tw:!font-normal">検索</x-button.blue>
                 </td>
                 <td class="tw:pl-[10px]" rowspan="2">
-                    案件数  {{ $progresses->count() }}
+                    案件数  {{ $geProgresses->count() }}
                     <button type="button" class="tw:ml-2 tw:text-xs tw:px-2 tw:py-0.5 tw:border tw:rounded tw:cursor-pointer" x-on:click="clearAllFilters()">フィルタークリア</button>
                 </td>
                 <td rowspan="2" colspan="4"></td>
@@ -97,7 +97,7 @@
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center" colspan="2">実質LT</td>
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['taikyo'] ?? 'ー' }}</td>
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_mitsumori_recieved'] ?? 'ー' }}</td>
-                <td class="tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['tsuden'] ?? 'ー' }}</td>
+                <td class="tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['power_activation_date'] ?? 'ー' }}</td>
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['tenant_charge_confirmed'] ?? 'ー' }}</td>
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_teian'] ?? 'ー' }}</td>
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_teian_kyodaku'] ?? 'ー' }}</td>
@@ -113,8 +113,8 @@
                     <div
                         data-filter-trigger
                         data-filter-title="原復ID"
-                        data-sort-field="id"
-                        data-filter-field="id"
+                        data-sort-field="progress_id"
+                        data-filter-field="progress_id"
                         data-filter-type="text"
                         @class(['tw:text-red-600' => $this->hasFilter('id')])
                     >▼</div>
@@ -189,10 +189,10 @@
                     <div
                         data-filter-trigger
                         data-filter-title="退去受付"
-                        data-sort-field="taikyo_uketuke_date"
-                        data-filter-field="taikyo_uketuke_date"
+                        data-sort-field="move_out_received_date"
+                        data-filter-field="move_out_received_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('taikyo_uketuke_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('move_out_received_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -209,80 +209,80 @@
                     <div
                         data-filter-trigger
                         data-filter-title="退去日"
-                        data-sort-field="taikyo_date"
-                        data-filter-field="taikyo_date"
+                        data-sort-field="move_out_date"
+                        data-filter-field="move_out_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('taikyo_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('move_out_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="下代"
-                        data-sort-field="genpuku_mitsumori_recieved_date"
-                        data-filter-field="genpuku_mitsumori_recieved_date"
+                        data-sort-field="cost_received_date"
+                        data-filter-field="cost_received_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_mitsumori_recieved_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('cost_received_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="通電"
-                        data-sort-field="tsuden"
-                        data-filter-field="tsuden"
+                        data-sort-field="power_activation_date"
+                        data-filter-field="power_activation_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('tsuden')])
+                        @class(['tw:text-red-600' => $this->hasFilter('power_activation_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="借主負担"
-                        data-sort-field="tenant_charge_confirmed_date"
-                        data-filter-field="tenant_charge_confirmed_date"
+                        data-sort-field="tenant_burden_confirmed_date"
+                        data-filter-field="tenant_burden_confirmed_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('tenant_charge_confirmed_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('tenant_burden_confirmed_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="貸主提案"
-                        data-sort-field="genpuku_teian_date"
-                        data-filter-field="genpuku_teian_date"
+                        data-sort-field="owner_proposed_date"
+                        data-filter-field="owner_proposed_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_teian_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('owner_proposed_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="貸主承諾"
-                        data-sort-field="genpuku_teian_kyodaku_date"
-                        data-filter-field="genpuku_teian_kyodaku_date"
+                        data-sort-field="owner_approved_date"
+                        data-filter-field="owner_approved_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_teian_kyodaku_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('owner_approved_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="発注"
-                        data-sort-field="genpuku_kouji_hachu_date"
-                        data-filter-field="genpuku_kouji_hachu_date"
+                        data-sort-field="ordered_date"
+                        data-filter-field="ordered_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_kouji_hachu_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('ordered_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="完工予定"
-                        data-sort-field="kanko_yotei_date"
-                        data-filter-field="kanko_yotei_date"
+                        data-sort-field="completion_scheduled_date"
+                        data-filter-field="completion_scheduled_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('kanko_yotei_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('completion_scheduled_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -299,50 +299,50 @@
                     <div
                         data-filter-trigger
                         data-filter-title="完工報告"
-                        data-sort-field="owner_kanko_houkoku_date"
-                        data-filter-field="owner_kanko_houkoku_date"
+                        data-sort-field="completion_reported_date"
+                        data-filter-field="completion_reported_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('owner_kanko_houkoku_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('completion_reported_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="革命控除"
-                        data-sort-field="kakumei_koujo_touroku_date"
-                        data-filter-field="kakumei_koujo_touroku_date"
+                        data-sort-field="kakumei_registered_date"
+                        data-filter-field="kakumei_registered_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('kakumei_koujo_touroku_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('kakumei_registered_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="完了"
-                        data-sort-field="ge_complete_date"
-                        data-filter-field="ge_complete_date"
+                        data-sort-field="completed_date"
+                        data-filter-field="completed_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('ge_complete_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('completed_date')])
                     >▼</div>
                 </td>
             </tr>
         </thead>
         <tbody>
-            @foreach ($progresses as $progress)
+            @foreach ($geProgresses as $geProgress)
                 <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
                     <td class="tw:text-center">
-                        <a href="{{ route('admin.progress.ge.detail', ['progressId' => $progress->id]) }}" class="tw:text-pm_blue_001">{{ $progress->id }}</a>
+                        <a href="{{ route('admin.progress.ge.detail', ['progressId' => $geProgress->id]) }}" class="tw:text-pm_blue_001">{{ $geProgress->progress_id }}</a>
                     </td>
-                    <td class="tw:text-center">{{ $progress->investment_id }}</td>
-                    <td>{{ $progress?->investment?->investment_name }}</td>
-                    <td class="tw:text-center">{{ $progress?->investment_room_uid == 0 ? '共用部' : $progress?->investmentRoom?->investment_room_number }}</td>
+                    <td class="tw:text-center">{{ $geProgress->progress->investment_id }}</td>
+                    <td>{{ $geProgress->progress?->investment?->investment_name }}</td>
+                    <td class="tw:text-center">{{ $geProgress->progress?->investment_room_uid == 0 ? '共用部' : $geProgress->progress?->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:text-center tw:px-[3px]">
                         <x-form.select
-                            name="genpuku_responsible_id"
+                            name="responsible_user_id"
                             :options="$genpukuResponsibleShortOptions"
                             empty="　"
-                            :value="$progress->genpuku_responsible_id"
-                            wire:input="updateSelectValue({{ $progress->id }}, 'genpuku_responsible_id', $event.target.value)"
+                            :value="$geProgress->responsible_user_id"
+                            wire:input="updateSelectValue({{ $geProgress->id }}, 'responsible_user_id', $event.target.value)"
                         />
                     </td>
                     <td class="tw:text-center tw:px-[3px]">
@@ -350,45 +350,45 @@
                             name="executor_user_id"
                             :options="$genpukuResponsibleShortOptions"
                             empty="　"
-                            :value="$progress->geProgress->executor_user_id"
-                            wire:input="updateSelectValue({{ $progress->id }}, 'executor_user_id', $event.target.value)"
+                            :value="$geProgress->executor_user_id"
+                            wire:input="updateSelectValue({{ $geProgress->id }}, 'executor_user_id', $event.target.value)"
                         />
                     </td>
-                    <td class="tw:text-center">{{ App\Models\GeProgress::NEXT_ACTIONS[$progress?->geProgress?->next_action] ?? '' }}</td>
+                    <td class="tw:text-center">{{ App\Models\GeProgress::NEXT_ACTIONS[$geProgress?->next_action] ?? '' }}</td>
                     <td class="tw:text-center">
-                        <x-tooltip :text="$progress?->taikyo_uketuke_date?->format('Y/m/d')">
-                            {{ $progress?->taikyo_uketuke_date?->format('m/d') }}
+                        <x-tooltip :text="$geProgress?->move_out_received_date?->format('Y/m/d')">
+                            {{ $geProgress?->move_out_received_date?->format('m/d') }}
                         </x-tooltip>
                     </td>
                     <td class="tw:text-center tw:overflow-visible">
-                        <x-tooltip :text="$progress?->investmentEmptyRoom?->cancellation_date?->format('Y/m/d')">
-                            {{ $progress?->investmentEmptyRoom?->cancellation_date?->format('m/d') }}
+                        <x-tooltip :text="$geProgress?->progress?->investmentEmptyRoom?->cancellation_date?->format('Y/m/d')">
+                            {{ $geProgress?->progress?->investmentEmptyRoom?->cancellation_date?->format('m/d') }}
                         </x-tooltip>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="退去日"
-                            data-popup-date="{{ $progress?->taikyo_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="taikyo_date"
+                            data-popup-date="{{ $geProgress?->move_out_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="move_out_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="taikyo_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="move_out_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         @php
-                            $costEstimateFileList = collect($progress?->geProgress?->costEstimateFiles ?? [])
+                            $lowerEstimateFileList = collect($geProgress?->geProgress?->lowerEstimateFiles ?? [])
                                 ->filter(fn($file) => !empty($file?->id))
                                 ->mapWithKeys(fn($file) => [route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]) => $file->file_name ?? ''])
                                 ->all();
-                            $costEstimateFileCount = count($costEstimateFileList);
+                            $lowerEstimateFileCount = count($lowerEstimateFileList);
                         @endphp
                         <div class="tw:flex tw:flex-col tw:items-center tw:gap-[4px]" x-data="{ fileListOpen: false }">
                             <div
                                 class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
-                                @click="if ({{ $costEstimateFileCount }} > 0) { fileListOpen = true }"
+                                @click="if ({{ $lowerEstimateFileCount }} > 0) { fileListOpen = true }"
                             >
-                                <x-admin.progress.date :progress="$progress" field="genpuku_mitsumori_recieved_date" />
+                                <x-admin.progress.date :progress="$geProgress" field="cost_received_date" />
                             </div>
                             <template x-teleport="body">
                                 <div
@@ -417,7 +417,7 @@
                                             </button>
                                         </div>
                                         <div class="tw:px-[16px] tw:py-[12px]">
-                                            <x-file-list :files="$costEstimateFileList" />
+                                            <x-file-list :files="$lowerEstimateFileList" />
                                         </div>
                                     </div>
                                 </div>
@@ -427,101 +427,101 @@
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="通電"
-                            data-popup-date="{{ $progress?->tsuden?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="tsuden"
+                            data-popup-date="{{ $geProgress?->power_activation_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="power_activation_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="tsuden" />
+                            <x-admin.progress.date :progress="$geProgress" field="power_activation_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="借主負担"
-                            data-popup-date="{{ $progress?->tenant_charge_confirmed_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="tenant_charge_confirmed_date"
+                            data-popup-date="{{ $geProgress?->tenant_burden_confirmed_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="tenant_burden_confirmed_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="tenant_charge_confirmed_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="tenant_burden_confirmed_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="貸主提案"
-                            data-popup-date="{{ $progress?->genpuku_teian_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="genpuku_teian_date"
+                            data-popup-date="{{ $geProgress?->owner_proposed_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="owner_proposed_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="genpuku_teian_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="owner_proposed_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="貸主承諾"
-                            data-popup-date="{{ $progress?->genpuku_teian_kyodaku_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="genpuku_teian_kyodaku_date"
+                            data-popup-date="{{ $geProgress?->owner_approved_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="owner_approved_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="genpuku_teian_kyodaku_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="owner_approved_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="発注"
-                            data-popup-date="{{ $progress?->genpuku_kouji_hachu_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="genpuku_kouji_hachu_date"
+                            data-popup-date="{{ $geProgress?->ordered_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="ordered_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="genpuku_kouji_hachu_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="ordered_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="完工予定"
-                            data-popup-date="{{ $progress?->kanko_yotei_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="kanko_yotei_date"
+                            data-popup-date="{{ $geProgress?->completion_scheduled_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="completion_scheduled_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="kanko_yotei_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="completion_scheduled_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="完工受信"
-                            data-popup-date="{{ $progress?->kanko_jyushin_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
+                            data-popup-date="{{ $geProgress?->kanko_jyushin_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
                             data-field="kanko_jyushin_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="kanko_jyushin_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="kanko_jyushin_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="完工報告"
-                            data-popup-date="{{ $progress?->owner_kanko_houkoku_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="owner_kanko_houkoku_date"
+                            data-popup-date="{{ $geProgress?->completion_reported_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="completion_reported_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="owner_kanko_houkoku_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="completion_reported_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="革命控除"
-                            data-popup-date="{{ $progress?->kakumei_koujo_touroku_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="kakumei_koujo_touroku_date"
+                            data-popup-date="{{ $geProgress?->kakumei_registered_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="kakumei_registered_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="kakumei_koujo_touroku_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="kakumei_registered_date" />
                         </div>
                     </td>
                     <td class="tw:text-center">
                         <div class="tw:inline-flex tw:w-full tw:h-full tw:items-center tw:justify-center tw:cursor-pointer"
                             data-popup-title="完了"
-                            data-popup-date="{{ $progress?->ge_complete_date?->format('Y/m/d') }}"
-                            data-progress-id="{{ $progress->id }}"
-                            data-field="ge_complete_date"
+                            data-popup-date="{{ $geProgress?->completed_date?->format('Y/m/d') }}"
+                            data-progress-id="{{ $geProgress->id }}"
+                            data-field="completed_date"
                         >
-                            <x-admin.progress.date :progress="$progress" field="ge_complete_date" />
+                            <x-admin.progress.date :progress="$geProgress" field="completed_date" />
                         </div>
                     </td>
                 </tr>

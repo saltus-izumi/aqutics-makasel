@@ -12,31 +12,31 @@
             <tr class="tw:h-[42px]">
                 <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">下代</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="securityDepositAmount" class="tw:text-center tw:font-bold tw:text-[1.7rem]" :border="false" wire:model.live="costAmount" />
+                    <x-form.input-number name="securityDepositAmount" class="tw:text-right tw:pr-[20px] tw:font-bold tw:text-[1.7rem]" :border="false" wire:model.live="costAmount" />
                 </td>
                 <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">上代</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="proratedRentAmount" class="tw:text-center tw:font-bold tw:text-[1.7rem]" :border="false" wire:model.live="chargeAmount" />
+                    <x-form.input-number name="proratedRentAmount" class="tw:text-right tw:pr-[20px] tw:font-bold tw:text-[1.7rem]" :border="false" wire:model.live="chargeAmount" />
                 </td>
             </tr>
             <tr class="tw:h-[42px]">
                 <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">利益</td>
-                <td class="tw:text-center tw:font-bold tw:text-[1.7rem] tw:border tw:border-[#cccccc]">
+                <td class="tw:text-right tw:pr-[20px] tw:font-bold tw:text-[1.7rem] tw:border tw:border-[#cccccc]">
                     {{ $profitAmount }}
                 </td>
                 <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:text-white tw:bg-black tw:border tw:border-[#cccccc]">利益率</td>
                 <td @class([
-                    'tw:text-center tw:font-bold tw:text-[1.7rem] tw:border tw:border-[#cccccc]',
+                    'tw:text-right tw:pr-[20px] tw:text-center tw:font-bold tw:text-[1.7rem] tw:border tw:border-[#cccccc]',
                     'tw:text-red-600' => $profitRate < 30,
                 ])>
-                    @if ($profitRate < 30)×@endif
+                    @if ($profitRate < 30)<span class="tw:pr-3">×</span>@endif
                     {{ $profitRate }}%
                 </td>
             </tr>
         </table>
         @php
             $moveOutSettlementFileCount = count($moveOutSettlementFiles ?? []);
-            $costEstimateFileCount = count($costEstimateFiles ?? []);
+            $lowerEstimateFileCount = count($lowerEstimateFiles ?? []);
             $walkthroughPhotoFileCount = count($walkthroughPhotoFiles ?? []);
         @endphp
         <div class="tw:mt-[21px] tw:flex tw:gap-x-[26px]">
@@ -53,7 +53,7 @@
                     </div>
                     <div
                         class="tw:w-full tw:h-[21px] tw:leading-[21px] tw:text-[#4a86e8] tw:cursor-pointer"
-                        @click="if (costEstimateFileCount > 0) { fileListType = 'costEstimate'; fileListOpen = true }"
+                        @click="if (lowerEstimateFileCount > 0) { fileListType = 'lowerEstimate'; fileListOpen = true }"
                     >
                         下代見積もり
                     </div>
@@ -78,9 +78,9 @@
                 </div>
                 <div class="tw:w-full">
                     <x-form.multi_file_upload2
-                        name="sales_estimate"
+                        name="retail_estimate"
                         title="上代見積もり"
-                        instanceId="ge-progress-sales-estimate-{{ $progress->id }}"
+                        instanceId="ge-progress-retail-estimate-{{ $progress->id }}"
                         class="tw:h-[42px]"
                         maxFileCount="20"
                         maxFileSize="25MB"
@@ -99,7 +99,7 @@
                             'application/msword',
                             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                         ]"
-                        :files="$salesEstimateFiles"
+                        :files="$retailEstimateFiles"
                     />
                 </div>
             </div>
@@ -137,8 +137,8 @@
                         <div x-show="fileListType === 'moveOutSettlement'">
                             <x-file-list :files="$moveOutSettlementFiles" />
                         </div>
-                        <div x-show="fileListType === 'costEstimate'">
-                            <x-file-list :files="$costEstimateFiles" />
+                        <div x-show="fileListType === 'lowerEstimate'">
+                            <x-file-list :files="$lowerEstimateFiles" />
                         </div>
                         <div x-show="fileListType === 'walkthroughPhoto'">
                             <x-file-list :files="$walkthroughPhotoFiles" />
@@ -165,14 +165,14 @@
                 fileListOpen: false,
                 fileListType: null,
                 moveOutSettlementFileCount: @js($moveOutSettlementFileCount),
-                costEstimateFileCount: @js($costEstimateFileCount),
+                lowerEstimateFileCount: @js($lowerEstimateFileCount),
                 walkthroughPhotoFileCount: @js($walkthroughPhotoFileCount),
                 instanceMap: [
                     {
-                        instanceId: @js('ge-progress-sales-estimate-' . $progress->id),
-                        uploadProperty: 'salesEstimateUploads',
-                        saveMethod: 'saveSalesEstimateUploads',
-                        removeMethod: 'removeSalesEstimateFile',
+                        instanceId: @js('ge-progress-retail-estimate-' . $progress->id),
+                        uploadProperty: 'retailEstimateUploads',
+                        saveMethod: 'saveRetailEstimateUploads',
+                        removeMethod: 'removeRetailEstimateFile',
                     },
                 ],
                 handleSelect(event) {

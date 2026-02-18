@@ -38,6 +38,11 @@ class OperationFile extends Model
         return $this->belongsTo(TeProgressFile::class);
     }
 
+    public function geProgressFile()
+    {
+        return $this->belongsTo(GeProgressFile::class);
+    }
+
 
     protected function mimeType(): Attribute
     {

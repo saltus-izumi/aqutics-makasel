@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Log;
 
 use App\Models\Owner;
+use App\Models\GeProgress;
 use App\Models\Operation;
 use App\Models\OperationKind;
 use App\Models\Investment;
@@ -39,6 +40,8 @@ class Create extends Component
     public $teProgressId = null;
     public $teProgress = null;
     public $geProgressId = null;
+    public $geProgressStep = null;
+    public $geProgress = null;
 
     public function mount()
     {
@@ -71,6 +74,7 @@ class Create extends Component
             $oldMessage = old('message', $this->operation->threadMessage?->extended_message);
             $this->threadId = $this->operation->thread_id;
             $this->teProgressId = $this->operation->te_progress_id;
+            $this->geProgressId = $this->operation->ge_progress_id;
             $this->retailEstimateFiles = $this->operation->retailEstimateFiles ?? [];
             $this->completionPhotoFiles = $this->operation->completionPhotoFiles ?? [];
             $this->otherFiles = $this->operation->otherFiles ?? [];
@@ -95,6 +99,31 @@ class Create extends Component
                 $oldInvestmentRoomId = old('investment_room_id', $this->teProgress->investment_room_uid);
 
                 $operation = Operation::where('te_progress_id', $this->teProgress->id)
+                    ->first();
+                if ($operation) {
+                    $this->threadId = $operation->thread_id;
+                }
+            }
+        }
+
+        if ($this->geProgressId) {
+            // GEプロセスIDが指定されている場合
+            $this->geProgress = GeProgress::query()
+                ->with([
+                    'progress',
+                    'progress.investment',
+                    'progress.investment.landlord',
+                    'progress.investment.landlord.owner',
+                    'progress.investmentRoom',
+                ])
+                ->find($this->geProgressId);
+
+            if ($this->geProgress) {
+                $oldOwnerId = old('owner_id', $this->geProgress?->progress->investment?->landlord?->owner_id);
+                $oldInvestmentId = old('investment_id', $this->geProgress?->progress->investment_id);
+                $oldInvestmentRoomId = old('investment_room_id', $this->geProgress?->progress->investment_room_uid);
+
+                $operation = Operation::where('ge_progress_id', $this->geProgress->id)
                     ->first();
                 if ($operation) {
                     $this->threadId = $operation->thread_id;

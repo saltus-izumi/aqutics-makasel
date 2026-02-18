@@ -3,7 +3,11 @@
         <div class="tw:w-full tw:h-[42px] tw:flex tw:gap-x-[1.5rem] tw:items-center">
             <div class="tw:text-[1.2rem]">原復ID：{{ $progress->id }}</div>
             <div class="tw:text-[1.2rem]">物件ID：{{ $progress->investment_id }}</div>
-            <div class="tw:max-w-[340px] tw:text-[1.2rem] tw:truncate">工事会社：{{ $progress->investment?->restorationCompany?->name }}（担当：{{ $progress->investment?->restorationCompany?->personnel1 }}）</div>
+            <div class="tw:max-w-[340px] tw:text-[1.2rem] tw:flex tw:items-center">
+                {{-- 工事会社：{{ $progress->investment?->restorationCompany?->name }}（担当：{{ $progress->investment?->restorationCompany?->personnel1 }}） --}}
+                <div>工事会社：</div>
+                <x-form.select-search :value="$genpukuGyoushaId" :options="$restorationCompanies" class="tw:w-[240px] tw:!text-[1rem]" wire:model.live="genpukuGyoushaId" />
+            </div>
             <div class="tw:text-[1.2rem]">所有者：{{ $progress->genpukuResponsible?->user_name }}</div>
             <div class="tw:text-[1.2rem]">実行担当：{{ $progress->geProgress?->executorUser?->user_name }}</div>
         </div>
@@ -32,17 +36,35 @@
         </div>
     </div>
     <div>
-        <div class="tw:mb-[21px]">
+        <div class="tw:mb-[21px] tw:flex tw:items-center tw:gap-x-[26px]">
             <table>
                 <tr class="tw:h-[42px]">
                     <td class="tw:w-[182px] tw:text-[1.3rem] tw:bg-[#efefef] tw:text-center tw:border tw:border-[#cccccc]">
                         ネクストアクション
                     </td>
-                    <td class="tw:w-[312px] tw:pl-[1rem] tw:text-[1.5rem] tw:border tw:border-[#cccccc]">
+                    <td class="tw:w-[208px] tw:pl-[1rem] tw:text-[1.5rem] tw:border tw:border-[#cccccc]">
                         {{ App\Models\GeProgress::NEXT_ACTIONS[$progress->geProgress?->next_action] ?? '' }}
                     </td>
                 </tr>
             </table>
+            <div>
+                <x-button.blue
+                    class="tw:!h-[31px] tw:!w-[156px] tw:!rounded-lg tw:text-[1.2rem]"
+                    type="button"
+                    x-on:click="if (!confirm('再提案処理を実施します。よろしいですか。\nこの処理は取り消しできません。')) { return; } $wire.rePropose();"
+                >
+                    再提案
+                </x-button.blue>
+            </div>
+            <div>
+                <x-button.red
+                    class="tw:!h-[31px] tw:!w-[156px] tw:!rounded-lg tw:text-[1.2rem]"
+                    type="button"
+                    x-on:click="if (!confirm('キャンセル処理を実施します。よろしいですか。\nこの処理は取り消しできません。')) { return; } $wire.cancelProgress();"
+                >
+                    キャンセル
+                </x-button.red>
+            </div>
         </div>
         <div>
             <table class="tw:w-[780px] tw:table-fixed">

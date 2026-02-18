@@ -3,10 +3,6 @@
 namespace App\Livewire\Admin\Progress\Ge;
 
 use App\Models\GeProgress;
-use App\Models\Investment;
-use App\Models\InvestmentEmptyRoom;
-use App\Models\InvestmentRoom;
-use App\Models\Progress;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -18,7 +14,7 @@ use Livewire\Component;
 class ProgressList extends Component
 {
     public $conditions = [];
-    public $progresses = null;
+    public $geProgresses = null;
     public bool $incompleteOnly = true;
     public string $searchKeyword = '';
     public string $sortOrder = 'asc';
@@ -53,23 +49,22 @@ class ProgressList extends Component
     }
 
     protected function refreshGeProgresses() {
-        $query = Progress::query()
+        $query = GeProgress::query()
             ->with([
-                'GeProgress',
-                'GeProgress.costEstimateFiles',
-                'investment',
-                'investment.landlord.owner',
-                'investmentRoom',
-                'investmentEmptyRoom',
-            ])
-            ->whereNull('kaiyaku_cancellation_date');
+                'lowerEstimateFiles',
+                'progress',
+                'progress.investment',
+                'progress.investment.landlord.owner',
+                'progress.investmentRoom',
+                'progress.investmentEmptyRoom',
+            ]);
 
         $query = $this->setOrder($query);
 
         $query = $this->setCondition($query);
 
-        $this->progresses = $query->get();
-        $this->averageLt = $this->buildAverageLt($this->progresses);
+        $this->geProgresses = $query->get();
+        $this->averageLt = $this->buildAverageLt($this->geProgresses);
     }
 
     protected function buildAverageLt($progresses): array
@@ -147,35 +142,34 @@ class ProgressList extends Component
     public function updateDate($progressId, $field, $date)
     {
         DB::transaction(function() use ($progressId, $field, $date) {
-            $progress = Progress::query()
+            $geProgress = GeProgress::query()
                 ->with([
-                    'investment',
-                    'investmentRoom',
-                    'investmentEmptyRoom',
-                    'GeProgress',
+                    'progress',
+                    'progress.investment',
+                    'progress.investmentRoom',
+                    'progress.investmentEmptyRoom',
                 ])
                 ->find($progressId);
 
-            if (!$progress) {
+            if (!$geProgress) {
                 return;
             }
 
             if ($date == 'ー') {
-                $progress->{$field} = null;
-                $progress->{$field . '_state'} = 2;
+                $geProgress->{$field} = null;
+                $geProgress->{$field . '_state'} = 2;
             }
             elseif ($date == '') {
-                $progress->{$field} = $date;
-                $progress->{$field . '_state'} = 0;
+                $geProgress->{$field} = $date;
+                $geProgress->{$field . '_state'} = 0;
             }
             else {
-                $progress->{$field} = $date;
-                $progress->{$field . '_state'} = 1;
+                $geProgress->{$field} = $date;
+                $geProgress->{$field . '_state'} = 1;
             }
-            $progress->save();
 
-            $progress->geProgress->next_action = $progress->ge_next_action;
-            $progress->geProgress->save();
+            $geProgress->next_action = $geProgress->getNextAction();
+            $geProgress->save();
         });
 
         $this->refreshGeProgresses();
@@ -185,22 +179,17 @@ class ProgressList extends Component
         DB::transaction(function() use ($progressId, $field, $id) {
             $id = empty($id) ? null : $id;
 
-            $progress = Progress::query()
+            $geProgress = GeProgress::query()
                 ->with([
-                    'investment',
-                    'investmentRoom',
-                    'investmentEmptyRoom',
-                    'GeProgress',
+                    'progress',
+                    'progress.investment',
+                    'progress.investmentRoom',
+                    'progress.investmentEmptyRoom',
                 ])
                 ->find($progressId);
 
-            if ($field == 'executor_user_id') {
-                $progress->geProgress->{$field} = $id;
-                $progress->geProgress->save();
-            } else {
-                $progress->{$field} = $id;
-                $progress->save();
-            }
+            $geProgress->{$field} = $id;
+            $geProgress->save();
         });
 
         $this->refreshGeProgresses();
@@ -233,7 +222,8 @@ class ProgressList extends Component
     protected function setCondition($query)
     {
         if ($this->incompleteOnly) {
-            $query->whereNull('ge_complete_date');
+            $query->whereNull('completed_date');
+            $query->whereNull('kaiyaku_cancellation_date');
         }
 
         if ($this->searchKeyword !== '') {
@@ -278,15 +268,15 @@ class ProgressList extends Component
                     if ($filterValue === '共用部') {
                         $query->where('investment_room_number', 0);
                     } else {
-                        $this->applyRelationFilter($query, 'investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
+                        $this->applyRelationFilter($query, 'progress.investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
                     }
                 } else {
-                    $this->applyRelationFilter($query, 'investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
+                    $this->applyRelationFilter($query, 'progress.investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
                 }
-            } elseif ($filterField === 'executor_user_id') {
-                $this->applyRelationFilter($query, 'geProgress', 'executor_user_id', $filterValue, $filterBlank);
-            } elseif ($filterField === 'next_action') {
-                $this->applyRelationFilter($query, 'geProgress', 'next_action', $filterValue, $filterBlank);
+            // } elseif ($filterField === 'executor_user_id') {
+            //     $this->applyRelationFilter($query, 'geProgress', 'executor_user_id', $filterValue, $filterBlank);
+            // } elseif ($filterField === 'next_action') {
+            //     $this->applyRelationFilter($query, 'geProgress', 'next_action', $filterValue, $filterBlank);
             } elseif (in_array($filterField, $this->getSimpleFilterFields(), true)) {
                 $this->applyColumnFilter($query, $filterField, $filterValue, $filterBlank);
             }
@@ -300,35 +290,24 @@ class ProgressList extends Component
         $sortOrder = $this->normalizeSortOrder($this->sortOrder);
         $sortField = $this->sortField;
         if ($sortField === 'investment_name') {
-            $query->orderBy(
-                Investment::select('investment_name')
-                    ->whereColumn('investments.id', 'progresses.investment_id'),
-                $sortOrder
-            );
+            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
+                ->leftJoin('investments as sort_investments', 'sort_investments.id', '=', 'sort_progresses.investment_id')
+                ->select('ge_progresses.*')
+                ->orderBy('sort_investments.investment_name', $sortOrder);
         } elseif ($sortField === 'investment_room_number') {
-            $query->orderBy(
-                InvestmentRoom::select('investment_room_number')
-                    ->whereColumn('investment_rooms.id', 'progresses.investment_room_uid'),
-                $sortOrder
-            );
+            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
+                ->leftJoin('investment_rooms as sort_investment_rooms', 'sort_investment_rooms.id', '=', 'sort_progresses.investment_room_uid')
+                ->select('ge_progresses.*')
+                ->orderBy('sort_investment_rooms.investment_room_number', $sortOrder);
         } elseif ($sortField === 'executor_user_id') {
-            $query->orderBy(
-                GeProgress::select('executor_user_id')
-                    ->whereColumn('ge_progresses.progress_id', 'progresses.id'),
-                $sortOrder
-            );
+            $query->orderBy('executor_user_id', $sortOrder);
         } elseif ($sortField === 'next_action') {
-            $query->orderBy(
-                GeProgress::select('next_action')
-                    ->whereColumn('ge_progresses.progress_id', 'progresses.id'),
-                $sortOrder
-            );
+            $query->orderBy('next_action', $sortOrder);
         } elseif ($sortField === 'cancellation_date') {
-            $query->orderBy(
-                InvestmentEmptyRoom::select('cancellation_date')
-                    ->whereColumn('investment_empty_rooms.id', 'progresses.investment_empty_room_id'),
-                $sortOrder
-            );
+            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
+                ->leftJoin('investment_empty_rooms as sort_investment_empty_rooms', 'sort_investment_empty_rooms.id', '=', 'sort_progresses.investment_empty_room_id')
+                ->select('ge_progresses.*')
+                ->orderBy('sort_investment_empty_rooms.cancellation_date', $sortOrder);
         } else {
             $query->orderBy($sortField, $sortOrder);
         }
@@ -468,6 +447,7 @@ class ProgressList extends Component
     {
         return [
             'id',
+            'progress_id',
             'investment_id',
             'genpuku_responsible_id',
         ];
@@ -476,25 +456,19 @@ class ProgressList extends Component
     protected function getDateRangeFilterFields()
     {
         return [
-            'ge_application_date',
-            'ge_complete_date',
-            'genpuku_shiryou_soushin_date',
-            'notice_of_intent_to_vacate_date',
-            'taikyo_yotei_date',
-            'taikyo_date',
-            'genpuku_mitsumori_recieved_date',
-            'tsuden',
-            'tenant_charge_confirmed_date',
-            'genpuku_teian_date',
-            'genpuku_teian_kyodaku_date',
-            'genpuku_kouji_hachu_date',
-            'kanko_yotei_date',
-            'kanko_jyushin_date',
-            'owner_kanko_houkoku_date',
-            'kakumei_koujo_touroku_date',
-            'taikyo_uketuke_date',
-            'kaiyaku_date',
-            'last_import_date',
+            'move_out_received_date',               // 退去受付日
+            'move_out_date',                        // 退去日
+            'cost_received_date',                   // 下代受信日
+            'power_activation_date',                // 通電日
+            'tenant_burden_confirmed_date',         // 借主負担確定日
+            'owner_proposed_date',                  // 貸主提案日
+            'owner_approved_date',                  // 貸主承諾日
+            'ordered_date',                         // 発注日
+            'completion_scheduled_date',            // 完工予定日
+            'completion_received_date',             // 完工受信日
+            'completion_reported_date',             // 完工報告日
+            'kakumei_registered_date',              // 革命控除登録日
+            'completed_date',                       // 完了日
         ];
     }
 
@@ -502,7 +476,7 @@ class ProgressList extends Component
     {
         return [
             'cancellation_date' => [
-                'relation' => 'investmentEmptyRoom',
+                'relation' => 'progress.investmentEmptyRoom',
                 'column' => 'cancellation_date',
             ],
         ];
@@ -551,6 +525,7 @@ class ProgressList extends Component
 
     protected function applyRelationDateRangeFilter($query, $relation, $column, $filterValue, $filterBlank)
     {
+// dd($filterBlank);
         $from = $filterValue['from'] ?? '';
         $to = $filterValue['to'] ?? '';
         if ($from !== '' || $to !== '') {

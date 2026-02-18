@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\RecordsUserStamps;
 use App\Models\Progress;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -12,36 +13,40 @@ class GeProgress extends Model
     use RecordsUserStamps;
     use SoftDeletes;
 
-    public const NEXT_ACTION_TAIKYO_UKETUKE = 1;
+    public const NEXT_ACTION_MOVE_OUT_RECEIVED = 1;
     public const NEXT_ACTION_CANCELLATION = 2;
-    public const NEXT_ACTION_TAIKYO = 3;
-    public const NEXT_ACTION_GENPUKU_MITSUMORI_RECIEVED = 4;
-    public const NEXT_ACTION_TSUDEN = 5;
-    public const NEXT_ACTION_TENANT_CHARGE_CONFIRMED = 6;
-    public const NEXT_ACTION_GENPUKU_TEIAN = 7;
-    public const NEXT_ACTION_GENPUKU_TEIAN_KYODAKU = 8;
-    public const NEXT_ACTION_GENPUKU_KOUJI_HACHU = 9;
-    public const NEXT_ACTION_KANKO_YOTEI = 10;
-    public const NEXT_ACTION_KANKO_JYUSHIN = 11;
-    public const NEXT_ACTION_OWNER_KANKO_HOUKOKU = 12;
-    public const NEXT_ACTION_KAKUMEI_KOUJO_TOUROKU = 13;
-    public const NEXT_ACTION_GE_COMPLETE = 14;
+    public const NEXT_ACTION_MOVE_OUT = 3;
+    public const NEXT_ACTION_COST_RECEIVED = 4;
+    public const NEXT_ACTION_POWER_ACTIVATION = 5;
+    public const NEXT_ACTION_TENANT_BURDEN_CONFIRMED = 6;
+    public const NEXT_ACTION_OWNER_PROPOSED = 7;
+    public const NEXT_ACTION_OWNER_APPROVED = 8;
+    public const NEXT_ACTION_ORDERED = 9;
+    public const NEXT_ACTION_COMPLETION_SCHEDULED = 10;
+    public const NEXT_ACTION_COMPLETION_RECEIVED = 11;
+    public const NEXT_ACTION_COMPLETION_REPORTED = 12;
+    public const NEXT_ACTION_KAKUMEI_REGISTERED = 13;
+    public const NEXT_ACTION_COMPLETED = 14;
+    public const NEXT_ACTION_RE_PROPOSED = 15;
+    public const NEXT_ACTION_CANCEL = 16;
 
     public const NEXT_ACTIONS = [
-        self::NEXT_ACTION_TAIKYO_UKETUKE => '退去受付',
+        self::NEXT_ACTION_MOVE_OUT_RECEIVED => '退去受付',
         self::NEXT_ACTION_CANCELLATION => '解約日',
-        self::NEXT_ACTION_TAIKYO => '退去日',
-        self::NEXT_ACTION_GENPUKU_MITSUMORI_RECIEVED => '下代',
-        self::NEXT_ACTION_TSUDEN => '通電',
-        self::NEXT_ACTION_TENANT_CHARGE_CONFIRMED => '借主負担',
-        self::NEXT_ACTION_GENPUKU_TEIAN => '貸主提案',
-        self::NEXT_ACTION_GENPUKU_TEIAN_KYODAKU => '貸主承諾',
-        self::NEXT_ACTION_GENPUKU_KOUJI_HACHU => '発注',
-        self::NEXT_ACTION_KANKO_YOTEI => '完工予定',
-        self::NEXT_ACTION_KANKO_JYUSHIN => '完工受信',
-        self::NEXT_ACTION_OWNER_KANKO_HOUKOKU => '完工報告',
-        self::NEXT_ACTION_KAKUMEI_KOUJO_TOUROKU => '革命控除',
-        self::NEXT_ACTION_GE_COMPLETE => '完了',
+        self::NEXT_ACTION_MOVE_OUT => '退去日',
+        self::NEXT_ACTION_COST_RECEIVED => '下代',
+        self::NEXT_ACTION_POWER_ACTIVATION => '通電',
+        self::NEXT_ACTION_TENANT_BURDEN_CONFIRMED => '借主負担',
+        self::NEXT_ACTION_OWNER_PROPOSED => '貸主提案',
+        self::NEXT_ACTION_OWNER_APPROVED => '貸主承諾',
+        self::NEXT_ACTION_ORDERED => '発注',
+        self::NEXT_ACTION_COMPLETION_SCHEDULED => '完工予定',
+        self::NEXT_ACTION_COMPLETION_RECEIVED => '完工受信',
+        self::NEXT_ACTION_COMPLETION_REPORTED => '完工報告',
+        self::NEXT_ACTION_KAKUMEI_REGISTERED => '革命控除',
+        self::NEXT_ACTION_COMPLETED => '完了',
+        self::NEXT_ACTION_RE_PROPOSED => '再提案',
+        self::NEXT_ACTION_CANCEL => 'キャンセル',
     ];
 
     public const IS_PROPER_WORK_BURDEN_APPROVED = 1;
@@ -73,6 +78,20 @@ class GeProgress extends Model
     protected function casts(): array
     {
         return [
+            'move_out_received_date' => 'date',
+            'move_out_date' => 'date',
+            'cost_received_date' => 'date',
+            'power_activation_date' => 'date',
+            'tenant_burden_confirmed_date' => 'date',
+            'owner_proposed_date' => 'date',
+            'owner_approved_date' => 'date',
+            'ordered_date' => 'date',
+            'completion_scheduled_date' => 'date',
+            'completion_received_date' => 'date',
+            'completion_reported_date' => 'date',
+            'kakumei_registered_date' => 'date',
+            'completed_date' => 'date',
+            'kaiyaku_cancellation_date' => 'date',
             'move_out_report_date' => 'date',
             'transfer_due_date' => 'date:Y/m/d',
         ];
@@ -108,10 +127,10 @@ class GeProgress extends Model
     }
 
     // 下代見積もりファイル
-    public function costEstimateFiles()
+    public function lowerEstimateFiles()
     {
         return $this->hasMany(GeProgressFile::class)
-            ->where('file_kind', GeProgressFile::FILE_KIND_COST_ESTIMATE);
+            ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE);
     }
 
     // 立会写真ファイル
@@ -121,11 +140,68 @@ class GeProgress extends Model
             ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO);
     }
 
-    // その他完工写真
-    public function otherCompletionPhotoFiles()
+    // 上代見積もりファイル
+    public function retailEstimateFiles()
     {
         return $this->hasMany(GeProgressFile::class)
-            ->where('file_kind', GeProgressFile::FILE_KIND_OTHER_COMPLETION_PHOTO);
+            ->where('file_kind', GeProgressFile::FILE_KIND_RETAIL_ESTIMATE);
+    }
+
+    // その他完工写真
+    public function completionPhotoFiles()
+    {
+        return $this->hasMany(GeProgressFile::class)
+            ->where('file_kind', GeProgressFile::FILE_KIND_COMPLETION_PHOTO);
+    }
+
+    public function getNextAction()
+    {
+        $nextAction = null;
+
+        if (!$this?->move_out_received_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_MOVE_OUT_RECEIVED;
+
+        } elseif (!$this?->progress?->investmentEmptyRoom?->cancellation_date) {
+            $nextAction = self::NEXT_ACTION_CANCELLATION;
+
+        } elseif ($this?->move_out_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_MOVE_OUT;
+
+        } elseif (!$this?->cost_received_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_COST_RECEIVED;
+
+        } elseif ($this?->power_activation_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_POWER_ACTIVATION;
+
+        } elseif ($this?->tenant_burden_confirmed_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_TENANT_BURDEN_CONFIRMED;
+
+        } elseif ($this?->owner_proposed_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_OWNER_PROPOSED;
+
+        } elseif ($this?->owner_approved_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_OWNER_APPROVED;
+
+        } elseif ($this?->ordered_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_ORDERED;
+
+        } elseif ($this?->completion_scheduled_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_COMPLETION_SCHEDULED;
+
+        } elseif ($this?->completion_received_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_COMPLETION_RECEIVED;
+
+        } elseif ($this?->completion_reported_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_COMPLETION_REPORTED;
+
+        } elseif ($this?->kakumei_registered_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_KAKUMEI_REGISTERED;
+
+        } elseif ($this?->completed_date_state === 0) {
+            $nextAction = self::NEXT_ACTION_COMPLETED;
+        }
+
+        return $nextAction;
     }
 
 }
