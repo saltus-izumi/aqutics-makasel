@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
+use App\Models\GeProgress;
 use App\Models\GeProgressFile;
-use App\Models\Progress;
 
 class GeProgressController
 {
@@ -17,57 +17,57 @@ class GeProgressController
         return view('admin.progress.ge.index');
     }
 
-    public function detail(Request $request, $progressId)
+    public function detail(Request $request, $geProgressId)
     {
-        $progress = Progress::query()
+        $geProgress = GeProgress::query()
             ->with([
-                'geProgress',
-                'geProgress.step1Files',
-                'geProgress.executorUser',
-                'genpukuResponsible',
-                'investment',
-                'investment.restorationCompany',
-                'investment.landlord.owner',
-                'investmentRoom',
-                'investmentRoomRedidentHistory',
-                'investmentEmptyRoom',
+                'step1Files',
+                'responsibleUser',
+                'executorUser',
+                'progress',
+                'progress.investment',
+                'progress.investment.restorationCompany',
+                'progress.investment.landlord.owner',
+                'progress.investmentRoom',
+                'progress.investmentRoomRedidentHistory',
+                'progress.investmentEmptyRoom',
             ])
-            ->find($progressId);
+            ->find($geProgressId);
 
-        if (!$progress) {
+        if (!$geProgress) {
             abort(404);
         }
 
         return view('admin.progress.ge.detail')
             ->with(compact(
-                'progress',
+                'geProgress',
             ));
     }
 
-    public function ownerSettlement(Request $request, $progressId)
+    public function ownerSettlement(Request $request, $geProgressId)
     {
-        $progress = Progress::query()
+        $geProgress = GeProgress::query()
             ->with([
-                'geProgress',
-                'geProgress.step1Files',
-                'geProgress.executorUser',
-                'genpukuResponsible',
-                'investment',
-                'investment.restorationCompany',
-                'investment.landlord.owner',
-                'investmentRoom',
-                'investmentRoomRedidentHistory',
-                'investmentEmptyRoom',
+                'step1Files',
+                'responsibleUser',
+                'executorUser',
+                'progress',
+                'progress.investment',
+                'progress.investment.restorationCompany',
+                'progress.investment.landlord.owner',
+                'progress.investmentRoom',
+                'progress.investmentRoomRedidentHistory',
+                'progress.investmentEmptyRoom',
             ])
-            ->find($progressId);
+            ->find($geProgressId);
 
-        if (!$progress) {
+        if (!$geProgress) {
             abort(404);
         }
 
         return view('admin.progress.ge.owner-settlement')
             ->with(compact(
-                'progress',
+                'geProgress',
             ));
     }
 

@@ -39,29 +39,29 @@
             <tr class="tw:h-[42px]">
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">退去受付</td>
                 <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $progress->taikyo_uketuke_date?->format('Y/m/d') }}
+                    {{ $geProgress->move_out_received_date?->format('Y/m/d') }}
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">革命登録</td>
                 <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $progress->kakumei_koujo_touroku_date?->format('Y/m/d') }}
+                    {{ $geProgress->kakumei_registered_date?->format('Y/m/d') }}
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">退去報告</td>
                 <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $progress->geProgress?->move_out_report_date?->format('Y/m/d') }}
+                    {{ $geProgress->move_out_report_date?->format('Y/m/d') }}
                 </td>
             </tr>
             <tr class="tw:h-[42px]">
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">解約日</td>
                 <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $progress?->investmentEmptyRoom?->cancellation_date?->format('Y/m/d') }}
+                    {{ $geProgress?->progress?->investmentEmptyRoom?->cancellation_date?->format('Y/m/d') }}
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">退去日</td>
                 <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $progress->taikyo_date?->format('Y/m/d') }}
+                    {{ $geProgress->move_out_date?->format('Y/m/d') }}
                 </td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">見積り受信日</td>
                 <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $progress->genpuku_mitsumori_recieved_date?->format('Y/m/d') }}
+                    {{ $geProgress->cost_received_date?->format('Y/m/d') }}
                 </td>
             </tr>
         </table>
@@ -76,7 +76,7 @@
             <div class="tw:w-full">
                 <x-form.multi_file_upload2
                     name="step1_files"
-                    instanceId="ge-progress-step1-{{ $progress->id }}"
+                    instanceId="ge-progress-step1-{{ $geProgress->id }}"
                     class="tw:h-[42px]"
                     maxFileCount="20"
                     maxFileSize="25MB"
@@ -106,10 +106,10 @@
         <div class="tw:h-[42px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
                 <x-form.checkbox
-                    name="step1Confirmed"
-                    :checked="$step1Confirmed"
+                    name="isStep1Confirmed"
+                    :checked="$isStep1Confirmed"
                     label_class="tw:!text-[1.1rem]"
-                    wire:model.live="step1Confirmed"
+                    wire:model.live="isStep1Confirmed"
                 >
                     立会パッケージ、退去時清算書格納の確認
                 </x-form.checkbox>
@@ -117,7 +117,7 @@
             <div>
                 <x-button.blue
                     class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
-                    :disabled="!$step1Confirmed"
+                    :disabled="!$isStep1Confirmed"
                     type="button"
                     x-on:click="if (!confirm('立会依頼送信します。よろしいですか。')) { return; } $wire.updateMoveOutReportDate();"
                 >
@@ -132,31 +132,34 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('geProgressStep1', () => ({
-                instanceId: @js('ge-progress-step1-' . $progress->id),
+                instanceMap: [
+                    {
+                        instanceId: @js('ge-progress-step1-' . $geProgress->id),
+                        uploadProperty: 'step1Uploads',
+                        saveMethod: 'saveStep1Uploads',
+                        removeMethod: 'removeStep1File',
+                    },
+                ],
                 handleSelect(event) {
-                    if (event?.detail?.name !== 'operation_files') {
-                        return;
-                    }
-                    if (event?.detail?.instanceId !== this.instanceId) {
+                    const target = this.instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                    if (!target) {
                         return;
                     }
                     const files = event.detail?.files || [];
                     if (files.length === 0) {
                         return;
                     }
-                    this.$wire.uploadMultiple('step1Uploads', files, () => {
-                        this.$wire.call('saveStep1Uploads');
+                    this.$wire.uploadMultiple(target.uploadProperty, files, () => {
+                        this.$wire.call(target.saveMethod);
                     });
                 },
                 handleRemove(event) {
-                    if (event?.detail?.name !== 'operation_files') {
-                        return;
-                    }
-                    if (event?.detail?.instanceId !== this.instanceId) {
+                    const target = this.instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                    if (!target) {
                         return;
                     }
                     const fileId = event?.detail?.file?.id || null;
-                    this.$wire.call('removeStep1File', fileId);
+                    this.$wire.call(target.removeMethod, fileId);
                 },
             }));
         });

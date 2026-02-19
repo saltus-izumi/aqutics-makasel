@@ -3,26 +3,31 @@
 namespace App\Livewire\Admin\Progress\Ge;
 
 use App\Models\GeProgress;
+use App\Models\GeProgressFile;
 use App\Models\TradingCompany;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class DetailHeader extends Component
 {
-    public $progress = null;
+    public $geProgress = null;
     public array $averageLt = [];
     public $mode = 'move-out-settlement';
-    public $genpukuGyoushaId = null;
+    public $tradingCompanyId = null;
     public $restorationCompanies = [];
 
+    protected array $geProgressMap = [
+        'tradingCompanyId' => 'trading_company_id',
+    ];
+
     protected array $progressMap = [
-        'genpukuGyoushaId' => 'genpuku_gyousha_id',
+        'trading_company_id' => 'genpuku_gyousha_id'
     ];
 
     protected function rules(): array
     {
         return [
-            'genpukuGyoushaId' => ['nullable'],
+            'tradingCompanyId' => ['nullable'],
         ];
     }
 
@@ -45,8 +50,8 @@ class DetailHeader extends Component
             }
             $this->restorationCompanies[$company->id] = $option;
         }
-        $this->genpukuGyoushaId = $this->progress->genpuku_gyousha_id ?? $this->progress->investment?->restoration_company_id;
-// dump($this->genpukuGyoushaId);
+        $this->tradingCompanyId = $this->geProgress->trading_company_id ?? $this->geProgress->progress->investment?->restoration_company_id;
+// dump($this->tradingCompanyId);
 // dump($this->restorationCompanies);
 
         $this->buildAverageLt();
@@ -55,16 +60,16 @@ class DetailHeader extends Component
     protected function buildAverageLt(): void
     {
         $pairs = [
-            'genpuku_mitsumori_recieved' => ['taikyo_date', 'genpuku_mitsumori_recieved_date'],
-            'genpuku_teian_date' => ['genpuku_mitsumori_recieved_date', 'genpuku_teian_date'],
-            'genpuku_teian_kyodaku' => ['genpuku_teian_date', 'genpuku_teian_kyodaku_date'],
-            'genpuku_kouji_hachu' => ['genpuku_teian_kyodaku_date', 'genpuku_kouji_hachu_date'],
-            'kanko_jyushin_date' => ['genpuku_kouji_hachu_date', 'kanko_jyushin_date'],
+            'cost_received' => ['move_out_date', 'cost_received_date'],
+            'owner_proposed' => ['cost_received_date', 'owner_proposed_date'],
+            'owner_approved' => ['owner_proposed_date', 'owner_approved_date'],
+            'ordered' => ['owner_approved_date', 'ordered_date'],
+            'completion_received' => ['ordered_date', 'completion_received_date'],
         ];
 
         foreach ($pairs as $key => [$startPath, $endPath]) {
-            $start = $this->progress->{$startPath};
-            $end = $this->progress->{$endPath};
+            $start = $this->geProgress->{$startPath};
+            $end = $this->geProgress->{$endPath};
             if (!$start || !$end) {
                 $this->averageLt[$key] = '';
             }
@@ -76,12 +81,12 @@ class DetailHeader extends Component
 
     public function updated($propertyName, $value)
     {
-        if (!array_key_exists($propertyName, $this->progressMap)) {
+        if (!array_key_exists($propertyName, $this->geProgressMap)) {
             return;
         }
 
         // null対策
-        if (!$this->progress?->geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
@@ -90,23 +95,57 @@ class DetailHeader extends Component
         if (is_string($value)) {
             $value = trim($value) !== '' ? trim($value) : null;
         }
+        DB::transaction(function () use ($propertyName, $value) {
+            $column = $this->geProgressMap[$propertyName];
+            $this->geProgress->{$column} = $value;
+            $this->geProgress->save();
 
-        $column = $this->progressMap[$propertyName];
-        $this->progress->{$column} = $value;
-        $this->progress->save();
+            if (array_key_exists($column, $this->progressMap)) {
+                $progressColumn = $this->progressMap[$column];
+                $this->geProgress->progress->{$progressColumn} = $value;
+                $this->geProgress->progress->save();
+            }
+        });
 
-        $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->dispatch('geProgressUpdated', progressId: $this->geProgress->id);
     }
 
     public function rePropose()
     {
         DB::transaction(function () {
             // 現在のプロセス管理データを修正
-            $this->progress->geProgress->next_action = GeProgress::NEXT_ACTION_RE_PROPOSED;
-            $this->progress->geProgress->save();
+            $this->geProgress->next_action = GeProgress::NEXT_ACTION_RE_PROPOSED;
+            $this->geProgress->save();
 
+            // 再提案データ作成
+            $geProgress = new GeProgress([
+                'progress_id' => $this->geProgress->progress_id,
+                'responsible_user_id' => $this->geProgress->responsible_user_id,
+                'executor_user_id' => $this->geProgress->executor_user_id,
+                'trading_company_id' => $this->geProgress->trading_company_id,
+                'move_out_received_date' => $this->geProgress->move_out_received_date,
+                'move_out_date' => $this->geProgress->move_out_date,
+                'security_deposit_amount' => $this->geProgress->security_deposit_amount,
+                'prorated_rent_amount' => $this->geProgress->prorated_rent_amount,
+                'penalty_forfeiture_amount' => $this->geProgress->penalty_forfeiture_amount,
+                'inspection_request_message' => $this->geProgress->inspection_request_message,
+                'step1_confirmed' => $this->geProgress->step1_confirmed,
+                'move_out_report_date' => $this->geProgress->move_out_report_date,
+            ]);
+            $geProgress->resetNextAction();
+            $geProgress->save();
 
+            foreach ($this->geProgress->step1Files as $step1File) {
+                $newFile = new GeProgressFile($step1File->toArray());
+                $newFile->ge_progress_id = $geProgress->id;
+                $newFile->save();
+            }
 
+            foreach ($this->geProgress->moveOutSettlementFiles as $moveOutSettlementFile) {
+                $newFile = new GeProgressFile($moveOutSettlementFile->toArray());
+                $newFile->ge_progress_id = $geProgress->id;
+                $newFile->save();
+            }
 
         });
     }
@@ -114,11 +153,11 @@ class DetailHeader extends Component
     public function cancelProgress()
     {
         DB::transaction(function () {
-            $this->progress->kaiyaku_cancellation_date = now();
-            $this->progress->save();
+            $this->geProgress->kaiyaku_cancellation_date = now();
+            $this->geProgress->save();
 
-            $this->progress->geProgress->next_action = GeProgress::NEXT_ACTION_CANCEL;
-            $this->progress->geProgress->save();
+            $this->geProgress->geProgress->next_action = GeProgress::NEXT_ACTION_CANCEL;
+            $this->geProgress->geProgress->save();
         });
     }
 

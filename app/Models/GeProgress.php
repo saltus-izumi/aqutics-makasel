@@ -102,6 +102,11 @@ class GeProgress extends Model
         return $this->belongsTo(Progress::class);
     }
 
+    public function responsibleUser()
+    {
+        return $this->belongsTo(User::class, 'responsible_user_id');
+    }
+
     public function executorUser()
     {
         return $this->belongsTo(User::class, 'executor_user_id');
@@ -154,54 +159,50 @@ class GeProgress extends Model
             ->where('file_kind', GeProgressFile::FILE_KIND_COMPLETION_PHOTO);
     }
 
-    public function getNextAction()
+    public function resetNextAction()
     {
-        $nextAction = null;
-
         if (!$this?->move_out_received_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_MOVE_OUT_RECEIVED;
+            $this->next_action = self::NEXT_ACTION_MOVE_OUT_RECEIVED;
 
         } elseif (!$this?->progress?->investmentEmptyRoom?->cancellation_date) {
-            $nextAction = self::NEXT_ACTION_CANCELLATION;
+            $this->next_action = self::NEXT_ACTION_CANCELLATION;
 
         } elseif ($this?->move_out_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_MOVE_OUT;
+            $this->next_action = self::NEXT_ACTION_MOVE_OUT;
 
         } elseif (!$this?->cost_received_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_COST_RECEIVED;
+            $this->next_action = self::NEXT_ACTION_COST_RECEIVED;
 
         } elseif ($this?->power_activation_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_POWER_ACTIVATION;
+            $this->next_action = self::NEXT_ACTION_POWER_ACTIVATION;
 
         } elseif ($this?->tenant_burden_confirmed_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_TENANT_BURDEN_CONFIRMED;
+            $this->next_action = self::NEXT_ACTION_TENANT_BURDEN_CONFIRMED;
 
         } elseif ($this?->owner_proposed_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_OWNER_PROPOSED;
+            $this->next_action = self::NEXT_ACTION_OWNER_PROPOSED;
 
         } elseif ($this?->owner_approved_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_OWNER_APPROVED;
+            $this->next_action = self::NEXT_ACTION_OWNER_APPROVED;
 
         } elseif ($this?->ordered_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_ORDERED;
+            $this->next_action = self::NEXT_ACTION_ORDERED;
 
         } elseif ($this?->completion_scheduled_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_COMPLETION_SCHEDULED;
+            $this->next_action = self::NEXT_ACTION_COMPLETION_SCHEDULED;
 
         } elseif ($this?->completion_received_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_COMPLETION_RECEIVED;
+            $this->next_action = self::NEXT_ACTION_COMPLETION_RECEIVED;
 
         } elseif ($this?->completion_reported_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_COMPLETION_REPORTED;
+            $this->next_action = self::NEXT_ACTION_COMPLETION_REPORTED;
 
         } elseif ($this?->kakumei_registered_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_KAKUMEI_REGISTERED;
+            $this->next_action = self::NEXT_ACTION_KAKUMEI_REGISTERED;
 
         } elseif ($this?->completed_date_state === 0) {
-            $nextAction = self::NEXT_ACTION_COMPLETED;
+            $this->next_action = self::NEXT_ACTION_COMPLETED;
         }
-
-        return $nextAction;
     }
 
 }

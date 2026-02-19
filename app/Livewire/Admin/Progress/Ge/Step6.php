@@ -12,13 +12,13 @@ class Step6 extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
+    public $geProgress = null;
 
     public string $componentId = '';
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
+        $this->geProgress = $geProgress;
     }
 
     public function render()

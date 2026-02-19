@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Progress\Ge;
 
+use App\Models\GeProgress;
 use App\Models\GeProgressFile;
-use App\Models\Progress;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,7 +12,7 @@ class Step3 extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
+    public $geProgress = null;
     public $completionMessage;
 
     public array $completionPhotoUploads = [];
@@ -36,10 +36,10 @@ class Step3 extends Component
         ];
     }
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
-        $this->completionMessage = $progress->geProgress?->completion_message;
+        $this->geProgress = $geProgress;
+        $this->completionMessage = $geProgress?->completion_message;
         $this->componentId = $this->getId();
         $this->loadCompletionPhotoFiles();
     }
@@ -51,7 +51,7 @@ class Step3 extends Component
         }
 
         // null対策
-        if (!$this->progress?->geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
@@ -60,25 +60,24 @@ class Step3 extends Component
         $value = trim($value) ? trim($value) : null;
 
         $column = $this->geProgressMap[$propertyName];
-        $this->progress->geProgress->{$column} = $value;
-        $this->progress->geProgress->save();
+        $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
 
-        $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
     public function saveCompletionPhotoUploads(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
         foreach ($this->completionPhotoUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$geProgress->id}");
+            $path = $file->store("progress/ge/{$this->geProgress->id}");
 
             GeProgressFile::create([
-                'ge_progress_id' => $geProgress->id,
+                'ge_progress_id' => $this->geProgress->id,
                 'file_kind' => GeProgressFile::FILE_KIND_COMPLETION_PHOTO,
                 'file_name' => $original,
                 'file_path' => $path,
@@ -92,13 +91,12 @@ class Step3 extends Component
 
     public function removeCompletionPhotoFile($fileId): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress || !$fileId) {
+        if (!$this->geProgress || !$fileId) {
             return;
         }
 
         $file = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_COMPLETION_PHOTO)
             ->where('id', $fileId)
             ->first();
@@ -117,29 +115,27 @@ class Step3 extends Component
 
     public function reloadProgress($progressId = null)
     {
-        if (!$this->progress) {
+        if (!$this->geProgress) {
             return;
         }
 
-        if ($progressId !== null && (int) $progressId !== (int) $this->progress->id) {
+        if ($progressId !== null && (int) $progressId !== (int) $this->geProgress->id) {
             return;
         }
 
-        $this->progress = Progress::query()
-            ->with('geProgress')
-            ->find($this->progress->id);
+        $this->geProgress = GeProgress::query()
+            ->find($this->geProgress->id);
     }
 
     protected function loadCompletionPhotoFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->completionPhotoFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_COMPLETION_PHOTO)
             ->orderBy('id')
             ->get();

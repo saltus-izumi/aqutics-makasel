@@ -12,8 +12,8 @@ class Step7 extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
-    public $restorationCompanyMessage;
+    public $geProgress = null;
+    public $executorToRestorationCompanyMessage;
 
     public array $purchaseOrderUploads = [];
     public array $purchaseOrderFiles = [];
@@ -21,12 +21,12 @@ class Step7 extends Component
 
     protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
     protected array $geProgressMap = [
-        'restorationCompanyMessage' => 'restoration_company_message',
+        'executorToRestorationCompanyMessage' => 'executor_to_restoration_company_message',
     ];
     protected function rules(): array
     {
         return [
-            'restorationCompanyMessage' => ['nullable', 'string'],
+            'executorToRestorationCompanyMessage' => ['nullable', 'string'],
         ];
     }
 
@@ -36,10 +36,10 @@ class Step7 extends Component
         ];
     }
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
-        $this->restorationCompanyMessage = $progress->geProgress?->restoration_company_message;
+        $this->geProgress = $geProgress;
+        $this->executorToRestorationCompanyMessage = $geProgress?->executor_to_restoration_company_message;
         $this->componentId = $this->getId();
         $this->loadPurchaseOrderFiles();
     }
@@ -51,7 +51,7 @@ class Step7 extends Component
         }
 
         // null対策
-        if (!$this->progress?->geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
@@ -60,25 +60,24 @@ class Step7 extends Component
         $value = trim($value) ? trim($value) : null;
 
         $column = $this->geProgressMap[$propertyName];
-        $this->progress->geProgress->{$column} = $value;
-        $this->progress->geProgress->save();
+        $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
 
-        $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
     public function savePurchaseOrderUploads(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
         foreach ($this->purchaseOrderUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$geProgress->id}");
+            $path = $file->store("progress/ge/{$this->geProgress->id}");
 
             GeProgressFile::create([
-                'ge_progress_id' => $geProgress->id,
+                'ge_progress_id' => $this->geProgress->id,
                 'file_kind' => GeProgressFile::FILE_KIND_PURCHASE_ORDER,
                 'file_name' => $original,
                 'file_path' => $path,
@@ -92,13 +91,12 @@ class Step7 extends Component
 
     public function removePurchaseOrderFile($fileId): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress || !$fileId) {
+        if (!$this->geProgress || !$fileId) {
             return;
         }
 
         $file = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_PURCHASE_ORDER)
             ->where('id', $fileId)
             ->first();
@@ -115,31 +113,29 @@ class Step7 extends Component
         $this->loadPurchaseOrderFiles();
     }
 
-    public function reloadProgress($progressId = null)
+    public function reloadProgress($geProgressId = null)
     {
-        if (!$this->progress) {
+        if (!$this->geProgress) {
             return;
         }
 
-        if ($progressId !== null && (int) $progressId !== (int) $this->progress->id) {
+        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
             return;
         }
 
-        $this->progress = Progress::query()
-            ->with('geProgress')
-            ->find($this->progress->id);
+        $this->geProgress = Progress::query()
+            ->find($this->geProgress->id);
     }
 
     protected function loadPurchaseOrderFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->purchaseOrderFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_PURCHASE_ORDER)
             ->orderBy('id')
             ->get();

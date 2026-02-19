@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Progress\Ge;
 
+use App\Models\GeProgress;
 use App\Models\GeProgressFile;
-use App\Models\Progress;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,7 +12,7 @@ class Memo extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
+    public $geProgress = null;
     public $memo;
 
     public string $componentId = '';
@@ -34,10 +34,10 @@ class Memo extends Component
         ];
     }
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
-        $this->memo = $progress->geProgress?->memo;
+        $this->geProgress = $geProgress;
+        $this->memo = $geProgress?->memo;
         $this->componentId = $this->getId();
     }
 
@@ -48,7 +48,7 @@ class Memo extends Component
         }
 
         // null対策
-        if (!$this->progress?->geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
@@ -57,25 +57,24 @@ class Memo extends Component
         $value = trim($value) ? trim($value) : null;
 
         $column = $this->geProgressMap[$propertyName];
-        $this->progress->geProgress->{$column} = $value;
-        $this->progress->geProgress->save();
+        $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
 
-        $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
-    public function reloadProgress($progressId = null)
+    public function reloadProgress($geProgressId = null)
     {
-        if (!$this->progress) {
+        if (!$this->geProgress) {
             return;
         }
 
-        if ($progressId !== null && (int) $progressId !== (int) $this->progress->id) {
+        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
             return;
         }
 
-        $this->progress = Progress::query()
-            ->with('geProgress')
-            ->find($this->progress->id);
+        $this->geProgress = GeProgress::query()
+            ->find($this->geProgress->id);
     }
 
     public function render()

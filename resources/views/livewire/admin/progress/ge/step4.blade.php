@@ -80,7 +80,7 @@
                     <x-form.multi_file_upload2
                         name="retail_estimate"
                         title="上代見積もり"
-                        instanceId="ge-progress-retail-estimate-{{ $progress->id }}"
+                        instanceId="ge-progress-retail-estimate-{{ $geProgress->id }}"
                         class="tw:h-[42px]"
                         maxFileCount="20"
                         maxFileSize="25MB"
@@ -149,7 +149,7 @@
         </template>
         <div class="tw:mt-[21px]">
             実行担当 ⇒ 責任担当<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="responsiblePersonMessage"></x-form.textarea>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="executorToResponsibleMessage"></x-form.textarea>
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
@@ -169,7 +169,7 @@
                 walkthroughPhotoFileCount: @js($walkthroughPhotoFileCount),
                 instanceMap: [
                     {
-                        instanceId: @js('ge-progress-retail-estimate-' . $progress->id),
+                        instanceId: @js('ge-progress-retail-estimate-' . $geProgress->id),
                         uploadProperty: 'retailEstimateUploads',
                         saveMethod: 'saveRetailEstimateUploads',
                         removeMethod: 'removeRetailEstimateFile',

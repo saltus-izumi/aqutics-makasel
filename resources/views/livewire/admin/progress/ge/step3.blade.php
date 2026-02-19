@@ -20,7 +20,7 @@
                 <x-form.multi_file_upload2
                     name="completion_photo"
                     title="その他完工写真"
-                    instanceId="ge-progress-completion-photo-{{ $progress->id }}"
+                    instanceId="ge-progress-completion-photo-{{ $geProgress->id }}"
                     class="tw:h-[42px]"
                     maxFileCount="20"
                     maxFileSize="25MB"
@@ -60,7 +60,7 @@
             Alpine.data('geProgressStep3', () => ({
                 instanceMap: [
                     {
-                        instanceId: @js('ge-progress-completion-photo-' . $progress->id),
+                        instanceId: @js('ge-progress-completion-photo-' . $geProgress->id),
                         uploadProperty: 'completionPhotoUploads',
                         saveMethod: 'saveCompletionPhotoUploads',
                         removeMethod: 'removeCompletionPhotoFile',

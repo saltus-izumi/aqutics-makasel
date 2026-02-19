@@ -28,8 +28,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('ge')->name('ge.')->group(function () {
                 Route::get('/', [AdminGeProgress::class, 'index'])->name('index');
                 Route::get('/files/{geProgressFileId}', [AdminGeProgress::class, 'preview'])->name('preview');
-                Route::get('/{progressId}', [AdminGeProgress::class, 'detail'])->name('detail');
-                Route::get('/{progressId}/owner-settlement', [AdminGeProgress::class, 'ownerSettlement'])->name('owner-settlement');
+                Route::get('/{geProgressId}', [AdminGeProgress::class, 'detail'])->name('detail');
+                Route::get('/{geProgressId}/owner-settlement', [AdminGeProgress::class, 'ownerSettlement'])->name('owner-settlement');
             });
         });
 

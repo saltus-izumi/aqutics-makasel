@@ -36,7 +36,7 @@
                     </td>
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">敷金預託等</td>
                     <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
-                        {{ number_format($progress->geProgress?->security_deposit_amount)}}
+                        {{ number_format($geProgress?->security_deposit_amount)}}
                     </td>
                 </tr>
                 <tr class="tw:h-[42px]">
@@ -46,7 +46,7 @@
                     </td>
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">日割り家賃</td>
                     <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
-                        {{ number_format($progress->geProgress?->prorated_rent_amount) }}
+                        {{ number_format($geProgress?->prorated_rent_amount) }}
                     </td>
                 </tr>
                 <tr class="tw:h-[42px]">
@@ -56,7 +56,7 @@
                     </td>
                     <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">違約金（償却等）</td>
                     <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
-                        {{ number_format($progress->geProgress?->penalty_forfeiture_amount) }}
+                        {{ number_format($geProgress?->penalty_forfeiture_amount) }}
                     </td>
                 </tr>
                 <tr class="tw:h-[42px]">
@@ -92,7 +92,7 @@
                         <x-form.multi_file_upload2
                             name="move_out_settlement"
                             title="退去時清算書"
-                            instanceId="ge-progress-move-out-settlement-{{ $progress->id }}"
+                            instanceId="ge-progress-move-out-settlement-{{ $geProgress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -109,7 +109,7 @@
                                 'application/vnd.ms-excel',
                                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                 'application/msword',
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                             ]"
                             :files="$moveOutSettlementFiles"
                         />
@@ -120,7 +120,7 @@
                         <x-form.multi_file_upload2
                             name="lower_estimate"
                             title="下代見積もり"
-                            instanceId="ge-progress-lower-estimate-{{ $progress->id }}"
+                            instanceId="ge-progress-lower-estimate-{{ $geProgress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -148,7 +148,7 @@
                         <x-form.multi_file_upload2
                             name="walkthrough_photo"
                             title="立会写真"
-                            instanceId="ge-progress-walkthrough-photo-{{ $progress->id }}"
+                            instanceId="ge-progress-walkthrough-photo-{{ $geProgress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -191,19 +191,19 @@
             Alpine.data('geProgressStep2', () => ({
                 instanceMap: [
                     {
-                        instanceId: @js('ge-progress-move-out-settlement-' . $progress->id),
+                        instanceId: @js('ge-progress-move-out-settlement-' . $geProgress->id),
                         uploadProperty: 'moveOutSettlementUploads',
                         saveMethod: 'saveMoveOutSettlementUploads',
                         removeMethod: 'removeMoveOutSettlementFile',
                     },
                     {
-                        instanceId: @js('ge-progress-lower-estimate-' . $progress->id),
+                        instanceId: @js('ge-progress-lower-estimate-' . $geProgress->id),
                         uploadProperty: 'lowerEstimateUploads',
                         saveMethod: 'saveLowerEstimateUploads',
                         removeMethod: 'removeLowerEstimateFile',
                     },
                     {
-                        instanceId: @js('ge-progress-walkthrough-photo-' . $progress->id),
+                        instanceId: @js('ge-progress-walkthrough-photo-' . $geProgress->id),
                         uploadProperty: 'walkthroughPhotoUploads',
                         saveMethod: 'saveWalkthroughPhotoUploads',
                         removeMethod: 'removeWalkthroughPhotoFile',

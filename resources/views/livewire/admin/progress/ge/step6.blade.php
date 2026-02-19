@@ -4,15 +4,15 @@
     </div>
     <div class="tw:w-full tw:mt-[21px] tw:px-[26px]">
         <div class="tw:h-[42px] tw:flex tw:justify-center tw:items-start">
-            @if ($progress->geProgress?->owner_proposal_operation_id)
+            @if ($geProgress?->owner_proposal_operation_id)
                 <a href="{{ route('admin.operation.edit', [
-                    'operationId' => $progress->geProgress?->owner_proposal_operation_id,
+                    'operationId' => $geProgress?->owner_proposal_operation_id,
                 ]) }}">
                     <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">オペレーション編集</x-button.blue>
                 </a>
             @else
                 <a href="{{ route('admin.operation.create.ge', [
-                    'geProgressId' => $progress->geProgress?->id,
+                    'geProgressId' => $geProgress?->id,
                     'geProgressStep' => 'owner_proposal',
                 ]) }}">
                     <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">オペレーション作成</x-button.blue>

@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Progress\Ge;
 
+use App\Models\GeProgress;
 use App\Models\GeProgressFile;
-use App\Models\Progress;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,7 +12,7 @@ class Step5 extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
+    public $geProgress = null;
     public $isProperWorkBurden;
     public $isProperPrice;
     public $correctionInstructionMessage;
@@ -43,13 +43,13 @@ class Step5 extends Component
         ];
     }
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
-        $this->isProperWorkBurden = $progress->geProgress?->is_proper_work_burden;
-        $this->isProperPrice = $progress->geProgress?->is_proper_price;
-        $this->correctionInstructionMessage = $progress->geProgress?->correction_instruction_message;
-        $this->estimateNoteMessage = $progress->geProgress?->estimate_note_message;
+        $this->geProgress = $geProgress;
+        $this->isProperWorkBurden = $geProgress?->is_proper_work_burden;
+        $this->isProperPrice = $geProgress?->is_proper_price;
+        $this->correctionInstructionMessage = $geProgress?->correction_instruction_message;
+        $this->estimateNoteMessage = $geProgress?->estimate_note_message;
         $this->componentId = $this->getId();
     }
 
@@ -60,7 +60,7 @@ class Step5 extends Component
         }
 
         // null対策
-        if (!$this->progress?->geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
@@ -69,25 +69,24 @@ class Step5 extends Component
         $value = trim($value) ? trim($value) : null;
 
         $column = $this->geProgressMap[$propertyName];
-        $this->progress->geProgress->{$column} = $value;
-        $this->progress->geProgress->save();
+        $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
 
-        $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
-    public function reloadProgress($progressId = null)
+    public function reloadProgress($geProgressId = null)
     {
-        if (!$this->progress) {
+        if (!$this->geProgress) {
             return;
         }
 
-        if ($progressId !== null && (int) $progressId !== (int) $this->progress->id) {
+        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
             return;
         }
 
-        $this->progress = Progress::query()
-            ->with('geProgress')
-            ->find($this->progress->id);
+        $this->geProgress = GeProgress::query()
+            ->find($this->geProgress->id);
     }
 
     public function render()

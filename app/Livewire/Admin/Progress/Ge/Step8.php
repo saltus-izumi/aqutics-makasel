@@ -12,15 +12,15 @@ class Step8 extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
+    public $geProgress = null;
 
     public string $componentId = '';
 
     protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
+        $this->geProgress = $geProgress;
     }
 
     public function render()

@@ -70,19 +70,19 @@ class ProgressList extends Component
     protected function buildAverageLt($progresses): array
     {
         $pairs = [
-            'cancellation' => ['taikyo_uketuke_date', 'investmentEmptyRoom.cancellation_date'],
-            'taikyo' => ['investmentEmptyRoom.cancellation_date', 'taikyo_date'],
-            'genpuku_mitsumori_recieved' => ['taikyo_date', 'genpuku_mitsumori_recieved_date'],
-            // 'tsuden' => ['genpuku_mitsumori_recieved_date', 'tenant_charge_confirmed_date'],
-            'tenant_charge_confirmed' => ['genpuku_mitsumori_recieved_date', 'tenant_charge_confirmed_date'],
-            'genpuku_teian' => ['tenant_charge_confirmed_date', 'genpuku_teian_date'],
-            'genpuku_teian_kyodaku' => ['genpuku_teian_date', 'genpuku_teian_kyodaku_date'],
-            'genpuku_kouji_hachu' => ['genpuku_teian_kyodaku_date', 'genpuku_kouji_hachu_date'],
-            'kanko_yotei' => ['genpuku_kouji_hachu_date', 'kanko_yotei_date'],
-            'kanko_jyushin_date' => ['kanko_yotei_date', 'kanko_jyushin_date'],
-            'owner_kanko_houkoku' => ['kanko_jyushin_date', 'owner_kanko_houkoku_date'],
-            'kakumei_koujo_touroku' => ['owner_kanko_houkoku_date', 'kakumei_koujo_touroku_date'],
-            'ge_complete' => ['kakumei_koujo_touroku_date', 'ge_complete_date'],
+            'cancellation' => ['move_out_received_date', 'progress.investmentEmptyRoom.cancellation_date'],
+            'move_out' => ['investmentEmptyRoom.cancellation_date', 'move_out_date'],
+            'cost_received' => ['move_out_date', 'cost_received_date'],
+            // 'tsuden' => ['cost_received_date', 'tenant_charge_confirmed_date'],
+            'tenant_burden_confirmed' => ['cost_received_date', 'tenant_burden_confirmed_date'],
+            'owner_proposed' => ['tenant_burden_confirmed_date', 'owner_proposed_date'],
+            'owner_approved' => ['owner_proposed_date', 'owner_approved_date'],
+            'ordered' => ['owner_approved_date', 'ordered_date'],
+            'completion_scheduled' => ['ordered_date', 'completion_scheduled_date'],
+            'completion_received' => ['completion_scheduled_date', 'completion_received_date'],
+            'completion_reported' => ['completion_received_date', 'completion_reported_date'],
+            'kakumei_registered' => ['completion_reported_date', 'kakumei_registered_date'],
+            'complete' => ['kakumei_registered_date', 'completed_date'],
         ];
 
         $averages = $this->averageDaysBatch($progresses, $pairs);
@@ -168,7 +168,7 @@ class ProgressList extends Component
                 $geProgress->{$field . '_state'} = 1;
             }
 
-            $geProgress->next_action = $geProgress->getNextAction();
+            $geProgress->resetNextAction();
             $geProgress->save();
         });
 
@@ -223,17 +223,18 @@ class ProgressList extends Component
     {
         if ($this->incompleteOnly) {
             $query->whereNull('completed_date');
-            $query->whereNull('kaiyaku_cancellation_date');
+            $query->whereNull('cancellation_reversed_date');
         }
 
         if ($this->searchKeyword !== '') {
             $keyword = $this->searchKeyword;
             $query->where(function ($q) use ($keyword) {
-                $q->where('investment_id', $keyword)
-                    ->orWhereHas('investment', function ($q) use ($keyword) {
-                        $q->where('investment_name', 'like', '%' . $keyword . '%');
+                $q
+                    ->orWhereHas('progress.investment', function ($q) use ($keyword) {
+                        $q->where('investment_name', 'like', '%' . $keyword . '%')
+                            ->orWhere('id', $keyword);
                     })
-                    ->orWhereHas('investment.landlord.owner', function ($q) use ($keyword) {
+                    ->orWhereHas('progress.investment.landlord.owner', function ($q) use ($keyword) {
                         $q->where('name', 'like', '%' . $keyword . '%')
                             ->orWhere('id', $keyword);
                     });
@@ -261,8 +262,10 @@ class ProgressList extends Component
                 continue;
             }
 
-            if ($filterField === 'investment_name') {
-                $this->applyRelationFilter($query, 'investment', 'investment_name', $filterValue, $filterBlank, true);
+            if ($filterField === 'investment_id') {
+                $this->applyRelationFilter($query, 'progress', 'investment_id', $filterValue, $filterBlank, true);
+            } elseif ($filterField === 'investment_name') {
+                $this->applyRelationFilter($query, 'progress.investment', 'investment_name', $filterValue, $filterBlank, true);
             } elseif ($filterField === 'investment_room_number') {
                 if ($filterValue !== '') {
                     if ($filterValue === '共用部') {
@@ -273,10 +276,6 @@ class ProgressList extends Component
                 } else {
                     $this->applyRelationFilter($query, 'progress.investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
                 }
-            // } elseif ($filterField === 'executor_user_id') {
-            //     $this->applyRelationFilter($query, 'geProgress', 'executor_user_id', $filterValue, $filterBlank);
-            // } elseif ($filterField === 'next_action') {
-            //     $this->applyRelationFilter($query, 'geProgress', 'next_action', $filterValue, $filterBlank);
             } elseif (in_array($filterField, $this->getSimpleFilterFields(), true)) {
                 $this->applyColumnFilter($query, $filterField, $filterValue, $filterBlank);
             }
@@ -289,7 +288,13 @@ class ProgressList extends Component
     {
         $sortOrder = $this->normalizeSortOrder($this->sortOrder);
         $sortField = $this->sortField;
-        if ($sortField === 'investment_name') {
+
+    // dump($sortField);
+        if ($sortField === 'investment_id') {
+            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
+                ->select('ge_progresses.*')
+                ->orderBy('sort_progresses.investment_id', $sortOrder);
+        } elseif ($sortField === 'investment_name') {
             $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
                 ->leftJoin('investments as sort_investments', 'sort_investments.id', '=', 'sort_progresses.investment_id')
                 ->select('ge_progresses.*')

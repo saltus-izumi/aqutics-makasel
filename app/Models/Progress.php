@@ -76,9 +76,9 @@ class Progress extends Model
         return $this->belongsTo(InvestmentEmptyRoom::class);
     }
 
-    public function geProgress()
+    public function geProgresses()
     {
-        return $this->hasOne(GeProgress::class);
+        return $this->hasMany(GeProgress::class);
     }
 
     public function genpukuResponsible()

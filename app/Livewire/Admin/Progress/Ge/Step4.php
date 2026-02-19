@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Progress\Ge;
 
+use App\Models\GeProgress;
 use App\Models\GeProgressFile;
-use App\Models\Progress;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,12 +12,12 @@ class Step4 extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
+    public $geProgress = null;
     public $costAmount;
     public $chargeAmount;
     public $profitAmount;
     public $profitRate;
-    public $responsiblePersonMessage;
+    public $executorToResponsibleMessage;
 
     // 上代見積もり
     public array $retailEstimateUploads = [];
@@ -33,14 +33,14 @@ class Step4 extends Component
     protected array $geProgressMap = [
         'costAmount' => 'cost_amount',
         'chargeAmount' => 'charge_amount',
-        'responsiblePersonMessage' => 'responsible_person_message',
+        'executorToResponsibleMessage' => 'executor_to_responsible_message',
     ];
     protected function rules(): array
     {
         return [
             'costAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
             'chargeAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'responsiblePersonMessage' => ['nullable', 'string'],
+            'executorToResponsibleMessage' => ['nullable', 'string'],
         ];
     }
 
@@ -52,12 +52,12 @@ class Step4 extends Component
         ];
     }
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
-        $this->costAmount = $progress->geProgress?->cost_amount;
-        $this->chargeAmount = $progress->geProgress?->charge_amount;
-        $this->responsiblePersonMessage = $progress->geProgress?->responsible_person_message;
+        $this->geProgress = $geProgress;
+        $this->costAmount = $geProgress?->cost_amount;
+        $this->chargeAmount = $geProgress?->charge_amount;
+        $this->executorToResponsibleMessage = $geProgress?->executor_to_responsible_message;
         $this->componentId = $this->getId();
         $this->loadRetailEstimateFiles();
         $this->loadMoveOutSettlementFiles();
@@ -73,7 +73,7 @@ class Step4 extends Component
         }
 
         // null対策
-        if (!$this->progress?->geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
@@ -89,27 +89,26 @@ class Step4 extends Component
         $value = trim($value) ? trim($value) : null;
 
         $column = $this->geProgressMap[$propertyName];
-        $this->progress->geProgress->{$column} = $value;
-        $this->progress->geProgress->save();
+        $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
 
         $this->calcProfit();
 
-        $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
     public function saveRetailEstimateUploads(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
         foreach ($this->retailEstimateUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$geProgress->id}");
+            $path = $file->store("progress/ge/{$this->geProgress->id}");
 
             GeProgressFile::create([
-                'ge_progress_id' => $geProgress->id,
+                'ge_progress_id' => $this->geProgress->id,
                 'file_kind' => GeProgressFile::FILE_KIND_RETAIL_ESTIMATE,
                 'file_name' => $original,
                 'file_path' => $path,
@@ -123,13 +122,12 @@ class Step4 extends Component
 
     public function removeRetailEstimateFile($fileId): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress || !$fileId) {
+        if (!$this->geProgress || !$fileId) {
             return;
         }
 
         $file = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_RETAIL_ESTIMATE)
             ->where('id', $fileId)
             ->first();
@@ -146,31 +144,29 @@ class Step4 extends Component
         $this->loadRetailEstimateFiles();
     }
 
-    public function reloadProgress($progressId = null)
+    public function reloadProgress($geProgressId = null)
     {
-        if (!$this->progress) {
+        if (!$this->geProgress) {
             return;
         }
 
-        if ($progressId !== null && (int) $progressId !== (int) $this->progress->id) {
+        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
             return;
         }
 
-        $this->progress = Progress::query()
-            ->with('geProgress')
-            ->find($this->progress->id);
+        $this->geProgress = GeProgress::query()
+            ->find($this->geProgress->id);
     }
 
     protected function loadRetailEstimateFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->retailEstimateFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_RETAIL_ESTIMATE)
             ->orderBy('id')
             ->get();
@@ -188,14 +184,13 @@ class Step4 extends Component
 
     protected function loadMoveOutSettlementFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->moveOutSettlementFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT)
             ->orderBy('id')
             ->get();
@@ -211,14 +206,13 @@ class Step4 extends Component
 
     protected function loadLowerEstimateFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->lowerEstimateFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
             ->orderBy('id')
             ->get();
@@ -234,14 +228,13 @@ class Step4 extends Component
 
     protected function loadWalkthroughPhotoFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->walkthroughPhotoFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO)
             ->orderBy('id')
             ->get();
@@ -266,9 +259,9 @@ class Step4 extends Component
     }
 
     protected function calcProfit() {
-        $profitAmount = (int)$this->progress->geProgress->charge_amount - (int)$this->progress->geProgress->cost_amount;
-        if ($this->progress->geProgress->charge_amount > 0) {
-            $profitRate = $profitAmount / $this->progress->geProgress->charge_amount * 100;
+        $profitAmount = (int)$this->geProgress->charge_amount - (int)$this->geProgress->cost_amount;
+        if ($this->geProgress->charge_amount > 0) {
+            $profitRate = $profitAmount / $this->geProgress->charge_amount * 100;
         } else {
             $profitRate = 0;
         }

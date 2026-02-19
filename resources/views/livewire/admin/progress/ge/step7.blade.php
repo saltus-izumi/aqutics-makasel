@@ -12,7 +12,7 @@
             <x-form.multi_file_upload2
                 name="purchase_order"
                 title="発注書"
-                instanceId="ge-progress-purchase-order-{{ $progress->id }}"
+                instanceId="ge-progress-purchase-order-{{ $geProgress->id }}"
                 class="tw:h-[42px]"
                 maxFileCount="20"
                 maxFileSize="25MB"
@@ -36,7 +36,7 @@
         </div>
         <div class="tw:mt-[21px]">
             実行担当 ⇒ 原復会社<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="restorationCompanyMessage"></x-form.textarea>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="executorToRestorationCompanyMessage"></x-form.textarea>
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
@@ -51,7 +51,7 @@
             Alpine.data('geProgressStep7', () => ({
                 instanceMap: [
                     {
-                        instanceId: @js('ge-progress-purchase-order-' . $progress->id),
+                        instanceId: @js('ge-progress-purchase-order-' . $geProgress->id),
                         uploadProperty: 'purchaseOrderUploads',
                         saveMethod: 'savePurchaseOrderUploads',
                         removeMethod: 'removePurchaseOrderFile',

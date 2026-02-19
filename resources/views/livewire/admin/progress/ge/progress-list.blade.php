@@ -95,18 +95,18 @@
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center" colspan="2">実質LT</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['taikyo'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_mitsumori_recieved'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['move_out'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['cost_received'] ?? 'ー' }}</td>
                 <td class="tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['power_activation_date'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['tenant_charge_confirmed'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_teian'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_teian_kyodaku'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['genpuku_kouji_hachu'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kanko_yotei'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kanko_jyushin_date'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['owner_kanko_houkoku'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kakumei_koujo_touroku'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['ge_complete'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['tenant_burden_confirmed'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['owner_proposed'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['owner_approved'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['ordered'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['completion_scheduled'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['completion_received'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['completion_reported'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kakumei_registered'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['complete'] ?? 'ー' }}</td>
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -153,12 +153,12 @@
                     <div
                         data-filter-trigger
                         data-filter-title="責任者"
-                        data-sort-field="genpuku_responsible_id"
-                        data-filter-field="genpuku_responsible_id"
+                        data-sort-field="responsible_user_id"
+                        data-filter-field="responsible_user_id"
                         data-filter-type="select"
                         data-filter-select-name="select_filter"
                         data-filter-options='@json($genpukuResponsibleOptions ?? [])'
-                        @class(['tw:text-red-600' => $this->hasFilter('genpuku_responsible_id')])
+                        @class(['tw:text-red-600' => $this->hasFilter('responsible_user_id')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -331,7 +331,7 @@
             @foreach ($geProgresses as $geProgress)
                 <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
                     <td class="tw:text-center">
-                        <a href="{{ route('admin.progress.ge.detail', ['progressId' => $geProgress->id]) }}" class="tw:text-pm_blue_001">{{ $geProgress->progress_id }}</a>
+                        <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $geProgress->id]) }}" class="tw:text-pm_blue_001">{{ $geProgress->progress_id }}</a>
                     </td>
                     <td class="tw:text-center">{{ $geProgress->progress->investment_id }}</td>
                     <td>{{ $geProgress->progress?->investment?->investment_name }}</td>

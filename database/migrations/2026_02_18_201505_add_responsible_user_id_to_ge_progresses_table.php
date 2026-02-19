@@ -15,6 +15,8 @@ return new class extends Migration
         Schema::table('ge_progresses', function (Blueprint $table) {
             $table->integer('responsible_user_id')->nullable()->comment('責任者')->after('progress_id');
 
+            $table->integer('trading_company_id')->nullable()->comment('原復業者ID')->after('executor_user_id');
+
             $table->date('move_out_received_date')->nullable()->comment('退去受付日')->after('next_action');
             $table->integer('move_out_received_date_state')->default(0)->comment('退去受付日ステータス')->after('move_out_received_date');
 
@@ -54,8 +56,8 @@ return new class extends Migration
             $table->date('completed_date')->nullable()->comment('完了日')->after('kakumei_registered_date_state');
             $table->integer('completed_date_state')->default(0)->comment('完了日ステータス')->after('completed_date');
 
-            $table->date('kaiyaku_cancellation_date')->nullable()->comment('解約キャンセル日')->after('completed_date_state');
-            $table->integer('kaiyaku_cancellation_date_state')->default(0)->comment('解約キャンセル日ステータス')->after('kaiyaku_cancellation_date');
+            $table->date('cancellation_reversed_date')->nullable()->comment('解約キャンセル日')->after('completed_date_state');
+            $table->integer('cancellation_reversed_date_state')->default(0)->comment('解約キャンセル日ステータス')->after('cancellation_reversed_date');
 
             $table->renameColumn('step1_confirmed', 'is_step1_confirmed');
             $table->renameColumn('responsible_person_message', 'executor_to_responsible_message');
@@ -69,6 +71,7 @@ return new class extends Migration
                 progresses p ON p.id = ge.progress_id
             SET
                 ge.responsible_user_id = p.genpuku_responsible_id,
+                ge.trading_company_id = p.genpuku_gyousha_id,
                 ge.move_out_received_date = p.taikyo_uketuke_date,
                 ge.move_out_date = p.taikyo_date,
                 ge.cost_received_date = p.genpuku_mitsumori_recieved_date,
@@ -82,7 +85,7 @@ return new class extends Migration
                 ge.completion_reported_date = p.owner_kanko_houkoku_date,
                 ge.kakumei_registered_date = p.kakumei_koujo_touroku_date,
                 ge.completed_date = p.ge_complete_date,
-                ge.kaiyaku_cancellation_date = p.kaiyaku_cancellation_date
+                ge.cancellation_reversed_date = p.kaiyaku_cancellation_date
         ');
 
         DB::table('ge_progresses')
@@ -138,8 +141,8 @@ return new class extends Migration
             ->update(['completed_date_state' => 1]);
 
         DB::table('ge_progresses')
-            ->whereNotNull('kaiyaku_cancellation_date')
-            ->update(['kaiyaku_cancellation_date_state' => 1]);
+            ->whereNotNull('cancellation_reversed_date')
+            ->update(['cancellation_reversed_date_state' => 1]);
 
     }
 
@@ -150,6 +153,8 @@ return new class extends Migration
     {
         Schema::table('ge_progresses', function (Blueprint $table) {
             $table->dropColumn('responsible_user_id');
+
+            $table->dropColumn('trading_company_id');
 
             $table->dropColumn('move_out_received_date');
             $table->dropColumn('move_out_received_date_state');
@@ -190,8 +195,8 @@ return new class extends Migration
             $table->dropColumn('completed_date');
             $table->dropColumn('completed_date_state');
 
-            $table->dropColumn('kaiyaku_cancellation_date');
-            $table->dropColumn('kaiyaku_cancellation_date_state');
+            $table->dropColumn('cancellation_reversed_date');
+            $table->dropColumn('cancellation_reversed_date_state');
 
             $table->renameColumn('is_step1_confirmed', 'step1_confirmed');
             $table->renameColumn('executor_to_responsible_message', 'responsible_person_message');

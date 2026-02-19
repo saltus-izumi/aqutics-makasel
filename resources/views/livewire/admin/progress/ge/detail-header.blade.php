@@ -1,21 +1,21 @@
 <div class="tw:flex tw:gap-x-[104px] tw:border-b">
     <div class="tw:w-[832px]">
         <div class="tw:w-full tw:h-[42px] tw:flex tw:gap-x-[1.5rem] tw:items-center">
-            <div class="tw:text-[1.2rem]">原復ID：{{ $progress->id }}</div>
-            <div class="tw:text-[1.2rem]">物件ID：{{ $progress->investment_id }}</div>
+            <div class="tw:text-[1.2rem]">原復ID：{{ $geProgress->progress_id }}</div>
+            <div class="tw:text-[1.2rem]">物件ID：{{ $geProgress->progress?->investment_id }}</div>
             <div class="tw:max-w-[340px] tw:text-[1.2rem] tw:flex tw:items-center">
                 {{-- 工事会社：{{ $progress->investment?->restorationCompany?->name }}（担当：{{ $progress->investment?->restorationCompany?->personnel1 }}） --}}
                 <div>工事会社：</div>
-                <x-form.select-search :value="$genpukuGyoushaId" :options="$restorationCompanies" class="tw:w-[240px] tw:!text-[1rem]" wire:model.live="genpukuGyoushaId" />
+                <x-form.select-search :value="$tradingCompanyId" :options="$restorationCompanies" class="tw:w-[240px] tw:!text-[1rem]" wire:model.live="tradingCompanyId" />
             </div>
-            <div class="tw:text-[1.2rem]">所有者：{{ $progress->genpukuResponsible?->user_name }}</div>
-            <div class="tw:text-[1.2rem]">実行担当：{{ $progress->geProgress?->executorUser?->user_name }}</div>
+            <div class="tw:text-[1.2rem]">所有者：{{ $geProgress?->responsibleUser?->user_name }}</div>
+            <div class="tw:text-[1.2rem]">実行担当：{{ $geProgress?->executorUser?->user_name }}</div>
         </div>
         <div class="tw:h-[42px] tw:mb-[21px] tw:leading-[42px] tw:text-[2.6rem] tw:font-bold">
-            {{ $progress->investment->investment_name }}　{{ $progress->investmentRoom->investment_room_number }}（{{ $progress->investmentRoomResidentHisotry?->contractor_name }}さま）
+            {{ $geProgress->progress?->investment->investment_name }}　{{ $geProgress->progress?->investmentRoom->investment_room_number }}（{{ $geProgress->progress?->investmentRoomResidentHisotry?->contractor_name }}さま）
         </div>
         <div class="tw:h-[42px] tw:flex">
-            <a href="{{ route('admin.progress.ge.detail', ['progressId' => $progress->id]) }}">
+            <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $geProgress->id]) }}">
                 <div @class([
                     'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
                     'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'move-out-settlement'),
@@ -24,7 +24,7 @@
                     退去精算
                 </div>
             </a>
-            <a href="{{ route('admin.progress.ge.owner-settlement', ['progressId' => $progress->id]) }}">
+            <a href="{{ route('admin.progress.ge.owner-settlement', ['geProgressId' => $geProgress->id]) }}">
                 <div @class([
                     'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
                     'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'owner-settlement'),
@@ -43,7 +43,7 @@
                         ネクストアクション
                     </td>
                     <td class="tw:w-[208px] tw:pl-[1rem] tw:text-[1.5rem] tw:border tw:border-[#cccccc]">
-                        {{ App\Models\GeProgress::NEXT_ACTIONS[$progress->geProgress?->next_action] ?? '' }}
+                        {{ App\Models\GeProgress::NEXT_ACTIONS[$geProgress?->next_action] ?? '' }}
                     </td>
                 </tr>
             </table>
@@ -90,19 +90,19 @@
                 </tr>
                 <tr class="tw:h-[42px]">
                     <td class="tw:text-[1.8rem] tw:font-bold tw:text-center tw:border tw:border-[#cccccc]">
-                        {{ $averageLt['genpuku_mitsumori_recieved'] }}
+                        {{ $averageLt['cost_received'] }}
                     </td>
                     <td class="tw:text-[1.8rem] tw:font-bold tw:text-center tw:border tw:border-[#cccccc]">
-                        {{ $averageLt['genpuku_teian_date'] }}
+                        {{ $averageLt['owner_proposed'] }}
                     </td>
                     <td class="tw:text-[1.8rem] tw:font-bold tw:text-center tw:border tw:border-[#cccccc]">
-                        {{ $averageLt['genpuku_teian_kyodaku'] }}
+                        {{ $averageLt['owner_approved'] }}
                     </td>
                     <td class="tw:text-[1.8rem] tw:font-bold tw:text-center tw:border tw:border-[#cccccc]">
-                        {{ $averageLt['genpuku_kouji_hachu'] }}
+                        {{ $averageLt['ordered'] }}
                     </td>
                     <td class="tw:text-[1.8rem] tw:font-bold tw:text-center tw:border tw:border-[#cccccc]">
-                        {{ $averageLt['kanko_jyushin_date'] }}
+                        {{ $averageLt['completion_received'] }}
                     </td>
                 </tr>
             </table>

@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Admin\Progress\Ge;
 
+use App\Models\GeProgress;
 use App\Models\GeProgressFile;
-use App\Models\Progress;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -13,7 +13,7 @@ class Step2 extends Component
 {
     use WithFileUploads;
 
-    public $progress = null;
+    public $geProgress = null;
     public $transferDueDate;
     public $subtotalAAmount;
     public $subtotalBAmount;
@@ -70,17 +70,17 @@ class Step2 extends Component
     }
 
 
-    public function mount($progress)
+    public function mount($geProgress)
     {
-        $this->progress = $progress;
-        $this->transferDueDate = $progress->geProgress?->transfer_due_date?->format('Y-m-d');
+        $this->geProgress = $geProgress;
+        $this->transferDueDate = $geProgress?->transfer_due_date?->format('Y-m-d');
 Log::debug($this->transferDueDate);
 
-        $this->subtotalAAmount = $progress->geProgress?->subtotal_a_amount;
-        $this->subtotalBAmount = $progress->geProgress?->subtotal_b_amount;
-        $this->subtotalCAmount = $progress->geProgress?->subtotal_c_amount;
-        $this->otherAmount = $progress->geProgress?->other_amount;
-        $this->inspectionCompletedMessage = $progress->geProgress?->inspection_completed_message;
+        $this->subtotalAAmount = $geProgress?->subtotal_a_amount;
+        $this->subtotalBAmount = $geProgress?->subtotal_b_amount;
+        $this->subtotalCAmount = $geProgress?->subtotal_c_amount;
+        $this->otherAmount = $geProgress?->other_amount;
+        $this->inspectionCompletedMessage = $geProgress?->inspection_completed_message;
         $this->componentId = $this->getId();
         $this->loadMoveOutSettlementFiles();
         $this->loadLowerEstimateFiles();
@@ -95,7 +95,7 @@ Log::debug($this->transferDueDate);
         }
 
         // null対策
-        if (!$this->progress?->geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
@@ -113,26 +113,25 @@ Log::debug($this->transferDueDate);
         $value = trim($value) ? trim($value) : null;
 
         $column = $this->geProgressMap[$propertyName];
-        $this->progress->geProgress->{$column} = $value;
-        $this->progress->geProgress->save();
+        $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
 
-        $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
         $this->calcConstructionCost();
     }
 
     public function saveMoveOutSettlementUploads(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
         foreach ($this->moveOutSettlementUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$geProgress->id}");
+            $path = $file->store("progress/ge/{$this->geProgress->id}");
 
             GeProgressFile::create([
-                'ge_progress_id' => $geProgress->id,
+                'ge_progress_id' => $this->geProgress->id,
                 'file_kind' => GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT,
                 'file_name' => $original,
                 'file_path' => $path,
@@ -146,13 +145,12 @@ Log::debug($this->transferDueDate);
 
     public function removeMoveOutSettlementFile($fileId): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress || !$fileId) {
+        if (!$this->geProgress || !$fileId) {
             return;
         }
 
         $file = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT)
             ->where('id', $fileId)
             ->first();
@@ -171,17 +169,16 @@ Log::debug($this->transferDueDate);
 
     public function saveLowerEstimateUploads(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
         foreach ($this->lowerEstimateUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$geProgress->id}");
+            $path = $file->store("progress/ge/{$this->geProgress->id}");
 
             GeProgressFile::create([
-                'ge_progress_id' => $geProgress->id,
+                'ge_progress_id' => $this->geProgress->id,
                 'file_kind' => GeProgressFile::FILE_KIND_LOWER_ESTIMATE,
                 'file_name' => $original,
                 'file_path' => $path,
@@ -190,10 +187,11 @@ Log::debug($this->transferDueDate);
         }
 
         // ファイルがなければ見積書受信日をNULLにする
-        if (count($this->lowerEstimateUploads) > 0 && !$this->progress->genpuku_mitsumori_recieved_date) {
-            $this->progress->genpuku_mitsumori_recieved_date = now();
-            $this->progress->save();
-            $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        if (count($this->lowerEstimateUploads) > 0 && !$this->geProgress->cost_received_date) {
+            $this->geProgress->cost_received_date = now();
+            $this->geProgress->cost_received_date_state = 1;
+            $this->geProgress->save();
+            $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
         }
 
         $this->lowerEstimateUploads = [];
@@ -202,13 +200,12 @@ Log::debug($this->transferDueDate);
 
     public function removeLowerEstimateFile($fileId): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress || !$fileId) {
+        if (!$this->geProgress || !$fileId) {
             return;
         }
 
         $file = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
             ->where('id', $fileId)
             ->first();
@@ -224,15 +221,16 @@ Log::debug($this->transferDueDate);
         $file->delete();
 
         $fileCount = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
             ->count();
 
         // ファイルがなければ見積書受信日をNULLにする
-        if ($fileCount == 0 && $this->progress->genpuku_mitsumori_recieved_date) {
-            $this->progress->genpuku_mitsumori_recieved_date = null;
-            $this->progress->save();
-            $this->dispatch('geProgressUpdated', progressId: $this->progress->id);
+        if ($fileCount == 0 && $this->geProgress->cost_received_date) {
+            $this->geProgress->genpuku_mitsumori_recieved_date = null;
+            $this->geProgress->genpuku_mitsumori_recieved_date_state = 0;
+            $this->geProgress->save();
+            $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
         }
 
         $this->loadLowerEstimateFiles();
@@ -240,17 +238,16 @@ Log::debug($this->transferDueDate);
 
     public function saveWalkthroughPhotoUploads(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             return;
         }
 
         foreach ($this->walkthroughPhotoUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$geProgress->id}");
+            $path = $file->store("progress/ge/{$this->geProgress->id}");
 
             GeProgressFile::create([
-                'ge_progress_id' => $geProgress->id,
+                'ge_progress_id' => $this->geProgress->id,
                 'file_kind' => GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO,
                 'file_name' => $original,
                 'file_path' => $path,
@@ -264,13 +261,12 @@ Log::debug($this->transferDueDate);
 
     public function removeWalkthroughPhotoFile($fileId): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress || !$fileId) {
+        if (!$this->geProgress || !$fileId) {
             return;
         }
 
         $file = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO)
             ->where('id', $fileId)
             ->first();
@@ -287,33 +283,31 @@ Log::debug($this->transferDueDate);
         $this->loadWalkthroughPhotoFiles();
     }
 
-    public function reloadProgress($progressId = null)
+    public function reloadProgress($geProgressId = null)
     {
-        if (!$this->progress) {
+        if (!$this->geProgress) {
             return;
         }
 
-        if ($progressId !== null && (int) $progressId !== (int) $this->progress->id) {
+        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
             return;
         }
 
-        $this->progress = Progress::query()
-            ->with('geProgress')
-            ->find($this->progress->id);
+        $this->geProgress = GeProgress::query()
+            ->find($this->geProgress->id);
 
         $this->calcConstructionCost();
     }
 
     protected function loadMoveOutSettlementFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->moveOutSettlementFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT)
             ->orderBy('id')
             ->get();
@@ -331,14 +325,13 @@ Log::debug($this->transferDueDate);
 
     protected function loadLowerEstimateFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->lowerEstimateFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
             ->orderBy('id')
             ->get();
@@ -356,14 +349,13 @@ Log::debug($this->transferDueDate);
 
     protected function loadWalkthroughPhotoFiles(): void
     {
-        $geProgress = $this->progress?->geProgress;
-        if (!$geProgress) {
+        if (!$this->geProgress) {
             $this->walkthroughPhotoFiles = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $geProgress->id)
+            ->where('ge_progress_id', $this->geProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO)
             ->orderBy('id')
             ->get();
@@ -394,9 +386,9 @@ Log::debug($this->transferDueDate);
         $this->constructionCostInclTax = floor($this->constructionCostExclTax * 1.1);
 
         $this->settlementAmount = $this->constructionCostInclTax +
-            (int)$this->progress->geProgress?->security_deposit_amount +
-            (int)$this->progress->geProgress?->prorated_rent_amount -
-            (int)$this->progress->geProgress?->penalty_forfeiture_amount +
+            (int)$this->geProgress?->security_deposit_amount +
+            (int)$this->geProgress?->prorated_rent_amount -
+            (int)$this->geProgress?->penalty_forfeiture_amount +
             (int)$this->otherAmount;
     }
 
