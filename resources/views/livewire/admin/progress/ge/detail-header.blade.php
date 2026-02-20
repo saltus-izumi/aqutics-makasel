@@ -37,6 +37,12 @@
     </div>
     <div>
         <div class="tw:mb-[21px] tw:flex tw:items-center tw:gap-x-[26px]">
+            @php
+                $isReProposeOrCancelDisabled = in_array($geProgress?->next_action, [
+                    App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED,
+                    App\Models\GeProgress::NEXT_ACTION_CANCEL,
+                ], true);
+            @endphp
             <table>
                 <tr class="tw:h-[42px]">
                     <td class="tw:w-[182px] tw:text-[1.3rem] tw:bg-[#efefef] tw:text-center tw:border tw:border-[#cccccc]">
@@ -51,6 +57,7 @@
                 <x-button.blue
                     class="tw:!h-[31px] tw:!w-[156px] tw:!rounded-lg tw:text-[1.2rem]"
                     type="button"
+                    :disabled="$isReProposeOrCancelDisabled"
                     x-on:click="if (!confirm('再提案処理を実施します。よろしいですか。\nこの処理は取り消しできません。')) { return; } $wire.rePropose();"
                 >
                     再提案
@@ -60,6 +67,7 @@
                 <x-button.red
                     class="tw:!h-[31px] tw:!w-[156px] tw:!rounded-lg tw:text-[1.2rem]"
                     type="button"
+                    :disabled="$isReProposeOrCancelDisabled"
                     x-on:click="if (!confirm('キャンセル処理を実施します。よろしいですか。\nこの処理は取り消しできません。')) { return; } $wire.cancelProgress();"
                 >
                     キャンセル

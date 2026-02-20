@@ -329,9 +329,14 @@
         </thead>
         <tbody>
             @foreach ($geProgresses as $geProgress)
-                <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
+                <tr @class([
+                    'tw:h-[42px] tw:border-b tw:border-b-[#cccccc]',
+                    'tw:bg-[#efefef]' => $geProgress->next_action == App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED
+                ])>
                     <td class="tw:text-center">
-                        <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $geProgress->id]) }}" class="tw:text-pm_blue_001">{{ $geProgress->progress_id }}</a>
+                        <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $geProgress->id]) }}" class="tw:text-pm_blue_001">
+                            {{ $geProgress->progress_id . ($geProgress->reproposal_count > 0 ? "-{$geProgress->reproposal_count}" : '' )  }}
+                        </a>
                     </td>
                     <td class="tw:text-center">{{ $geProgress->progress->investment_id }}</td>
                     <td>{{ $geProgress->progress?->investment?->investment_name }}</td>
@@ -343,6 +348,7 @@
                             empty="　"
                             :value="$geProgress->responsible_user_id"
                             wire:input="updateSelectValue({{ $geProgress->id }}, 'responsible_user_id', $event.target.value)"
+                            :disabled="$geProgress->next_action == App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED"
                         />
                     </td>
                     <td class="tw:text-center tw:px-[3px]">
@@ -352,6 +358,7 @@
                             empty="　"
                             :value="$geProgress->executor_user_id"
                             wire:input="updateSelectValue({{ $geProgress->id }}, 'executor_user_id', $event.target.value)"
+                            :disabled="$geProgress->next_action == App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED"
                         />
                     </td>
                     <td class="tw:text-center">{{ App\Models\GeProgress::NEXT_ACTIONS[$geProgress?->next_action] ?? '' }}</td>

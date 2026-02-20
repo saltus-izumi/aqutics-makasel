@@ -161,6 +161,14 @@ class GeProgress extends Model
 
     public function resetNextAction()
     {
+        // 終了判定
+        if (in_array($this?->next_action, [
+            self::NEXT_ACTION_RE_PROPOSED,
+            self::NEXT_ACTION_CANCEL,
+        ], true)) {
+            return;
+        }
+
         if (!$this?->move_out_received_date_state === 0) {
             $this->next_action = self::NEXT_ACTION_MOVE_OUT_RECEIVED;
 
@@ -170,7 +178,7 @@ class GeProgress extends Model
         } elseif ($this?->move_out_date_state === 0) {
             $this->next_action = self::NEXT_ACTION_MOVE_OUT;
 
-        } elseif (!$this?->cost_received_date_state === 0) {
+        } elseif ($this?->cost_received_date_state === 0) {
             $this->next_action = self::NEXT_ACTION_COST_RECEIVED;
 
         } elseif ($this?->power_activation_date_state === 0) {

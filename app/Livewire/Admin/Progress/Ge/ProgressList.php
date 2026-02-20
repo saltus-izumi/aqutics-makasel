@@ -18,7 +18,7 @@ class ProgressList extends Component
     public bool $incompleteOnly = true;
     public string $searchKeyword = '';
     public string $sortOrder = 'asc';
-    public string $sortField = 'id';
+    public string $sortField = 'progress_id';
     public array $filters = [];
     public array $genpukuResponsibleOptions = [];
     public array $genpukuResponsibleShortOptions = [];
@@ -315,6 +315,10 @@ class ProgressList extends Component
                 ->orderBy('sort_investment_empty_rooms.cancellation_date', $sortOrder);
         } else {
             $query->orderBy($sortField, $sortOrder);
+        }
+
+        if ($sortField !== 'id') {
+            $query->orderBy('ge_progresses.id', $sortOrder);
         }
 
         return $query;

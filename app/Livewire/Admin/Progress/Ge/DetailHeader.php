@@ -79,6 +79,14 @@ class DetailHeader extends Component
         }
     }
 
+    protected function isReProposeOrCancelLocked(): bool
+    {
+        return in_array($this->geProgress?->next_action, [
+            GeProgress::NEXT_ACTION_RE_PROPOSED,
+            GeProgress::NEXT_ACTION_CANCEL,
+        ], true);
+    }
+
     public function updated($propertyName, $value)
     {
         if (!array_key_exists($propertyName, $this->geProgressMap)) {
@@ -112,6 +120,10 @@ class DetailHeader extends Component
 
     public function rePropose()
     {
+        if ($this->isReProposeOrCancelLocked()) {
+            return;
+        }
+
         DB::transaction(function () {
             // 現在のプロセス管理データを修正
             $this->geProgress->next_action = GeProgress::NEXT_ACTION_RE_PROPOSED;
@@ -120,6 +132,7 @@ class DetailHeader extends Component
             // 再提案データ作成
             $geProgress = new GeProgress([
                 'progress_id' => $this->geProgress->progress_id,
+                'reproposal_count' => $this->geProgress->reproposal_count + 1,
                 'responsible_user_id' => $this->geProgress->responsible_user_id,
                 'executor_user_id' => $this->geProgress->executor_user_id,
                 'trading_company_id' => $this->geProgress->trading_company_id,
@@ -152,6 +165,10 @@ class DetailHeader extends Component
 
     public function cancelProgress()
     {
+        if ($this->isReProposeOrCancelLocked()) {
+            return;
+        }
+
         DB::transaction(function () {
             $this->geProgress->kaiyaku_cancellation_date = now();
             $this->geProgress->save();
