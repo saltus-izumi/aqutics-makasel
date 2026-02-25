@@ -329,10 +329,16 @@
         </thead>
         <tbody>
             @foreach ($geProgresses as $geProgress)
+                @php
+                    $isReProposeOrCancel = in_array($geProgress->next_action, [
+                        App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED,
+                        App\Models\GeProgress::NEXT_ACTION_CANCEL,
+                    ], true);
+                @endphp
                 <tr @class([
                     'tw:h-[42px] tw:border-b tw:border-b-[#cccccc]',
-                    'tw:bg-[#efefef]' => $geProgress->next_action == App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED
-                ])>
+                    'tw:bg-[#efefef]' => $isReProposeOrCancel
+                ]) data-popup-disabled="{{ $isReProposeOrCancel ? '1' : '0' }}">
                     <td class="tw:text-center">
                         <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $geProgress->id]) }}" class="tw:text-pm_blue_001">
                             {{ $geProgress->progress_id . ($geProgress->reproposal_count > 0 ? "-{$geProgress->reproposal_count}" : '' )  }}
@@ -348,7 +354,8 @@
                             empty="　"
                             :value="$geProgress->responsible_user_id"
                             wire:input="updateSelectValue({{ $geProgress->id }}, 'responsible_user_id', $event.target.value)"
-                            :disabled="$geProgress->next_action == App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED"
+                            :disabled="$isReProposeOrCancel"
+                            class="tw:disabled:bg-[#efefef]"
                         />
                     </td>
                     <td class="tw:text-center tw:px-[3px]">
@@ -358,7 +365,8 @@
                             empty="　"
                             :value="$geProgress->executor_user_id"
                             wire:input="updateSelectValue({{ $geProgress->id }}, 'executor_user_id', $event.target.value)"
-                            :disabled="$geProgress->next_action == App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED"
+                            :disabled="$isReProposeOrCancel"
+                            class="tw:disabled:bg-[#efefef]"
                         />
                     </td>
                     <td class="tw:text-center">{{ App\Models\GeProgress::NEXT_ACTIONS[$geProgress?->next_action] ?? '' }}</td>
@@ -599,6 +607,10 @@
                     calendarName,
 
                     openPopup(trigger, event) {
+                        if (trigger?.closest('[data-popup-disabled="1"]')) {
+                            this.close();
+                            return;
+                        }
                         this.filterOpen = false;
                         this.activeTarget = trigger;
                         this.popupTitle = trigger.dataset.popupTitle ?? '';

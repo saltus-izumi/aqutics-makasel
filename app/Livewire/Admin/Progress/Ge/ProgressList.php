@@ -25,6 +25,23 @@ class ProgressList extends Component
     public array $nextActionOptions = [];
     public array $averageLt = [];
 
+    protected array $progressMap = [
+        'responsible_user_id' => 'genpuku_responsible_id',
+        'move_out_received_date' => 'taikyo_uketuke_date',
+        'move_out_date' => 'taikyo_date',
+        'cost_received_date' => 'genpuku_mitsumori_recieved_date',
+        'power_activation_date' => 'tsuden',
+        'tenant_burden_confirmed_date' => 'tenant_charge_confirmed_date',
+        'owner_proposed_date' => 'genpuku_teian_date',
+        'owner_approved_date' => 'genpuku_teian_kyodaku_date',
+        'ordered_date' => 'genpuku_kouji_hachu_date',
+        'completion_scheduled_date' => 'kanko_yotei_date',
+        'completion_received_date' => 'kanko_jyushin_date',
+        'completion_reported_date' => 'owner_kanko_houkoku_date',
+        'kakumei_registered_date' => 'kakumei_koujo_touroku_date',
+        'completed_date' => 'ge_complete_date',
+    ];
+
     public function mount()
     {
         $this->incompleteOnly = true;
@@ -170,6 +187,12 @@ class ProgressList extends Component
 
             $geProgress->resetNextAction();
             $geProgress->save();
+
+            if (array_key_exists($field, $this->progressMap)) {
+                $progressField = $this->progressMap[$field];
+                $this->geProgress->progress->{$progressField} = $date;
+                $this->geProgress->progress->save();
+            }
         });
 
         $this->refreshGeProgresses();
