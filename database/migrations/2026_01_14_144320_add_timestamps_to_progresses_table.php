@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -25,6 +26,10 @@ return new class extends Migration
             // ソフトデリート用の deleted_at を追加
             $table->softDeletes();
         });
+
+        DB::table('progresses')
+            ->where('deleted', 1)
+            ->update(['deleted_at' => now()]);
     }
 
     /**
