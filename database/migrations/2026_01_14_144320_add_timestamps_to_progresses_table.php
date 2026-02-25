@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('progresses', function (Blueprint $table) {
-            $table->integer('created_user_id')->nullable()->comment('データ登録スタッフID')->after('pr037');
+            $table->integer('created_user_id')->nullable()->comment('データ登録スタッフID')->after('keiri_bikou');
             $table->datetime('user_created_at')->nullable()->comment('データ登録日時（スタッフ）')->after('created_user_id');
             $table->integer('updated_user_id')->nullable()->comment('データ更新スタッフID')->after('user_created_at');
             $table->datetime('user_updated_at')->nullable()->comment('データ更新日時（スタッフ）')->after('updated_user_id');
