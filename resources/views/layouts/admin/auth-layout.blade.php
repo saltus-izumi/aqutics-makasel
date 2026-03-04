@@ -113,6 +113,7 @@
                 <x-layout.top-menu-item title="プロセス管理"
                     :subItems="[
                         route('admin.progress.ge.index') => '原復プロセス管理',
+                        route('admin.progress.en.index') => 'ENプロセス管理',
                     ]"
                 />
 

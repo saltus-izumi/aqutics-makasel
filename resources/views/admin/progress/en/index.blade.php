@@ -1,6 +1,6 @@
-<x-admin.auth-layout title="原復プロセス管理">
+<x-admin.auth-layout title="ENプロセス管理">
     <div class="tw:h-full tw:w-full tw:overflow-auto">
-        <div class="tw:h-[120px] tw:w-[286px] tw:px-[26px] tw:pt-[11px]">
+        <div class="tw:sticky tw:left-0 tw:h-[120px] tw:w-[286px] tw:px-[26px] tw:pt-[11px]">
             <div class="tw:text-[1.3rem]">
                 物件選択
             </div>
@@ -11,17 +11,21 @@
                 <x-form.checkbox id="ge-progress-incomplete-only" class="tw:text-[1.1rem]" :checked="true">未完了のみ表示</x-form.checkbox>
             </div>
         </div>
-        <div class="tw:h-[45px] tw:w-[calc(100%-40px)] tw:ml-[26px] tw:flex tw:items-end tw:border-b tw:mb-[21px]">
-            <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#d9d9d9] tw:border-b tw:border-b-3 tw:border-b-pm_blue_001">原復</div>
+        <div class="tw:sticky tw:left-[26px] tw:h-[45px] tw:w-[calc(100%-40px)] tw:ml-[26px] tw:flex tw:items-end tw:border-b tw:mb-[21px]">
+            <a href="{{ route('admin.progress.ge.index') }}"><div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">原復</div></a>
             <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">LE</div>
             <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">TE</div>
-            <a href="{{ route('admin.progress.en.index') }}"><div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">EN</div></a>
+            <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#d9d9d9] tw:border-b tw:border-b-3 tw:border-b-pm_blue_001">EN</div>
             <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">更新</div>
             <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">解約</div>
         </div>
         <div class="tw:h-[calc(100%-165px)]">
-            <div class="tw:px-[52px]">
-                <livewire:admin.progress.ge.progress-list />
+            <div class="tw:flex tw:w-max tw:min-w-full tw:bg-white">
+                <div class="tw:pointer-events-none tw:sticky tw:left-0 tw:z-20 tw:w-[52px] tw:shrink-0 tw:bg-white"></div>
+                <div class="tw:shrink-0">
+                    <livewire:admin.progress.en.progress-list />
+                </div>
+                {{-- <div class="tw:pointer-events-none tw:sticky tw:right-0 tw:z-20 tw:w-[52px] tw:shrink-0 tw:bg-white"></div> --}}
             </div>
         </div>
     </div>

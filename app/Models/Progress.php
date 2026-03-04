@@ -81,6 +81,16 @@ class Progress extends Model
         return $this->hasMany(GeProgress::class);
     }
 
+    public function latestGeProgress()
+    {
+        return $this->hasOne(GeProgress::class)->latestOfMany('id');
+    }
+
+    public function enProgresses()
+    {
+        return $this->hasMany(EnProgress::class);
+    }
+
     public function genpukuResponsible()
     {
         return $this->belongsTo(User::class, 'genpuku_responsible_id');

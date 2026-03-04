@@ -1,0 +1,277 @@
+<?php
+
+namespace App\Livewire\Admin\Progress\Ge;
+
+use App\Models\GeProgress;
+use App\Models\GeProgressFile;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+
+class Step4 extends Component
+{
+    use WithFileUploads;
+
+    public $geProgress = null;
+    public $costAmount;
+    public $chargeAmount;
+    public $profitAmount;
+    public $profitRate;
+    public $executorToResponsibleMessage;
+
+    // 上代見積もり
+    public array $retailEstimateUploads = [];
+    public array $retailEstimateFiles = [];
+
+    public array $moveOutSettlementFiles = [];      // 退去時清算書
+    public array $lowerEstimateFiles = [];          // 下代見積もり
+    public array $walkthroughPhotoFiles = [];       // 立会写真
+
+    public string $componentId = '';
+
+    protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
+    protected array $geProgressMap = [
+        'costAmount' => 'cost_amount',
+        'chargeAmount' => 'charge_amount',
+        'executorToResponsibleMessage' => 'executor_to_responsible_message',
+    ];
+    protected function rules(): array
+    {
+        return [
+            'costAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'chargeAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'executorToResponsibleMessage' => ['nullable', 'string'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'costAmount.regex' => '下代は半角数字で入力してください。',
+            'chargeAmount.regex' => '上代は半角数字で入力してください。',
+        ];
+    }
+
+    public function mount($geProgress)
+    {
+        $this->geProgress = $geProgress;
+        $this->costAmount = $geProgress?->cost_amount;
+        $this->chargeAmount = $geProgress?->charge_amount;
+        $this->executorToResponsibleMessage = $geProgress?->executor_to_responsible_message;
+        $this->componentId = $this->getId();
+        $this->loadRetailEstimateFiles();
+        $this->loadMoveOutSettlementFiles();
+        $this->loadLowerEstimateFiles();
+        $this->loadWalkthroughPhotoFiles();
+        $this->calcProfit();
+    }
+
+    public function updated($propertyName, $value)
+    {
+        if (!array_key_exists($propertyName, $this->geProgressMap)) {
+            return;
+        }
+
+        // null対策
+        if (!$this->geProgress) {
+            return;
+        }
+
+        $this->validateOnly($propertyName);
+
+        switch($propertyName) {
+            case 'costAmount':
+            case 'chargeAmount':
+                $value = str_replace(',', '', (string) $value);
+                break;
+        }
+
+        $value = trim($value) ? trim($value) : null;
+
+        $column = $this->geProgressMap[$propertyName];
+        $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
+
+        $this->calcProfit();
+
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+    }
+
+    public function saveRetailEstimateUploads(): void
+    {
+        if (!$this->geProgress) {
+            return;
+        }
+
+        foreach ($this->retailEstimateUploads as $file) {
+            $original = $file->getClientOriginalName();
+            $path = $file->store("progress/ge/{$this->geProgress->id}");
+
+            GeProgressFile::create([
+                'ge_progress_id' => $this->geProgress->id,
+                'file_kind' => GeProgressFile::FILE_KIND_RETAIL_ESTIMATE,
+                'file_name' => $original,
+                'file_path' => $path,
+                'upload_at' => now(),
+            ]);
+        }
+
+        $this->retailEstimateUploads = [];
+        $this->loadRetailEstimateFiles();
+    }
+
+    public function removeRetailEstimateFile($fileId): void
+    {
+        if (!$this->geProgress || !$fileId) {
+            return;
+        }
+
+        $file = GeProgressFile::query()
+            ->where('ge_progress_id', $this->geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_RETAIL_ESTIMATE)
+            ->where('id', $fileId)
+            ->first();
+
+        if (!$file) {
+            return;
+        }
+
+        if ($file->file_path && Storage::disk('local')->exists($file->file_path)) {
+            Storage::disk('local')->delete($file->file_path);
+        }
+
+        $file->delete();
+        $this->loadRetailEstimateFiles();
+    }
+
+    public function reloadProgress($geProgressId = null)
+    {
+        if (!$this->geProgress) {
+            return;
+        }
+
+        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
+            return;
+        }
+
+        $this->geProgress = GeProgress::query()
+            ->find($this->geProgress->id);
+    }
+
+    protected function loadRetailEstimateFiles(): void
+    {
+        if (!$this->geProgress) {
+            $this->retailEstimateFiles = [];
+            return;
+        }
+
+        $files = GeProgressFile::query()
+            ->where('ge_progress_id', $this->geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_RETAIL_ESTIMATE)
+            ->orderBy('id')
+            ->get();
+
+        $this->retailEstimateFiles = $files->map(function (GeProgressFile $file) {
+            return [
+                'id' => $file->id,
+                'file_name' => $file->file_name ?? '',
+                'url' => route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]),
+                'file_path' => $file->file_path ?? '',
+                'mime_type' => $this->getFileMimeType($file),
+            ];
+        })->all();
+    }
+
+    protected function loadMoveOutSettlementFiles(): void
+    {
+        if (!$this->geProgress) {
+            $this->moveOutSettlementFiles = [];
+            return;
+        }
+
+        $files = GeProgressFile::query()
+            ->where('ge_progress_id', $this->geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT)
+            ->orderBy('id')
+            ->get();
+
+        $this->moveOutSettlementFiles = $files
+            ->mapWithKeys(function (GeProgressFile $file) {
+                return [
+                    route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]) => $file->file_name ?? '',
+                ];
+            })
+            ->all();
+    }
+
+    protected function loadLowerEstimateFiles(): void
+    {
+        if (!$this->geProgress) {
+            $this->lowerEstimateFiles = [];
+            return;
+        }
+
+        $files = GeProgressFile::query()
+            ->where('ge_progress_id', $this->geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
+            ->orderBy('id')
+            ->get();
+
+        $this->lowerEstimateFiles = $files
+            ->mapWithKeys(function (GeProgressFile $file) {
+                return [
+                    route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]) => $file->file_name ?? '',
+                ];
+            })
+            ->all();
+    }
+
+    protected function loadWalkthroughPhotoFiles(): void
+    {
+        if (!$this->geProgress) {
+            $this->walkthroughPhotoFiles = [];
+            return;
+        }
+
+        $files = GeProgressFile::query()
+            ->where('ge_progress_id', $this->geProgress->id)
+            ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO)
+            ->orderBy('id')
+            ->get();
+
+        $this->walkthroughPhotoFiles = $files
+            ->mapWithKeys(function (GeProgressFile $file) {
+                return [
+                    route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]) => $file->file_name ?? '',
+                ];
+            })
+            ->all();
+    }
+
+    protected function getFileMimeType(GeProgressFile $file): string
+    {
+        if (!$file->file_path || !Storage::disk('local')->exists($file->file_path)) {
+            return '';
+        }
+
+        $fullPath = Storage::disk('local')->path($file->file_path);
+        return mime_content_type($fullPath) ?: '';
+    }
+
+    protected function calcProfit() {
+        $profitAmount = (int)$this->geProgress->charge_amount - (int)$this->geProgress->cost_amount;
+        if ($this->geProgress->charge_amount > 0) {
+            $profitRate = $profitAmount / $this->geProgress->charge_amount * 100;
+        } else {
+            $profitRate = 0;
+        }
+
+        $this->profitAmount = number_format($profitAmount);
+        $this->profitRate = round($profitRate, 2);
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.progress.ge.step4');
+    }
+}

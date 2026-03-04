@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController as AdminAuth;
 use App\Http\Controllers\Admin\OperationController as AdminOperation;
 use App\Http\Controllers\Admin\GeProgressController as AdminGeProgress;
+use App\Http\Controllers\Admin\EnProgressController as AdminEnProgress;
 use App\Http\Controllers\Admin\ImportController as AdminImport;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -30,6 +31,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/files/{geProgressFileId}', [AdminGeProgress::class, 'preview'])->name('preview');
                 Route::get('/{geProgressId}', [AdminGeProgress::class, 'detail'])->name('detail');
                 Route::get('/{geProgressId}/owner-settlement', [AdminGeProgress::class, 'ownerSettlement'])->name('owner-settlement');
+            });
+            Route::prefix('en')->name('en.')->group(function () {
+                Route::get('/', [AdminEnProgress::class, 'index'])->name('index');
+                Route::get('/files/{geProgressFileId}', [AdminEnProgress::class, 'preview'])->name('preview');
+                Route::get('/{geProgressId}', [AdminEnProgress::class, 'detail'])->name('detail');
+                Route::get('/{geProgressId}/owner-settlement', [AdminEnProgress::class, 'ownerSettlement'])->name('owner-settlement');
             });
         });
 
