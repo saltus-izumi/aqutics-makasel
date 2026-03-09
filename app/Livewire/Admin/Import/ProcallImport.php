@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class ImportProcall extends Component
+class ProcallImport extends Component
 {
     use WithFileUploads;
     use SyncKsf;
@@ -92,7 +92,7 @@ class ImportProcall extends Component
 
     public function render()
     {
-        return view('livewire.admin.import.import-procall');
+        return view('livewire.admin.import.procall-import');
     }
 
     protected function insert($record)

@@ -7,6 +7,7 @@ use App\Models\BrokerInvestment;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\InvestmentRoomResident;
+use App\Models\PersonalTenancyApplicationLog;
 use App\Models\ReactionPersonal;
 use App\Models\SummaryPeriod;
 use Carbon\Carbon;
@@ -20,7 +21,9 @@ class PersonalTenancyApplicationImport extends Component
 
     public $personalTenancyApplicationFile = null;
 
-    public ?int $insertCount = null;
+    public ?int $readCount = null;
+    public ?int $insertResidentCount = null;
+    public ?int $updateResidentCount = null;
     public ?int $errorCount = null;
     public array $errorMessages = [];
 
@@ -34,7 +37,9 @@ class PersonalTenancyApplicationImport extends Component
             'personalTenancyApplicationFile' => ['required', 'file'],
         ]);
 
-        $this->insertCount = 0;
+        $this->readCount = 0;
+        $this->insertResidentCount = 0;
+        $this->updateResidentCount = 0;
         $this->errorCount = 0;
         $this->errorMessages = [];
 
@@ -61,11 +66,6 @@ class PersonalTenancyApplicationImport extends Component
         DB::beginTransaction();
 
         try {
-            SummaryPeriod::query()->firstOrCreate(
-                ['start_date' => $startDate->toDateString()],
-                ['end_date' => $endDate->toDateString()]
-            );
-
             ReactionPersonal::query()
                 ->whereDate('sampling_date', $samplingDate->toDateString())
                 ->delete();
@@ -84,10 +84,14 @@ class PersonalTenancyApplicationImport extends Component
                 }
 
                 $record = $this->convertEncoding($row);
+                $this->insertLog($record);
+
                 $regData = $this->mapCsvRow($record);
                 if ($regData === []) {
                     continue;
                 }
+
+                $this->readCount++;
 
                 $regData['sampling_date'] = $samplingDate->toDateString();
 
@@ -102,12 +106,14 @@ class PersonalTenancyApplicationImport extends Component
                     continue;
                 } else {
                     if (!$investment) {
+                        $this->errorCount = ($this->errorCount ?? 0) + 1;
                         $this->errorMessages[] = sprintf(
                             '%d行目: %s に該当する物件情報がありません。',
                             $rowNo,
                             $regData['ru003'] ?? ''
                         );
                     } else {
+                        $this->errorCount = ($this->errorCount ?? 0) + 1;
                         $this->errorMessages[] = sprintf(
                             '%d行目: %s %s に該当する部屋情報がありません。',
                             $rowNo,
@@ -118,7 +124,6 @@ class PersonalTenancyApplicationImport extends Component
                 }
 
                 ReactionPersonal::query()->create($regData);
-                $this->insertCount++;
 
                 if (($regData['ru035'] ?? null) === '承認' && $room) {
                     $this->upsertInvestmentRoomResident($room, $regData);
@@ -133,7 +138,11 @@ class PersonalTenancyApplicationImport extends Component
                 }
             }
 
-            DB::commit();
+            if ($this->errorCount == 0) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
@@ -201,8 +210,7 @@ class PersonalTenancyApplicationImport extends Component
     protected function upsertInvestmentRoomResident(InvestmentRoom $room, array $regData): void
     {
         $resident = InvestmentRoomResident::query()
-            ->where('investment_id', $room->investment_id)
-            ->where('investment_room_id', $room->investment_room_id)
+            ->where('investment_room_uid', $room->id)
             ->first();
 
         $genderId = 0;
@@ -222,10 +230,11 @@ class PersonalTenancyApplicationImport extends Component
 
         $payload = [
             'investment_id' => $room->investment_id,
+            'investment_uid' => $room->id,
             'investment_room_id' => $room->investment_room_id,
             'contractor_name' => ($regData['ru062'] ?? '') . '　' . ($regData['ru063'] ?? ''),
             'gender_id' => $genderId,
-            'age' => $regData['ru068'] ?? null,
+            'age' => $this->calculateAgeFromBirthDate($regData['ru068'] ?? null),
             'attribute_id' => $attributeId,
             'workplace' => $regData['ru080'] ?? null,
             'annual_income' => $regData['ru092'] ?? null,
@@ -236,12 +245,39 @@ class PersonalTenancyApplicationImport extends Component
         }
 
         if ($resident) {
+            $this->updateResidentCount++;
             $resident->fill($payload);
             $resident->save();
             return;
         }
 
         InvestmentRoomResident::query()->create($payload);
+        $this->insertResidentCount++;
+
+    }
+
+    protected function calculateAgeFromBirthDate(mixed $birthDate): ?int
+    {
+        if (!is_string($birthDate)) {
+            return null;
+        }
+
+        $birthDate = trim($birthDate);
+        if ($birthDate === '') {
+            return null;
+        }
+
+        try {
+            $birthday = Carbon::parse($birthDate)->startOfDay();
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if ($birthday->isFuture()) {
+            return null;
+        }
+
+        return $birthday->age;
     }
 
     /**
@@ -320,6 +356,206 @@ class PersonalTenancyApplicationImport extends Component
         }
 
         return $areaId;
+    }
+
+    protected function insertLog($row)
+    {
+        $row = array_map(static function ($value) {
+            return $value === '' ? null : $value;
+        }, $row);
+
+        PersonalTenancyApplicationLog::create([
+            'import_at' => now(),
+            'application_id' => $row[0] ?? null,
+            'shop_name' => $row[1] ?? null,
+            'property_name' => $row[2] ?? null,
+            'room_number' => $row[3] ?? null,
+            'room_key' => $row[4] ?? null,
+            'building_key' => $row[5] ?? null,
+            'itanji_account_id' => $row[6] ?? null,
+            'management_company_id' => $row[7] ?? null,
+            'room_id' => $row[8] ?? null,
+            'application_status_id' => $row[9] ?? null,
+            'confirmation_status' => $row[10] ?? null,
+            'broker_itanji_account_id' => $row[11] ?? null,
+            'broker_company_name' => $row[12] ?? null,
+            'broker_company_name_kana' => $row[13] ?? null,
+            'broker_mobile_phone' => $row[14] ?? null,
+            'broker_staff_name' => $row[15] ?? null,
+            'broker_email' => $row[16] ?? null,
+            'broker_fax' => $row[17] ?? null,
+            'broker_phone' => $row[18] ?? null,
+            'broker_zip' => $row[19] ?? null,
+            'broker_address' => $row[20] ?? null,
+            'guarantor_company_plan_id' => $row[21] ?? null,
+            'corporation_flag' => $row[22] ?? null,
+            'paper_input_flag' => $row[23] ?? null,
+            'proxy_application_flag' => $row[24] ?? null,
+            'guarantor_reexamination_flag' => $row[25] ?? null,
+            'applicant_editable_flag' => $row[26] ?? null,
+            'staff_id' => $row[27] ?? null,
+            'guarantor_auto_link_flag' => $row[28] ?? null,
+            'contract_number' => $row[29] ?? null,
+            'application_created_at' => $row[30] ?? null,
+            'application_updated_at' => $row[31] ?? null,
+            'guarantor_company_name' => $row[32] ?? null,
+            'guarantor_plan_name' => $row[33] ?? null,
+            'screening_result' => $row[34] ?? null,
+            'guarantee_number' => $row[35] ?? null,
+            'guarantee_target_amount' => $row[36] ?? null,
+            'initial_guarantee_fee' => $row[37] ?? null,
+            'guarantee_order' => $row[38] ?? null,
+            'applicant_email' => $row[39] ?? null,
+            'applicant_first_name' => $row[40] ?? null,
+            'applicant_last_name' => $row[41] ?? null,
+            'applicant_full_name' => $row[42] ?? null,
+            'property_usage_type' => $row[43] ?? null,
+            'property_name_detail' => $row[44] ?? null,
+            'property_name_kana' => $row[45] ?? null,
+            'property_room_number' => $row[46] ?? null,
+            'property_address' => $row[47] ?? null,
+            'rent' => $row[48] ?? null,
+            'management_fee' => $row[49] ?? null,
+            'utilities_fee' => $row[50] ?? null,
+            'neighborhood_fee' => $row[51] ?? null,
+            'management_transfer_fee' => $row[52] ?? null,
+            'parking_fee' => $row[53] ?? null,
+            'other_fixed_fee' => $row[54] ?? null,
+            'total_monthly_payment' => $row[55] ?? null,
+            'deposit' => $row[56] ?? null,
+            'security_deposit' => $row[57] ?? null,
+            'desired_move_in_date' => $row[58] ?? null,
+            'desired_contract_date' => $row[59] ?? null,
+            'initial_payment_due_date' => $row[60] ?? null,
+            'tokio_marine_insurance_flag' => $row[61] ?? null,
+            'applicant_last_name_kanji' => $row[62] ?? null,
+            'applicant_first_name_kanji' => $row[63] ?? null,
+            'applicant_last_name_kana' => $row[64] ?? null,
+            'applicant_first_name_kana' => $row[65] ?? null,
+            'applicant_gender' => $row[66] ?? null,
+            'applicant_birth_date' => $row[67] ?? null,
+            'applicant_age' => $row[68] ?? null,
+            'applicant_mobile_phone' => $row[69] ?? null,
+            'applicant_email_address' => $row[70] ?? null,
+            'applicant_home_phone' => $row[71] ?? null,
+            'applicant_zip' => $row[72] ?? null,
+            'applicant_prefecture' => $row[73] ?? null,
+            'applicant_city' => $row[74] ?? null,
+            'applicant_address_line' => $row[75] ?? null,
+            'applicant_building' => $row[76] ?? null,
+            'applicant_residence_type' => $row[77] ?? null,
+            'applicant_residence_years' => $row[78] ?? null,
+            'applicant_move_reason' => $row[79] ?? null,
+            'applicant_job' => $row[80] ?? null,
+            'applicant_company_name' => $row[81] ?? null,
+            'applicant_company_name_kana' => $row[82] ?? null,
+            'applicant_company_phone' => $row[83] ?? null,
+            'applicant_company_zip' => $row[84] ?? null,
+            'applicant_company_prefecture' => $row[85] ?? null,
+            'applicant_company_city' => $row[86] ?? null,
+            'applicant_company_address' => $row[87] ?? null,
+            'applicant_company_building' => $row[88] ?? null,
+            'applicant_industry' => $row[89] ?? null,
+            'applicant_company_established_date' => $row[90] ?? null,
+            'applicant_company_capital' => $row[91] ?? null,
+            'applicant_years_employed' => $row[92] ?? null,
+            'applicant_annual_income' => $row[93] ?? null,
+            'occupant1_last_name' => $row[94] ?? null,
+            'occupant1_first_name' => $row[95] ?? null,
+            'occupant1_last_name_kana' => $row[96] ?? null,
+            'occupant1_first_name_kana' => $row[97] ?? null,
+            'occupant1_gender' => $row[98] ?? null,
+            'occupant1_relationship' => $row[99] ?? null,
+            'occupant1_birth_date' => $row[100] ?? null,
+            'occupant1_age' => $row[101] ?? null,
+            'occupant1_mobile_phone' => $row[102] ?? null,
+            'occupant1_company_name' => $row[103] ?? null,
+            'occupant1_company_name_kana' => $row[104] ?? null,
+            'occupant2_last_name' => $row[105] ?? null,
+            'occupant2_first_name' => $row[106] ?? null,
+            'occupant2_last_name_kana' => $row[107] ?? null,
+            'occupant2_first_name_kana' => $row[108] ?? null,
+            'occupant2_gender' => $row[109] ?? null,
+            'occupant2_relationship' => $row[110] ?? null,
+            'occupant2_birth_date' => $row[111] ?? null,
+            'occupant2_age' => $row[112] ?? null,
+            'occupant2_mobile_phone' => $row[113] ?? null,
+            'occupant2_company_name' => $row[114] ?? null,
+            'occupant2_company_name_kana' => $row[115] ?? null,
+            'occupant3_last_name' => $row[116] ?? null,
+            'occupant3_first_name' => $row[117] ?? null,
+            'occupant3_last_name_kana' => $row[118] ?? null,
+            'occupant3_first_name_kana' => $row[119] ?? null,
+            'occupant3_gender' => $row[120] ?? null,
+            'occupant3_relationship' => $row[121] ?? null,
+            'occupant3_birth_date' => $row[122] ?? null,
+            'occupant3_age' => $row[123] ?? null,
+            'occupant3_mobile_phone' => $row[124] ?? null,
+            'occupant3_company_name' => $row[125] ?? null,
+            'occupant3_company_name_kana' => $row[126] ?? null,
+            'occupant4_last_name' => $row[127] ?? null,
+            'occupant4_first_name' => $row[128] ?? null,
+            'occupant4_last_name_kana' => $row[129] ?? null,
+            'occupant4_first_name_kana' => $row[130] ?? null,
+            'occupant4_gender' => $row[131] ?? null,
+            'occupant4_relationship' => $row[132] ?? null,
+            'occupant4_birth_date' => $row[133] ?? null,
+            'occupant4_age' => $row[134] ?? null,
+            'occupant4_mobile_phone' => $row[135] ?? null,
+            'occupant4_company_name' => $row[136] ?? null,
+            'occupant4_company_name_kana' => $row[137] ?? null,
+            'emergency_contact_last_name' => $row[138] ?? null,
+            'emergency_contact_first_name' => $row[139] ?? null,
+            'emergency_contact_last_name_kana' => $row[140] ?? null,
+            'emergency_contact_first_name_kana' => $row[141] ?? null,
+            'emergency_contact_gender' => $row[142] ?? null,
+            'emergency_contact_birth_date' => $row[143] ?? null,
+            'emergency_contact_age' => $row[144] ?? null,
+            'emergency_contact_relationship' => $row[145] ?? null,
+            'emergency_contact_mobile_phone' => $row[146] ?? null,
+            'emergency_contact_home_phone' => $row[147] ?? null,
+            'emergency_contact_zip' => $row[148] ?? null,
+            'emergency_contact_prefecture' => $row[149] ?? null,
+            'emergency_contact_city' => $row[150] ?? null,
+            'emergency_contact_address' => $row[151] ?? null,
+            'emergency_contact_building' => $row[152] ?? null,
+            'emergency_contact_company_name' => $row[153] ?? null,
+            'emergency_contact_company_name_kana' => $row[154] ?? null,
+            'guarantor_last_name' => $row[155] ?? null,
+            'guarantor_first_name' => $row[156] ?? null,
+            'guarantor_last_name_kana' => $row[157] ?? null,
+            'guarantor_first_name_kana' => $row[158] ?? null,
+            'guarantor_gender' => $row[159] ?? null,
+            'guarantor_birth_date' => $row[160] ?? null,
+            'guarantor_age' => $row[161] ?? null,
+            'guarantor_relationship' => $row[162] ?? null,
+            'guarantor_mobile_phone' => $row[163] ?? null,
+            'guarantor_home_phone' => $row[164] ?? null,
+            'guarantor_zip' => $row[165] ?? null,
+            'guarantor_prefecture' => $row[166] ?? null,
+            'guarantor_city' => $row[167] ?? null,
+            'guarantor_address' => $row[168] ?? null,
+            'guarantor_building' => $row[169] ?? null,
+            'guarantor_residence_type' => $row[170] ?? null,
+            'guarantor_residence_years' => $row[171] ?? null,
+            'guarantor_job' => $row[172] ?? null,
+            'guarantor_company_name_kana' => $row[173] ?? null,
+            'guarantor_company_phone' => $row[174] ?? null,
+            'guarantor_company_zip' => $row[175] ?? null,
+            'guarantor_company_prefecture' => $row[176] ?? null,
+            'guarantor_company_city' => $row[177] ?? null,
+            'guarantor_company_address' => $row[178] ?? null,
+            'guarantor_company_building' => $row[179] ?? null,
+            'guarantor_industry' => $row[180] ?? null,
+            'guarantor_company_established_date' => $row[181] ?? null,
+            'guarantor_company_capital' => $row[182] ?? null,
+            'guarantor_annual_income' => $row[183] ?? null,
+            'guarantor_years_employed' => $row[184] ?? null,
+            'applicant_id_document_front' => $row[185] ?? null,
+            'applicant_id_document_back' => $row[186] ?? null,
+            'applicant_income_certificate' => $row[187] ?? null,
+            'applicant_additional_document_1' => $row[188] ?? null,
+        ]);
     }
 
     public function render()

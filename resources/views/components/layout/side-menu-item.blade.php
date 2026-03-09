@@ -1,7 +1,8 @@
 @props([
     'title' => '',
+    'open' => false
 ])
-<li x-data="{ open: false }">
+<li x-data="{ open: @js($open) }">
     <div class="tw:text-[1.4rem] tw:leading-[42px]" @click="open = !open">
         <i class="tw:pr-3 tw:w-4 tw:inline-block tw:text-center" :class="open ? 'far fa-angle-down' : 'far fa-angle-right'"></i>{{ $title }}
     </div>

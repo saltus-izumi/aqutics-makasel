@@ -23,9 +23,14 @@ class ImportController
     {
     }
 
-    public function procallAdd()
+    public function importProcall()
     {
-        return view('admin.import.procall-add');
+        return view('admin.import.import-procall');
+    }
+
+    public function importPersonalTenancyApplication()
+    {
+        return view('admin.import.import-personal-tenancy-application');
     }
 
 }
