@@ -44,7 +44,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/import-procall', [AdminImport::class, 'importProcall'])->name('procall');
         });
         Route::prefix('import')->name('import.')->group(function () {
-            Route::get('/import-personal-tenancy-application', [AdminImport::class, 'importPersonalTenancyApplication'])->name('personal-tenancy-application');
+            Route::get('/import-individual-tenancy-application', [AdminImport::class, 'importPersonalTenancyApplication'])->name('individual-tenancy-application');
         });
     });
 });

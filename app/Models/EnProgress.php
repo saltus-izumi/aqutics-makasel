@@ -13,6 +13,15 @@ class EnProgress extends Model
     use RecordsUserStamps;
     use SoftDeletes;
 
+    // 申込人種別
+    public const APPLICANT_TYPE_INDIVIDUAL = 1;
+    public const APPLICANT_TYPE_CORPORATE = 2;
+
+    // 審査結果
+    public const SCREENING_RESULT_APPROVED = 1;              // 承認
+    public const SCREENING_RESULT_CONDITIONAL_APPROVAL = 2;  // 条件付き承認
+    public const SCREENING_RESULT_REJECTED = 3;              // 否決
+
     public const NEXT_ACTION_APPLICATION = 1;
     public const NEXT_ACTION_GUARANTEE_SCREENING = 2;
     public const NEXT_ACTION_WP_SCREENING = 3;

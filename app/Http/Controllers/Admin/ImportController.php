@@ -30,7 +30,7 @@ class ImportController
 
     public function importPersonalTenancyApplication()
     {
-        return view('admin.import.import-personal-tenancy-application');
+        return view('admin.import.import-individual-tenancy-application');
     }
 
 }
