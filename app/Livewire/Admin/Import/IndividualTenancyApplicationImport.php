@@ -19,11 +19,11 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class PersonalTenancyApplicationImport extends Component
+class IndividualTenancyApplicationImport extends Component
 {
     use WithFileUploads;
 
-    public $personalTenancyApplicationFile = null;
+    public $individualTenancyApplicationFile = null;
 
     public ?int $readCount = null;
     public ?int $insertResidentCount = null;
@@ -32,13 +32,13 @@ class PersonalTenancyApplicationImport extends Component
     public array $errorMessages = [];
 
     protected $messages = [
-        'personalTenancyApplicationFile.required' => 'ファイルを選択してください。',
+        'individualTenancyApplicationFile.required' => 'ファイルを選択してください。',
     ];
 
     public function import(): void
     {
         $this->validate([
-            'personalTenancyApplicationFile' => ['required', 'file'],
+            'individualTenancyApplicationFile' => ['required', 'file'],
         ]);
 
         $this->readCount = 0;
@@ -47,7 +47,7 @@ class PersonalTenancyApplicationImport extends Component
         $this->errorCount = 0;
         $this->errorMessages = [];
 
-        $originalName = $this->personalTenancyApplicationFile->getClientOriginalName();
+        $originalName = $this->individualTenancyApplicationFile->getClientOriginalName();
         if (!preg_match('/^個人申込-([0-9]{8})\.csv$/u', $originalName, $matches)) {
             $this->errorCount = 1;
             $this->errorMessages[] = '不正なファイル名です。';
@@ -74,7 +74,7 @@ class PersonalTenancyApplicationImport extends Component
                 ->whereDate('sampling_date', $samplingDate->toDateString())
                 ->delete();
 
-            $csv = new \SplFileObject($this->personalTenancyApplicationFile->getRealPath(), 'r');
+            $csv = new \SplFileObject($this->individualTenancyApplicationFile->getRealPath(), 'r');
             $rowNo = 0;
             while (!$csv->eof()) {
                 $row = $csv->fgetcsv();
@@ -163,7 +163,7 @@ class PersonalTenancyApplicationImport extends Component
             $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e . ')';
         }
 
-        $this->reset('personalTenancyApplicationFile');
+        $this->reset('individualTenancyApplicationFile');
     }
 
     /**
@@ -756,6 +756,6 @@ class PersonalTenancyApplicationImport extends Component
 
     public function render()
     {
-        return view('livewire.admin.import.personal-tenancy-application-import');
+        return view('livewire.admin.import.individual-tenancy-application-import');
     }
 }

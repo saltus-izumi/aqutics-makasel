@@ -4,8 +4,8 @@
             CSVファイル名：<span class="tw:font-bold">個人申込-YYYYMMDD.csv</div>
         </div>
         <div class="tw:mb-[21px]">
-            <x-form.input-file name="personal_tenancy_application_file" wire:model="personalTenancyApplicationFile" />
-            @error('personalTenancyApplicationFile')
+            <x-form.input-file name="individual_tenancy_application_file" wire:model="individualTenancyApplicationFile" />
+            @error('individualTenancyApplicationFile')
                 <x-form.error-message>{{ $message }}</x-form.error-message>
             @enderror
         </div>
