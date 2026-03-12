@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('personal_tenancy_application_logs', function (Blueprint $table) {
+        Schema::create('individual_tenancy_application_logs', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('ID');
 
             $rawColumns = [
-                ['datetime', 'import_at', '取り込み日時'],
+                ['datetime', 'import_date', '取り込み日時'],
                 ['int', 'application_id', '申込ID'],
                 ['varchar', 'shop_name', '店舗名'],
                 ['varchar', 'property_name', '物件名'],
@@ -189,17 +189,17 @@ return new class extends Migration
                 ['varchar', 'guarantor_residence_type', '連帯保証人住居種別'],
                 ['varchar', 'guarantor_residence_years', '連帯保証人居住年数'],
                 ['varchar', 'guarantor_job', '連帯保証人お勤め先職業'],
-                ['varchar', 'guarantor_company_name', '連帯保証人お勤め先勤務先'],
-                ['varchar', 'guarantor_company_name_kana', '連帯保証人お勤め先勤務先（カナ）'],
-                ['varchar', 'guarantor_company_phone', '連帯保証人お勤め先勤務先電話番号'],
-                ['varchar', 'guarantor_company_zip', '連帯保証人お勤め先勤務先所在地（郵便番号）'],
-                ['varchar', 'guarantor_company_prefecture', '連帯保証人お勤め先勤務先所在地（都道府県）'],
-                ['varchar', 'guarantor_company_city', '連帯保証人お勤め先勤務先所在地（市区町村）'],
-                ['varchar', 'guarantor_company_address', '連帯保証人お勤め先勤務先所在地（番地・丁目）'],
-                ['varchar', 'guarantor_company_building', '連帯保証人お勤め先勤務先所在地（建物名・部屋番号）'],
-                ['varchar', 'guarantor_industry', '連帯保証人お勤め先業種'],
-                ['varchar', 'guarantor_company_established_date', '連帯保証人お勤め先設立年月日'],
-                ['varchar', 'guarantor_company_capital', '連帯保証人お勤め先資本金'],
+                ['varchar', 'guarantor_workplace_name', '連帯保証人お勤め先勤務先'],
+                ['varchar', 'guarantor_workplace_name_kana', '連帯保証人お勤め先勤務先（カナ）'],
+                ['varchar', 'guarantor_workplace_phone', '連帯保証人お勤め先勤務先電話番号'],
+                ['varchar', 'guarantor_workplace_zip', '連帯保証人お勤め先勤務先所在地（郵便番号）'],
+                ['varchar', 'guarantor_workplace_prefecture', '連帯保証人お勤め先勤務先所在地（都道府県）'],
+                ['varchar', 'guarantor_workplace_city', '連帯保証人お勤め先勤務先所在地（市区町村）'],
+                ['varchar', 'guarantor_workplace_address', '連帯保証人お勤め先勤務先所在地（番地・丁目）'],
+                ['varchar', 'guarantor_workplace_building', '連帯保証人お勤め先勤務先所在地（建物名・部屋番号）'],
+                ['varchar', 'guarantor_workplace_industry', '連帯保証人お勤め先業種'],
+                ['varchar', 'guarantor_workplace_established_date', '連帯保証人お勤め先設立年月日'],
+                ['varchar', 'guarantor_workplace_capital', '連帯保証人お勤め先資本金'],
                 ['varchar', 'guarantor_annual_income', '連帯保証人お勤め先税込年収'],
                 ['varchar', 'guarantor_years_employed', '連帯保証人お勤め先勤続年数'],
                 ['varchar', 'applicant_id_document_front', '申込者本人確認書類（表）'],
@@ -252,6 +252,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('personal_tenancy_application_logs');
+        Schema::dropIfExists('individual_tenancy_application_logs');
     }
 };

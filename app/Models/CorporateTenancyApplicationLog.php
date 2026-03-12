@@ -23,7 +23,7 @@ class CorporateTenancyApplicationLog extends Model
     protected function casts(): array
     {
         return [
-            'import_at' => 'datetime',
+            'import_date' => 'datetime',
         ];
     }
 

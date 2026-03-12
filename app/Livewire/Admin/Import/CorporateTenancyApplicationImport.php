@@ -3,10 +3,17 @@
 namespace App\Livewire\Admin\Import;
 
 use App\Models\Broker;
+use App\Models\BrokerInvestment;
 use App\Models\CorporateTenancyApplicationLog;
+use App\Models\EnProgress;
+use App\Models\EnProgressEmergencyContact;
+use App\Models\EnProgressGuarantor;
+use App\Models\EnProgressCorporateApplicant;
+use App\Models\EnProgressOccupants;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\InvestmentRoomResident;
+use App\Models\Progress;
 use App\Models\ReactionCompany;
 use App\Models\SummaryPeriod;
 use Carbon\Carbon;
@@ -102,10 +109,15 @@ class CorporateTenancyApplicationImport extends Component
                 $room = $this->findRoom($investment, $regData['ru004'] ?? '');
                 $regData['investment_id'] = 0;
                 $regData['investment_room_id'] = 0;
+                $regData['en_staff_id'] = null;
 
+                if ($investment) {
+                    $regData['investment_id'] = $investment->id;
+                    $regData['en_staff_id'] = $investment->en_staff_id;
+                }
                 if ($room) {
-                    $regData['investment_id'] = $room->investment_id;
                     $regData['investment_room_id'] = $room->investment_room_id;
+                    $regData['investment_room_uid'] = $room->id;
                 } elseif (($regData['ru001'] ?? null) === "\x1a") {
                     continue;
                 } else {
@@ -128,16 +140,19 @@ class CorporateTenancyApplicationImport extends Component
 
                 ReactionCompany::query()->create($regData);
 
-                if (($regData['ru035'] ?? null) === '承認' && $room) {
-                    $this->upsertInvestmentRoomResident($room, $regData);
-                }
+                // if (($regData['ru035'] ?? null) === '承認' && $room) {
+                //     $this->upsertInvestmentRoomResident($room, $regData);
+                // }
 
                 $broker = $this->upsertBroker($regData);
                 if ($room && $broker) {
-                    Investment::query()
-                        ->where('id', $room->investment_id)
-                        ->update(['broker_id' => $broker->id]);
+                    BrokerInvestment::query()->firstOrCreate([
+                        'broker_id' => $broker->id,
+                        'investment_id' => $room->investment_id,
+                    ]);
                 }
+
+                $this->upsertEnProgress($regData);
             }
 
             if ($this->errorCount == 0) {
@@ -390,11 +405,11 @@ class CorporateTenancyApplicationImport extends Component
             'total_monthly_payment' => $row[55] ?? null,
             'deposit' => $row[56] ?? null,
             'security_deposit' => $row[57] ?? null,
-            'desired_move_in_date' => $row[58] ?? null,
-            'desired_contract_date' => $row[59] ?? null,
-            'initial_payment_due_date' => $row[60] ?? null,
-            'tokio_marine_insurance_flag' => $row[61] ?? null,
-            'tokio_marine_direct_insurance_flag' => $row[62] ?? null,
+            'planned_move_in_date' => $row[58] ?? null,
+            'desired_move_in_date' => $row[59] ?? null,
+            'desired_contract_date' => $row[60] ?? null,
+            'initial_payment_due_date' => $row[61] ?? null,
+            'tokio_marine_insurance_flag' => $row[62] ?? null,
             'corporate_name' => $row[63] ?? null,
             'corporate_name_kana' => $row[64] ?? null,
             'corporate_head_office_postal_code' => $row[65] ?? null,
@@ -478,15 +493,15 @@ class CorporateTenancyApplicationImport extends Component
             'emergency_contact_building' => $row[143] ?? null,
             'emergency_contact_company_name' => $row[144] ?? null,
             'emergency_contact_company_name_kana' => $row[145] ?? null,
-            'corporate_emergency_contact_work_phone' => $row[146] ?? null,
+            'emergency_contact_work_phone' => $row[146] ?? null,
             'guarantor_last_name' => $row[147] ?? null,
             'guarantor_first_name' => $row[148] ?? null,
             'guarantor_last_name_kana' => $row[149] ?? null,
             'guarantor_first_name_kana' => $row[150] ?? null,
             'guarantor_gender' => $row[151] ?? null,
-            'guarantor_birth_date' => $row[152] ?? null,
-            'guarantor_age' => $row[153] ?? null,
-            'guarantor_relationship' => $row[154] ?? null,
+            'guarantor_relationship' => $row[152] ?? null,
+            'guarantor_birth_date' => $row[153] ?? null,
+            'guarantor_age' => $row[154] ?? null,
             'guarantor_mobile_phone' => $row[155] ?? null,
             'guarantor_home_phone' => $row[156] ?? null,
             'guarantor_zip' => $row[157] ?? null,
@@ -495,22 +510,238 @@ class CorporateTenancyApplicationImport extends Component
             'guarantor_address' => $row[160] ?? null,
             'guarantor_building' => $row[161] ?? null,
             'guarantor_residence_type' => $row[162] ?? null,
-            'guarantor_residence_years' => $row[163] ?? null,
-            'guarantor_job' => $row[164] ?? null,
-            'guarantor_company_name_kana' => $row[165] ?? null,
-            'guarantor_company_phone' => $row[166] ?? null,
-            'guarantor_company_zip' => $row[167] ?? null,
-            'guarantor_company_prefecture' => $row[168] ?? null,
-            'guarantor_company_city' => $row[169] ?? null,
-            'guarantor_company_address' => $row[170] ?? null,
-            'guarantor_company_building' => $row[171] ?? null,
-            'guarantor_industry' => $row[172] ?? null,
-            'guarantor_company_established_date' => $row[173] ?? null,
-            'guarantor_company_capital' => $row[174] ?? null,
-            'guarantor_annual_income' => $row[175] ?? null,
-            'guarantor_years_employed' => $row[176] ?? null,
-            'corporate_company_registry_document' => $row[177] ?? null,
+            'guarantor_job' => $row[163] ?? null,
+            'guarantor_workplace_name' => $row[164] ?? null,
+            'guarantor_workplace_name_kana' => $row[165] ?? null,
+            'guarantor_workplace_phone' => $row[166] ?? null,
+            'guarantor_workplace_zip' => $row[167] ?? null,
+            'guarantor_workplace_prefecture' => $row[168] ?? null,
+            'guarantor_workplace_city' => $row[169] ?? null,
+            'guarantor_workplace_address' => $row[170] ?? null,
+            'guarantor_workplace_building' => $row[171] ?? null,
+            'guarantor_workplace_industry' => $row[172] ?? null,
+            'guarantor_workplace_capital' => $row[173] ?? null,
+            'guarantor_workplace_employee_count' => $row[174] ?? null,
+            'guarantor_workplace_established_date' => $row[175] ?? null,
+            'guarantor_annual_income' => $row[176] ?? null,
+            'guarantor_years_employed' => $row[177] ?? null,
+            'corporate_company_registry_document' => $row[178] ?? null,
+            'created_user_id' => $row[179] ?? null,
+            'user_created_at' => $row[180] ?? null,
+            'updated_user_id' => $row[181] ?? null,
+            'user_updated_at' => $row[182] ?? null,
+            'deleted_user_id' => $row[183] ?? null,
+            'user_deleted_at' => $row[184] ?? null,
         ]);
+    }
+
+    /**
+     * @param array<string, mixed> $regData
+     */
+    protected function upsertEnProgress(array $regData): void
+    {
+        $progress = Progress::firstOrCreate([
+            'investment_id' => $regData['investment_id'],
+            'investment_room_uid' => $regData['investment_room_uid'],
+            'complete_date' => null
+        ]);
+
+        $enProgress = EnProgress::firstOrNew(['application_id' => $regData['ru001'] ?? null]);
+        $enProgress->progress_id = $progress->id;
+        $enProgress->responsible_user_id = $regData['en_staff_id'] ?? null;
+        $enProgress->applicant_type = EnProgress::APPLICANT_TYPE_INDIVIDUAL;    // 申込人種別
+        $enProgress->application_date = $regData['ru031'] ?? null;              // 申込作成日時
+        $enProgress->guarantor_plan_name = $regData['ru034'] ?? null;           // 保証会社プラン名
+        $enProgress->screening_result = ($regData['ru035'] ?? null) === '承認' ? EnProgress::SCREENING_RESULT_APPROVED : null;   // 審査結果
+        $enProgress->priority_order = $regData['ru039'] ?? null;                // 番手
+        $enProgress->rent_fee = $regData['ru049'] ?? null;                      // 賃貸物件内容家賃
+        $enProgress->common_service_fee = $regData['ru050'] ?? null;            // 賃貸物件内容管理費／共益費
+        $enProgress->water_fee = $regData['ru051'] ?? null;                     // 賃貸物件内容水道光熱費
+        $enProgress->neighborhood_fee = $regData['ru052'] ?? null;              // 賃貸物件内容町内会費（区費）
+        $enProgress->transfer_fee = $regData['ru053'] ?? null;                  // その他・管理会社振替手数料（管理会社）
+        $enProgress->parking_fee = $regData['ru054'] ?? null;                   // 賃貸物件内容駐車場料金
+        $enProgress->other_fixed_fee = $regData['ru055'] ?? null;               // 賃貸物件内容その他固定費
+        $enProgress->deposit_fee = $regData['ru057'] ?? null;                   // 賃貸物件内容敷金
+        $enProgress->security_deposit_fee = $regData['ru058'] ?? null;          // 賃貸物件内容保証金
+        $enProgress->desired_move_in_date = $regData['ru060'] ?? null;          // 賃貸物件内容入居希望日
+        $enProgress->desired_contract_date = $regData['ru061'] ?? null;         // 賃貸物件内容契約希望日
+        $enProgress->planned_payment_date = $regData['ru062'] ?? null;          // 賃貸物件内容初期費用入金予定日
+        $enProgress->save();
+
+        $enProgressCorporateApplicant = EnProgressCorporateApplicant::firstOrNew(['en_progress_id' => $enProgress->id]);
+        $enProgressCorporateApplicant->en_progress_id = $enProgress->id;
+        $enProgressCorporateApplicant->company_name = $regData['ru064'] ?? null;                        // 法人の申込者会社名
+        $enProgressCorporateApplicant->company_kana = $regData['ru065'] ?? null;                        // 法人の申込者会社名（カナ）
+        $enProgressCorporateApplicant->head_office_postal_code = $regData['ru066'] ?? null;             // 法人の会社情報本社所在地（郵便番号）
+        $enProgressCorporateApplicant->head_office_prefecture = $regData['ru067'] ?? null;              // 法人の会社情報本社所在地（都道府県）
+        $enProgressCorporateApplicant->head_office_city = $regData['ru068'] ?? null;                    // 法人の会社情報本社所在地（市区町村）
+        $enProgressCorporateApplicant->head_office_street = $regData['ru069'] ?? null;                  // 法人の会社情報本社所在地（番地・丁目）
+        $enProgressCorporateApplicant->head_office_building = $regData['ru070'] ?? null;                // 法人の会社情報本社所在地（建物名・部屋番号）
+        $enProgressCorporateApplicant->head_office_phone_number = $regData['ru071'] ?? null;            // 法人の会社情報本社電話番号
+        $enProgressCorporateApplicant->head_office_fax_number = $regData['ru072'] ?? null;              // 法人の会社情報本社FAX番号
+        $enProgressCorporateApplicant->email = $regData['ru073'] ?? null;                               // 法人の申込者メールアドレス
+        $enProgressCorporateApplicant->industry = $regData['ru074'] ?? null;                            // 法人の会社情報業種
+        $enProgressCorporateApplicant->capital = $regData['ru075'] ?? null;                             // 法人の会社情報資本金
+        $enProgressCorporateApplicant->number_of_employees = $regData['ru076'] ?? null;                 // 法人の会社情報従業員数
+        $enProgressCorporateApplicant->established_date = $regData['ru077'] ?? null;                    // 法人の会社情報設立年月日
+        $enProgressCorporateApplicant->representative_last_name = $regData['ru078'] ?? null;            // 法人の会社代表者氏名（名字）
+        $enProgressCorporateApplicant->representative_first_name = $regData['ru079'] ?? null;           // 法人の会社代表者氏名（名字）
+        $enProgressCorporateApplicant->representative_last_kana = $regData['ru080'] ?? null;            // 法人の会社代表者氏名（名字カナ）
+        $enProgressCorporateApplicant->representative_first_kana = $regData['ru081'] ?? null;           // 法人の会社代表者氏名（名前カナ）
+        $enProgressCorporateApplicant->representative_mobile_phone_number = $regData['ru082'] ?? null;  // 法人の会社代表者携帯電話番号
+        $enProgressCorporateApplicant->representative_postal_code = $regData['ru083'] ?? null;          // 法人の会社代表者現住所（郵便番号）
+        $enProgressCorporateApplicant->representative_prefecture = $regData['ru084'] ?? null;           // 法人の会社代表者現住所（都道府県）
+        $enProgressCorporateApplicant->representative_city = $regData['ru085'] ?? null;                 // 法人の会社代表者現住所（市区町村）
+        $enProgressCorporateApplicant->representative_street = $regData['ru086'] ?? null;               // 法人の会社代表者現住所（番地・丁目）
+        $enProgressCorporateApplicant->representative_building = $regData['ru087'] ?? null;             // 法人の会社代表者現住所（建物名・部屋番号）
+        $enProgressCorporateApplicant->contact_last_name = $regData['ru088'] ?? null;                   // 法人の申込者担当者名（名字）
+        $enProgressCorporateApplicant->contact_first_name = $regData['ru089'] ?? null;                  // 法人の申込者担当者名（名前）
+        $enProgressCorporateApplicant->contact_last_kana = $regData['ru090'] ?? null;                   // 法人の申込者担当者名（名字カナ）
+        $enProgressCorporateApplicant->contact_first_kana = $regData['ru091'] ?? null;                  // 法人の申込者担当者名（名前カナ）
+        $enProgressCorporateApplicant->contact_department = $regData['ru092'] ?? null;                  // 法人の申込者担当者所属部署
+        $enProgressCorporateApplicant->contact_phone_number = $regData['ru093'] ?? null;                // 法人の申込者担当者電話番号
+        $enProgressCorporateApplicant->save();
+
+        $enProgressOccupants = EnProgressOccupants::firstOrNew([
+            'en_progress_id' => $enProgress->id,
+            'occupant_seq' => 1
+        ]);
+        $enProgressOccupants->en_progress_id = $enProgress->id;
+        $enProgressOccupants->last_name = $regData['ru094'] ?? null;                    // 法人の入居者1氏名（名字）
+        $enProgressOccupants->first_name = $regData['ru095'] ?? null;                   // 法人の入居者1氏名（名前）
+        $enProgressOccupants->last_kana = $regData['ru096'] ?? null;                    // 法人の入居者1氏名（名字カナ）
+        $enProgressOccupants->first_kana = $regData['ru097'] ?? null;                   // 法人の入居者1氏名（名前カナ）
+        $enProgressOccupants->relationship = $regData['ru098'] ?? null;                 // 法人の入居者1続柄
+        $enProgressOccupants->birth_date = $regData['ru099'] ?? null;                   // 法人の入居者1生年月日
+        $enProgressOccupants->mobile_phone_number = $regData['ru101'] ?? null;          // 法人の入居者1携帯電話番号
+        $enProgressOccupants->annual_income = $regData['ru102'] ?? null;                // 法人の入居者1税込年収
+        $enProgressOccupants->save();
+
+        // 入居者2
+        if ($regData['ru103'] ?? null) {
+            $enProgressOccupants = EnProgressOccupants::firstOrNew([
+                'en_progress_id' => $enProgress->id,
+                'occupant_seq' => 2
+            ]);
+            $enProgressOccupants->en_progress_id = $enProgress->id;
+            $enProgressOccupants->last_name = $regData['ru103'] ?? null;                    // 法人の入居者2氏名（名字）
+            $enProgressOccupants->first_name = $regData['ru104'] ?? null;                   // 法人の入居者2氏名（名前）
+            $enProgressOccupants->last_kana = $regData['rru105'] ?? null;                   // 法人の入居者2氏名（名字カナ）
+            $enProgressOccupants->first_kana = $regData['ru106'] ?? null;                   // 法人の入居者2氏名（名前カナ）
+            $enProgressOccupants->relationship = $regData['ru107'] ?? null;                 // 法人の入居者2続柄
+            $enProgressOccupants->birth_date = $regData['ru108'] ?? null;                   // 法人の入居者2生年月日
+            $enProgressOccupants->mobile_phone_number = $regData['ru110'] ?? null;          // 法人の入居者2携帯電話番号
+            $enProgressOccupants->annual_income = $regData['ru111'] ?? null;                // 法人の入居者2税込年収
+            $enProgressOccupants->save();
+        }
+
+        // 入居者3
+        if ($regData['ru112'] ?? null) {
+            $enProgressOccupants = EnProgressOccupants::firstOrNew([
+                'en_progress_id' => $enProgress->id,
+                'occupant_seq' => 3
+            ]);
+            $enProgressOccupants->en_progress_id = $enProgress->id;
+            $enProgressOccupants->last_name = $regData['ru112'] ?? null;                    // 法人の入居者3氏名（名字）
+            $enProgressOccupants->first_name = $regData['ru113'] ?? null;                   // 法人の入居者3氏名（名前）
+            $enProgressOccupants->last_kana = $regData['ru114'] ?? null;                    // 法人の入居者3氏名（名字カナ）
+            $enProgressOccupants->first_kana = $regData['ru115'] ?? null;                   // 法人の入居者3氏名（名前カナ）
+            $enProgressOccupants->relationship = $regData['ru116'] ?? null;                 // 法人の入居者3続柄
+            $enProgressOccupants->birth_date = $regData['ru117'] ?? null;                   // 法人の入居者3生年月日
+            $enProgressOccupants->mobile_phone_number = $regData['ru119'] ?? null;          // 法人の入居者3携帯電話番号
+            $enProgressOccupants->annual_income = $regData['ru120'] ?? null;                // 法人の入居者3税込年収
+            $enProgressOccupants->save();
+        }
+
+        // 入居者4
+        if ($regData['ru121'] ?? null) {
+            $enProgressOccupants = EnProgressOccupants::firstOrNew([
+                'en_progress_id' => $enProgress->id,
+                'occupant_seq' => 4
+            ]);
+            $enProgressOccupants->en_progress_id = $enProgress->id;
+            $enProgressOccupants->last_name = $regData['ru121'] ?? null;                    // 法人の入居者4氏名（名字）
+            $enProgressOccupants->first_name = $regData['ru122'] ?? null;                   // 法人の入居者4氏名（名前）
+            $enProgressOccupants->last_kana = $regData['ru123'] ?? null;                    // 法人の入居者4氏名（名字カナ）
+            $enProgressOccupants->first_kana = $regData['ru124'] ?? null;                   // 法人の入居者4氏名（名前カナ）
+            $enProgressOccupants->relationship = $regData['ru125'] ?? null;                 // 法人の入居者4続柄
+            $enProgressOccupants->birth_date = $regData['ru126'] ?? null;                   // 法人の入居者4生年月日
+            $enProgressOccupants->mobile_phone_number = $regData['ru128'] ?? null;          // 法人の入居者4携帯電話番号
+            $enProgressOccupants->annual_income = $regData['ru129'] ?? null;                // 法人の入居者4税込年収
+            $enProgressOccupants->save();
+        }
+
+        $enProgressEmergencyContact = EnProgressEmergencyContact::firstOrNew(['en_progress_id' => $enProgress->id]);
+        $enProgressEmergencyContact->en_progress_id = $enProgress->id;
+        $enProgressEmergencyContact->last_name = $regData['ru130'] ?? null;                         // 法人の緊急連絡先氏名（名字）
+        $enProgressEmergencyContact->first_name = $regData['ru131'] ?? null;                        // 法人の緊急連絡先氏名（名前）
+        $enProgressEmergencyContact->last_kana = $regData['ru132'] ?? null;                         // 法人の緊急連絡先氏名（名字カナ）
+        $enProgressEmergencyContact->first_kana = $regData['ru133'] ?? null;                        // 法人の緊急連絡先氏名（名前カナ）
+        $enProgressEmergencyContact->gender = $this->getGender($regData['ru134'] ?? null, EnProgressEmergencyContact::class);     // 法人の緊急連絡先性別
+        $enProgressEmergencyContact->birth_date = $regData['ru135'] ?? null;                        // 法人の緊急連絡先生年月日
+        $enProgressEmergencyContact->relationship = $regData['ru137'] ?? null;                      // 法人の緊急連絡先続柄
+        $enProgressEmergencyContact->mobile_phone_number = $regData['ru138'] ?? null;               // 法人の緊急連絡先携帯電話番号
+        $enProgressEmergencyContact->phone_number = $regData['ru139'] ?? null;                      // 法人の緊急連絡先自宅電話番号
+        $enProgressEmergencyContact->postal_code = $regData['ru140'] ?? null;                       // 法人の緊急連絡先自宅住所（郵便番号）
+        $enProgressEmergencyContact->prefecture = $regData['ru141'] ?? null;                        // 法人の緊急連絡先自宅住所（都道府県）
+        $enProgressEmergencyContact->city = $regData['ru142'] ?? null;                              // 法人の緊急連絡先自宅住所（市区町村）
+        $enProgressEmergencyContact->street = $regData['ru143'] ?? null;                            // 法人の緊急連絡先自宅住所（番地・丁目）
+        $enProgressEmergencyContact->building = $regData['ru144'] ?? null;                          // 法人の緊急連絡先自宅住所（建物名・部屋番号）
+        $enProgressEmergencyContact->workplace_or_school_name = $regData['ru145'] ?? null;          // 法人の緊急連絡先勤務先名
+        $enProgressEmergencyContact->workplace_or_school_kana = $regData['ru146'] ?? null;          // 法人の緊急連絡先勤務先名（カナ）
+        $enProgressEmergencyContact->workplace_or_school_phone_number = $regData['ru147'] ?? null;  // 法人の緊急連絡先勤務先電話番号
+        $enProgressEmergencyContact->save();
+
+        $enProgressGuarantor = EnProgressGuarantor::firstOrNew(['en_progress_id' => $enProgress->id]);
+        $enProgressGuarantor->en_progress_id = $enProgress->id;
+        $enProgressGuarantor->last_name = $regData['ru148'] ?? null;                            // 法人の連帯保証人氏名（名字）
+        $enProgressGuarantor->first_name = $regData['ru149'] ?? null;                           // 法人の連帯保証人氏名（名前）
+        $enProgressGuarantor->last_kana = $regData['ru150'] ?? null;                            // 法人の連帯保証人氏名（名字カナ）
+        $enProgressGuarantor->first_kana = $regData['ru151'] ?? null;                           // 法人の連帯保証人氏名（名前カナ）
+        $enProgressGuarantor->gender = $this->getGender($regData['ru152'] ?? null, EnProgressGuarantor::class);     // 法人の連帯保証人性別
+        $enProgressGuarantor->relationship = $regData['ru153'] ?? null;                         // 法人の連帯保証人続柄
+        $enProgressGuarantor->birth_date = $regData['ru154'] ?? null;                           // 法人の連帯保証人生年月日
+        $enProgressGuarantor->mobile_phone_number = $regData['ru156'] ?? null;                  // 法人の連帯保証人携帯電話番号
+        $enProgressGuarantor->phone_number = $regData['ru157'] ?? null;                         // 法人の連帯保証人自宅電話番号
+        $enProgressGuarantor->postal_code = $regData['ru158'] ?? null;                          // 法人の連帯保証人現住所（郵便番号）
+        $enProgressGuarantor->prefecture = $regData['ru159'] ?? null;                           // 法人の連帯保証人現住所（都道府県）
+        $enProgressGuarantor->city = $regData['ru160'] ?? null;                                 // 法人の連帯保証人現住所（市区町村）
+        $enProgressGuarantor->street = $regData['ru161'] ?? null;                               // 法人の連帯保証人現住所（番地・丁目）
+        $enProgressGuarantor->building = $regData['ru162'] ?? null;                             // 法人の連帯保証人現住所（建物名・部屋番号）
+        $enProgressGuarantor->residence_type = $regData['ru163'] ?? null;                       // 法人の連帯保証人住居種別
+        $enProgressGuarantor->occupation = $regData['ru164'] ?? null;                           // 法人の連帯保証人お勤め先職業
+        $enProgressGuarantor->workplace_name = $regData['ru165'] ?? null;                       // 法人の連帯保証人お勤め先勤務先/学校名
+        $enProgressGuarantor->workplace_kana = $regData['ru166'] ?? null;                       // 法人の連帯保証人お勤め先勤務先/学校名（カナ）
+        $enProgressGuarantor->workplace_phone_number = $regData['ru167'] ?? null;               // 法人の連帯保証人お勤め先勤務先電話番号
+        $enProgressGuarantor->workplace_postal_code = $regData['ru168'] ?? null;                // 法人の連帯保証人お勤め先勤務先所在地（郵便番号）
+        $enProgressGuarantor->workplace_prefecture = $regData['ru169'] ?? null;                 // 法人の連帯保証人お勤め先勤務先所在地（都道府県）
+        $enProgressGuarantor->workplace_city = $regData['ru170'] ?? null;                       // 法人の連帯保証人お勤め先勤務先所在地（市区町村）
+        $enProgressGuarantor->workplace_street = $regData['ru171'] ?? null;                     // 法人の連帯保証人お勤め先勤務先所在地（番地・丁目）
+        $enProgressGuarantor->workplace_building = $regData['ru172'] ?? null;                   // 法人の連帯保証人お勤め先勤務先所在地（建物名・部屋番号）
+        $enProgressGuarantor->industry = $regData['ru173'] ?? null;                             // 法人の連帯保証人お勤め先業種
+        $enProgressGuarantor->capital = $regData['ru174'] ?? null;                              // 法人の連帯保証人お勤め先資本金
+        $enProgressGuarantor->number_of_employees = $regData['ru175'] ?? null;                  // 法人の連帯保証人お勤め先従業員数
+        $enProgressGuarantor->established_date = $regData['ru176'] ?? null;                     // 法人の連帯保証人お勤め先設立年月日
+        $enProgressGuarantor->annual_income = $regData['ru177'] ?? null;                        // 法人の連帯保証人お勤め先税込年収
+        $enProgressGuarantor->years_of_service = $regData['ru178'] ?? null;                     // 法人の連帯保証人お勤め先勤続年数
+        $enProgressGuarantor->save();
+    }
+
+    protected function getGender($value, $class) {
+        $gender = null;
+
+        switch ($value) {
+            case '男':
+            case '男性':
+                $gender = $class::GENDER_MALE;
+                break;
+            case '女':
+            case '女性':
+                $gender = $class::GENDER_FEMALE;
+                break;
+        }
+
+        return $gender;
     }
 
     public function render()

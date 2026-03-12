@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('en_progress_occupants', function (Blueprint $table) {
+        Schema::create('en_progress_guarantors', function (Blueprint $table) {
             $table->increments('id')->comment('EN進捗入居者ID');
             $table->integer('en_progress_id')->nullable()->comment('EN進捗ID');
-            $table->integer('occupant_seq')->default(1)->comment('入居者連番');
             $table->string('last_name')->nullable()->comment('氏名（姓）');
             $table->string('first_name')->nullable()->comment('氏名（名）');
             $table->string('last_kana')->nullable()->comment('カナ（姓）');
@@ -23,9 +22,28 @@ return new class extends Migration
             $table->date('birth_date')->nullable()->comment('生年月日');
             $table->string('relationship')->nullable()->comment('続柄');
             $table->string('mobile_phone_number')->nullable()->comment('携帯電話番号');
-            $table->string('workplace_or_school_name')->nullable()->comment('勤務先/学校名');
-            $table->string('workplace_or_school_kana')->nullable()->comment('カナ');
+            $table->string('phone_number')->nullable()->comment('自宅電話番号');
+            $table->string('postal_code')->nullable()->comment('住所・郵便番号');
+            $table->string('prefecture')->nullable()->comment('住所・都道府県');
+            $table->string('city')->nullable()->comment('住所・市区町村');
+            $table->string('street')->nullable()->comment('住所・番地・丁目');
+            $table->string('building')->nullable()->comment('住所・建物名・部屋番号');
+            $table->string('residence_type')->nullable()->comment('居住種別');
+            $table->string('occupation')->nullable()->comment('職業');
+            $table->string('workplace_name')->nullable()->comment('勤務先/学校名');
+            $table->string('workplace_kana')->nullable()->comment('勤務先・カナ');
+            $table->string('workplace_phone_number')->nullable()->comment('勤務先・電話番号');
+            $table->string('workplace_postal_code')->nullable()->comment('勤務先・郵便番号');
+            $table->string('workplace_prefecture')->nullable()->comment('勤務先・都道府県');
+            $table->string('workplace_city')->nullable()->comment('勤務先・市区町村');
+            $table->string('workplace_street')->nullable()->comment('勤務先・番地・丁目');
+            $table->string('workplace_building')->nullable()->comment('勤務先・建物名・部屋番号');
+            $table->string('industry')->nullable()->comment('業種');
+            $table->string('years_of_service')->nullable()->comment('勤続年数');
             $table->integer('annual_income')->nullable()->comment('税込年収');
+            $table->integer('capital')->nullable()->comment('資本金');
+            $table->integer('number_of_employees')->nullable()->comment('従業員数');
+            $table->date('established_date')->nullable()->comment('設立年月日');
             $table->integer('created_user_id')->nullable()->comment('データ登録スタッフID');
             $table->dateTime('user_created_at')->nullable()->comment('データ登録日時（ スタッフ）');
             $table->integer('updated_user_id')->nullable()->comment('データ更新スタッフID');
@@ -43,6 +61,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('en_progress_occupants');
+        Schema::dropIfExists('en_progress_guarantors');
     }
 };

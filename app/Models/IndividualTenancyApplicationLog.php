@@ -6,7 +6,7 @@ use App\Models\Concerns\RecordsUserStamps;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PersonalTenancyApplicationLog extends Model
+class IndividualTenancyApplicationLog extends Model
 {
     use RecordsUserStamps;
     use SoftDeletes;
@@ -23,7 +23,7 @@ class PersonalTenancyApplicationLog extends Model
     protected function casts(): array
     {
         return [
-            'import_at' => 'datetime',
+            'import_date' => 'datetime',
         ];
     }
 

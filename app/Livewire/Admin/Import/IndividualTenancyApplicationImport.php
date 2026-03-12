@@ -6,14 +6,16 @@ use App\Models\Broker;
 use App\Models\BrokerInvestment;
 use App\Models\EnProgress;
 use App\Models\EnProgressEmergencyContact;
+use App\Models\EnProgressGuarantor;
 use App\Models\EnProgressIndividualApplicant;
 use App\Models\EnProgressOccupants;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\InvestmentRoomResident;
-use App\Models\PersonalTenancyApplicationLog;
+use App\Models\IndividualTenancyApplicationLog;
 use App\Models\Progress;
 use App\Models\ReactionPersonal;
+use App\Models\SummaryPeriod;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -70,6 +72,11 @@ class IndividualTenancyApplicationImport extends Component
         DB::beginTransaction();
 
         try {
+            SummaryPeriod::query()->firstOrCreate(
+                ['start_date' => $startDate->toDateString()],
+                ['end_date' => $endDate->toDateString()]
+            );
+
             ReactionPersonal::query()
                 ->whereDate('sampling_date', $samplingDate->toDateString())
                 ->delete();
@@ -377,8 +384,8 @@ class IndividualTenancyApplicationImport extends Component
             return $value === '' ? null : $value;
         }, $row);
 
-        PersonalTenancyApplicationLog::create([
-            'import_at' => now(),
+        IndividualTenancyApplicationLog::create([
+            'import_date' => now(),
             'application_id' => $row[0] ?? null,
             'shop_name' => $row[1] ?? null,
             'property_name' => $row[2] ?? null,
@@ -552,22 +559,29 @@ class IndividualTenancyApplicationImport extends Component
             'guarantor_residence_type' => $row[170] ?? null,
             'guarantor_residence_years' => $row[171] ?? null,
             'guarantor_job' => $row[172] ?? null,
-            'guarantor_company_name_kana' => $row[173] ?? null,
-            'guarantor_company_phone' => $row[174] ?? null,
-            'guarantor_company_zip' => $row[175] ?? null,
-            'guarantor_company_prefecture' => $row[176] ?? null,
-            'guarantor_company_city' => $row[177] ?? null,
-            'guarantor_company_address' => $row[178] ?? null,
-            'guarantor_company_building' => $row[179] ?? null,
-            'guarantor_industry' => $row[180] ?? null,
-            'guarantor_company_established_date' => $row[181] ?? null,
-            'guarantor_company_capital' => $row[182] ?? null,
-            'guarantor_annual_income' => $row[183] ?? null,
-            'guarantor_years_employed' => $row[184] ?? null,
-            'applicant_id_document_front' => $row[185] ?? null,
-            'applicant_id_document_back' => $row[186] ?? null,
-            'applicant_income_certificate' => $row[187] ?? null,
-            'applicant_additional_document_1' => $row[188] ?? null,
+            'guarantor_workplace_name' => $row[173] ?? null,
+            'guarantor_workplace_name_kana' => $row[174] ?? null,
+            'guarantor_workplace_phone' => $row[175] ?? null,
+            'guarantor_workplace_zip' => $row[176] ?? null,
+            'guarantor_workplace_prefecture' => $row[177] ?? null,
+            'guarantor_workplace_city' => $row[178] ?? null,
+            'guarantor_workplace_address' => $row[179] ?? null,
+            'guarantor_workplace_building' => $row[180] ?? null,
+            'guarantor_workplace_industry' => $row[181] ?? null,
+            'guarantor_workplace_established_date' => $row[182] ?? null,
+            'guarantor_workplace_capital' => $row[183] ?? null,
+            'guarantor_annual_income' => $row[184] ?? null,
+            'guarantor_years_employed' => $row[185] ?? null,
+            'applicant_id_document_front' => $row[186] ?? null,
+            'applicant_id_document_back' => $row[187] ?? null,
+            'applicant_income_certificate' => $row[188] ?? null,
+            'applicant_additional_document_1' => $row[189] ?? null,
+            'created_user_id' => $row[190] ?? null,
+            'user_created_at' => $row[191] ?? null,
+            'updated_user_id' => $row[192] ?? null,
+            'user_updated_at' => $row[193] ?? null,
+            'deleted_user_id' => $row[194] ?? null,
+            'user_deleted_at' => $row[195] ?? null,
         ]);
     }
 
@@ -735,6 +749,41 @@ class IndividualTenancyApplicationImport extends Component
         $enProgressEmergencyContact->workplace_or_school_name = $regData['ru154'] ?? null;          // 緊急連絡先勤務先名
         $enProgressEmergencyContact->workplace_or_school_kana = $regData['ru155'] ?? null;          // 緊急連絡先勤務先名（カナ）
         $enProgressEmergencyContact->save();
+
+
+        $enProgressGuarantor = EnProgressGuarantor::firstOrNew(['en_progress_id' => $enProgress->id]);
+        $enProgressGuarantor->en_progress_id = $enProgress->id;
+        $enProgressGuarantor->last_name = $regData['ru156'] ?? null;                            // 連帯保証人氏名（名字）
+        $enProgressGuarantor->first_name = $regData['ru157'] ?? null;                           // 連帯保証人氏名（名前）
+        $enProgressGuarantor->last_kana = $regData['ru158'] ?? null;                            // 連帯保証人氏名（名字カナ）
+        $enProgressGuarantor->first_kana = $regData['ru159'] ?? null;                           // 連帯保証人氏名（名前カナ）
+        $enProgressGuarantor->gender = $this->getGender($regData['ru160'] ?? null, EnProgressGuarantor::class);     // 連帯保証人性別
+        $enProgressGuarantor->birth_date = $regData['ru161'] ?? null;                           // 連帯保証人生年月日
+        $enProgressGuarantor->relationship = $regData['ru163'] ?? null;                         // 連帯保証人続柄
+        $enProgressGuarantor->mobile_phone_number = $regData['ru164'] ?? null;                  // 連帯保証人携帯電話番号
+        $enProgressGuarantor->phone_number = $regData['ru165'] ?? null;                         // 連帯保証人自宅電話番号
+        $enProgressGuarantor->postal_code = $regData['ru166'] ?? null;                          // 連帯保証人現住所（郵便番号）
+        $enProgressGuarantor->prefecture = $regData['ru167'] ?? null;                           // 連帯保証人現住所（都道府県）
+        $enProgressGuarantor->city = $regData['ru168'] ?? null;                                 // 連帯保証人現住所（市区町村）
+        $enProgressGuarantor->street = $regData['ru169'] ?? null;                               // 連帯保証人現住所（番地・丁目）
+        $enProgressGuarantor->building = $regData['ru170'] ?? null;                             // 連帯保証人現住所（建物名・部屋番号）
+        $enProgressGuarantor->residence_type = $regData['ru171'] ?? null;                       // 連帯保証人住居種別
+        $enProgressGuarantor->residence_years = $regData['ru172'] ?? null;                      // 連帯保証人居住年数
+        $enProgressGuarantor->occupation = $regData['ru173'] ?? null;                           // 連帯保証人お勤め先職業
+        $enProgressGuarantor->workplace_name = $regData['ru174'] ?? null;                       // 連帯保証人お勤め先勤務先
+        $enProgressGuarantor->workplace_kana = $regData['ru175'] ?? null;                       // 連帯保証人お勤め先勤務先（カナ）
+        $enProgressGuarantor->workplace_phone_number = $regData['ru176'] ?? null;               // 連帯保証人お勤め先勤務先電話番号
+        $enProgressGuarantor->workplace_postal_code = $regData['ru177'] ?? null;                // 連帯保証人お勤め先勤務先所在地（郵便番号）
+        $enProgressGuarantor->workplace_prefecture = $regData['ru178'] ?? null;                 // 連帯保証人お勤め先勤務先所在地（都道府県）
+        $enProgressGuarantor->workplace_city = $regData['ru179'] ?? null;                       // 連帯保証人お勤め先勤務先所在地（市区町村）
+        $enProgressGuarantor->workplace_street = $regData['ru180'] ?? null;                     // 連帯保証人お勤め先勤務先所在地（番地・丁目）
+        $enProgressGuarantor->workplace_building = $regData['ru181'] ?? null;                   // 連帯保証人お勤め先勤務先所在地（建物名・部屋番号）
+        $enProgressGuarantor->industry = $regData['ru182'] ?? null;                             // 連帯保証人お勤め先業種
+        $enProgressGuarantor->established_date = $regData['ru183'] ?? null;                     // 連帯保証人お勤め先設立年月日
+        $enProgressGuarantor->capital = $regData['ru184'] ?? null;                              // 連帯保証人お勤め先資本金
+        $enProgressGuarantor->annual_income = $regData['ru185'] ?? null;                        // 連帯保証人お勤め先税込年収
+        $enProgressGuarantor->years_of_service = $regData['ru186'] ?? null;                     // 連帯保証人お勤め先勤続年数
+        $enProgressGuarantor->save();
     }
 
     protected function getGender($value, $class) {
