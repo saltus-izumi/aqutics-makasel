@@ -33,4 +33,9 @@ class ImportController
         return view('admin.import.import-individual-tenancy-application');
     }
 
+    public function importCorporateTenancyApplication()
+    {
+        return view('admin.import.import-corporate-tenancy-application');
+    }
+
 }

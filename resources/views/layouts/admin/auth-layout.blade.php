@@ -55,7 +55,7 @@
                                 <li><a href="/app/admin/CsvImports/4">不動産BB</a></li>
                                 <li><a href="/app/admin/CsvImports/5">イタンジ（内見予約くん）</a></li>
                                 <li><a href="{{ route('admin.import.individual-tenancy-application') }}">個人申込</a></li>
-                                <li><a href="/app/admin/CsvImports/8">法人申込</a></li>
+                                <li><a href="{{ route('admin.import.corporate-tenancy-application') }}">法人申込</a></li>
                                 <li><a href="{{ route('admin.import.procall') }}">PMView（新規）</a></li>
                                 <li><a href="/app/admin/CsvImports/11">PMView（更新）</a></li>
                                 <li><a href="/app/admin/CsvImports/9">入居者状況一覧</a></li>

@@ -45,6 +45,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
         Route::prefix('import')->name('import.')->group(function () {
             Route::get('/import-individual-tenancy-application', [AdminImport::class, 'importIndividualTenancyApplication'])->name('individual-tenancy-application');
+            Route::get('/import-corporate-tenancy-application', [AdminImport::class, 'importCorporateTenancyApplication'])->name('corporate-tenancy-application');
         });
     });
 });
