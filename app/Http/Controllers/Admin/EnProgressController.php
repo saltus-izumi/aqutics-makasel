@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use App\Models\GeProgress;
+use App\Models\EnProgress;
 use App\Models\GeProgressFile;
 
 class EnProgressController
@@ -17,14 +17,14 @@ class EnProgressController
         return view('admin.progress.en.index');
     }
 
-    public function detail(Request $request, $geProgressId)
+    public function detail(Request $request, $enProgressId)
     {
-        $geProgress = GeProgress::query()
+        $enProgress = EnProgress::query()
             ->with([
-                'step1Files',
                 'responsibleUser',
                 'executorUser',
                 'progress',
+                'progress.latestGeProgress',
                 'progress.investment',
                 'progress.investment.restorationCompany',
                 'progress.investment.landlord.owner',
@@ -32,15 +32,15 @@ class EnProgressController
                 'progress.investmentRoomRedidentHistory',
                 'progress.investmentEmptyRoom',
             ])
-            ->find($geProgressId);
+            ->find($enProgressId);
 
-        if (!$geProgress) {
+        if (!$enProgress) {
             abort(404);
         }
 
         return view('admin.progress.en.detail')
             ->with(compact(
-                'geProgress',
+                'enProgress',
             ));
     }
 

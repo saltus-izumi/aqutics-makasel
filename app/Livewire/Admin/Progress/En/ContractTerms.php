@@ -1,19 +1,23 @@
 <?php
 
-namespace App\Livewire\Admin\Progress\Ge;
+namespace App\Livewire\Admin\Progress\En;
 
 use App\Models\GeProgress;
 use App\Models\GeProgressFile;
+use App\Models\GuaranteeCompany;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class Step1 extends Component
+class ContractTerms extends Component
 {
     use WithFileUploads;
 
-    public $geProgress = null;
+    public $enProgress = null;
+    public $latestGeProgress = null;
+    public $guaranteeCompanyOptions = [];
+
     public $securityDepositAmount = null;
     public $proratedRentAmount = null;
     public $penaltyForfeitureAmount = null;
@@ -23,8 +27,8 @@ class Step1 extends Component
     public array $step1Files = [];
     public string $componentId = '';
 
-    protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
-    protected array $geProgressMap = [
+    protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
+    protected array $enProgressMap = [
         'securityDepositAmount' => 'security_deposit_amount',
         'proratedRentAmount' => 'prorated_rent_amount',
         'penaltyForfeitureAmount' => 'penalty_forfeiture_amount',
@@ -51,26 +55,32 @@ class Step1 extends Component
         ];
     }
 
-    public function mount($geProgress)
+    public function mount($enProgress)
     {
-        $this->geProgress = $geProgress;
-        $this->securityDepositAmount = $geProgress?->security_deposit_amount;
-        $this->proratedRentAmount = $geProgress?->prorated_rent_amount;
-        $this->penaltyForfeitureAmount = $geProgress?->penalty_forfeiture_amount;
-        $this->inspectionRequestMessage = $geProgress?->inspection_request_message;
-        $this->isStep1Confirmed = $geProgress?->is_step1_confirmed;
+        $this->enProgress = $enProgress;
+        $this->latestGeProgress = $enProgress->progress?->latestGeProgress;
+        $this->guaranteeCompanyOptions = GuaranteeCompany::query()
+            ->orderBy('id')
+            ->pluck('company_name', 'id')
+            ->toArray();
+
+        $this->securityDepositAmount = $enProgress?->security_deposit_amount;
+        $this->proratedRentAmount = $enProgress?->prorated_rent_amount;
+        $this->penaltyForfeitureAmount = $enProgress?->penalty_forfeiture_amount;
+        $this->inspectionRequestMessage = $enProgress?->inspection_request_message;
+        $this->isStep1Confirmed = $enProgress?->is_step1_confirmed;
         $this->componentId = $this->getId();
         $this->loadStep1Files();
     }
 
     public function updated($propertyName, $value)
     {
-        if (!array_key_exists($propertyName, $this->geProgressMap)) {
+        if (!array_key_exists($propertyName, $this->enProgressMap)) {
             return;
         }
 
         // null対策
-        if (!$this->geProgress) {
+        if (!$this->enProgress) {
             return;
         }
 
@@ -92,31 +102,31 @@ class Step1 extends Component
             }
         }
 
-        $column = $this->geProgressMap[$propertyName];
-        $this->geProgress->{$column} = $value;
-        $this->geProgress->save();
+        $column = $this->enProgressMap[$propertyName];
+        $this->enProgress->{$column} = $value;
+        $this->enProgress->save();
 
-        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+        $this->dispatch('enProgressUpdated', enProgressId: $this->enProgress->id);
     }
 
     public function updateMoveOutReportDate(): void
     {
-        if ($this->geProgress->move_out_report_date) {
+        if ($this->enProgress->move_out_report_date) {
             return;
         }
 
-        $this->geProgress->move_out_report_date = now();
-        $this->geProgress->save();
+        $this->enProgress->move_out_report_date = now();
+        $this->enProgress->save();
     }
 
     public function saveStep1Uploads(): void
     {
         foreach ($this->step1Uploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$this->geProgress->id}");
+            $path = $file->store("progress/ge/{$this->enProgress->id}");
 
             GeProgressFile::create([
-                'ge_progress_id' => $this->geProgress->id,
+                'ge_progress_id' => $this->enProgress->id,
                 'file_kind' => GeProgressFile::FILE_KIND_STEP1,
                 'file_name' => $original,
                 'file_path' => $path,
@@ -130,12 +140,12 @@ class Step1 extends Component
 
     public function removeStep1File($fileId): void
     {
-        if (!$this->geProgress || !$fileId) {
+        if (!$this->enProgress || !$fileId) {
             return;
         }
 
         $file = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
+            ->where('ge_progress_id', $this->enProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_STEP1)
             ->where('id', $fileId)
             ->first();
@@ -154,13 +164,13 @@ class Step1 extends Component
 
     protected function loadStep1Files(): void
     {
-        if (!$this->geProgress) {
+        if (!$this->enProgress) {
             $this->step1Files = [];
             return;
         }
 
         $files = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
+            ->where('ge_progress_id', $this->enProgress->id)
             ->where('file_kind', GeProgressFile::FILE_KIND_STEP1)
             ->orderBy('id')
             ->get();
@@ -169,7 +179,7 @@ class Step1 extends Component
             return [
                 'id' => $file->id,
                 'file_name' => $file->file_name ?? '',
-                'url' => route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]),
+                'url' => route('admin.progress.ge.preview', ['enProgressFileId' => $file->id]),
                 'file_path' => $file->file_path ?? '',
                 'mime_type' => $this->getFileMimeType($file),
             ];
@@ -186,23 +196,23 @@ class Step1 extends Component
         return mime_content_type($fullPath) ?: '';
     }
 
-    public function reloadProgress($geProgressId = null)
+    public function reloadProgress($enProgressId = null)
     {
-        if (!$this->geProgress) {
+        if (!$this->enProgress) {
             return;
         }
 
-        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
+        if ($enProgressId !== null && (int) $enProgressId !== (int) $this->enProgress->id) {
             return;
         }
 
-        $this->geProgress = GeProgress::query()
-            ->find($this->geProgress->id);
+        $this->enProgress = GeProgress::query()
+            ->find($this->enProgress->id);
     }
 
 
     public function render()
     {
-        return view('livewire.admin.progress.ge.step1');
+        return view('livewire.admin.progress.en.contract-terms');
     }
 }

@@ -36,7 +36,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/', [AdminEnProgress::class, 'index'])->name('index');
                 Route::get('/files/{enProgressFileId}', [AdminEnProgress::class, 'preview'])->name('preview');
                 Route::get('/{enProgressId}', [AdminEnProgress::class, 'detail'])->name('detail');
-                Route::get('/{enProgressId}/owner-settlement', [AdminEnProgress::class, 'ownerSettlement'])->name('owner-settlement');
+                Route::get('/{enProgressId}/approval', [AdminEnProgress::class, 'approval'])->name('approval');
             });
         });
 

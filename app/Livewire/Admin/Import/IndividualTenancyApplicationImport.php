@@ -9,6 +9,7 @@ use App\Models\EnProgressEmergencyContact;
 use App\Models\EnProgressGuarantor;
 use App\Models\EnProgressIndividualApplicant;
 use App\Models\EnProgressOccupants;
+use App\Models\GuaranteeCompany;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\InvestmentRoomResident;
@@ -597,6 +598,11 @@ class IndividualTenancyApplicationImport extends Component
             'complete_date' => null
         ]);
 
+        // 保証会社データ取得
+        $guaranteeCompany = GuaranteeCompany::firstOrCreate([
+            'company_name' =>  $regData['ru033']
+        ]);
+
         $enProgress = EnProgress::firstOrNew(['application_id' => $regData['ru001'] ?? null]);
         $enProgress->progress_id = $progress->id;
         $enProgress->responsible_user_id = $regData['en_staff_id'] ?? null;
@@ -607,7 +613,8 @@ class IndividualTenancyApplicationImport extends Component
         $enProgress->application_date = $regData['ru031'] ?? null;              // 申込作成日時
         if ($enProgress->application_date) $enProgress->application_date_state = 1;
 
-        $enProgress->guarantor_plan_name = $regData['ru034'] ?? null;           // 保証会社プラン名
+        $enProgress->guarantee_company_id = $guaranteeCompany->id;              // 保証会社ID
+        $enProgress->guarantee_company_plan = $regData['ru034'] ?? null;        // 保証会社プラン名
         $enProgress->screening_result = ($regData['ru035'] ?? null) === '承認' ? EnProgress::SCREENING_RESULT_APPROVED : null;   // 審査結果
         $enProgress->priority_order = $regData['ru039'] ?? null;                // 番手
         $enProgress->rent_fee = $regData['ru049'] ?? null;                      // 賃貸物件内容家賃

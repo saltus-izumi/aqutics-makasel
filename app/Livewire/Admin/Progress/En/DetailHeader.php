@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Progress\Ge;
+namespace App\Livewire\Admin\Progress\En;
 
 use App\Models\GeProgress;
 use App\Models\GeProgressFile;
@@ -10,13 +10,13 @@ use Livewire\Component;
 
 class DetailHeader extends Component
 {
-    public $geProgress = null;
+    public $enProgress = null;
     public array $averageLt = [];
     public $mode = 'move-out-settlement';
     public $tradingCompanyId = null;
     public $restorationCompanies = [];
 
-    protected array $geProgressMap = [
+    protected array $enProgressMap = [
         'tradingCompanyId' => 'trading_company_id',
     ];
 
@@ -50,7 +50,7 @@ class DetailHeader extends Component
             }
             $this->restorationCompanies[$company->id] = $option;
         }
-        $this->tradingCompanyId = $this->geProgress->trading_company_id ?? $this->geProgress->progress->investment?->restoration_company_id;
+        $this->tradingCompanyId = $this->enProgress->trading_company_id ?? $this->enProgress->progress->investment?->restoration_company_id;
 // dump($this->tradingCompanyId);
 // dump($this->restorationCompanies);
 
@@ -68,8 +68,8 @@ class DetailHeader extends Component
         ];
 
         foreach ($pairs as $key => [$startPath, $endPath]) {
-            $start = $this->geProgress->{$startPath};
-            $end = $this->geProgress->{$endPath};
+            $start = $this->enProgress->{$startPath};
+            $end = $this->enProgress->{$endPath};
             if (!$start || !$end) {
                 $this->averageLt[$key] = '';
             }
@@ -81,7 +81,7 @@ class DetailHeader extends Component
 
     protected function isReProposeOrCancelLocked(): bool
     {
-        return in_array($this->geProgress?->next_action, [
+        return in_array($this->enProgress?->next_action, [
             GeProgress::NEXT_ACTION_RE_PROPOSED,
             GeProgress::NEXT_ACTION_CANCEL,
         ], true);
@@ -89,12 +89,12 @@ class DetailHeader extends Component
 
     public function updated($propertyName, $value)
     {
-        if (!array_key_exists($propertyName, $this->geProgressMap)) {
+        if (!array_key_exists($propertyName, $this->enProgressMap)) {
             return;
         }
 
         // null対策
-        if (!$this->geProgress) {
+        if (!$this->enProgress) {
             return;
         }
 
@@ -104,18 +104,18 @@ class DetailHeader extends Component
             $value = trim($value) !== '' ? trim($value) : null;
         }
         DB::transaction(function () use ($propertyName, $value) {
-            $column = $this->geProgressMap[$propertyName];
-            $this->geProgress->{$column} = $value;
-            $this->geProgress->save();
+            $column = $this->enProgressMap[$propertyName];
+            $this->enProgress->{$column} = $value;
+            $this->enProgress->save();
 
             if (array_key_exists($column, $this->progressMap)) {
                 $progressColumn = $this->progressMap[$column];
-                $this->geProgress->progress->{$progressColumn} = $value;
-                $this->geProgress->progress->save();
+                $this->enProgress->progress->{$progressColumn} = $value;
+                $this->enProgress->progress->save();
             }
         });
 
-        $this->dispatch('geProgressUpdated', progressId: $this->geProgress->id);
+        $this->dispatch('enProgressUpdated', progressId: $this->enProgress->id);
     }
 
     public function rePropose()
@@ -126,37 +126,37 @@ class DetailHeader extends Component
 
         DB::transaction(function () {
             // 現在のプロセス管理データを修正
-            $this->geProgress->next_action = GeProgress::NEXT_ACTION_RE_PROPOSED;
-            $this->geProgress->save();
+            $this->enProgress->next_action = GeProgress::NEXT_ACTION_RE_PROPOSED;
+            $this->enProgress->save();
 
             // 再提案データ作成
-            $geProgress = new GeProgress([
-                'progress_id' => $this->geProgress->progress_id,
-                'reproposal_count' => $this->geProgress->reproposal_count + 1,
-                'responsible_user_id' => $this->geProgress->responsible_user_id,
-                'executor_user_id' => $this->geProgress->executor_user_id,
-                'trading_company_id' => $this->geProgress->trading_company_id,
-                'move_out_received_date' => $this->geProgress->move_out_received_date,
-                'move_out_date' => $this->geProgress->move_out_date,
-                'security_deposit_amount' => $this->geProgress->security_deposit_amount,
-                'prorated_rent_amount' => $this->geProgress->prorated_rent_amount,
-                'penalty_forfeiture_amount' => $this->geProgress->penalty_forfeiture_amount,
-                'inspection_request_message' => $this->geProgress->inspection_request_message,
-                'step1_confirmed' => $this->geProgress->step1_confirmed,
-                'move_out_report_date' => $this->geProgress->move_out_report_date,
+            $enProgress = new GeProgress([
+                'progress_id' => $this->enProgress->progress_id,
+                'reproposal_count' => $this->enProgress->reproposal_count + 1,
+                'responsible_user_id' => $this->enProgress->responsible_user_id,
+                'executor_user_id' => $this->enProgress->executor_user_id,
+                'trading_company_id' => $this->enProgress->trading_company_id,
+                'move_out_received_date' => $this->enProgress->move_out_received_date,
+                'move_out_date' => $this->enProgress->move_out_date,
+                'security_deposit_amount' => $this->enProgress->security_deposit_amount,
+                'prorated_rent_amount' => $this->enProgress->prorated_rent_amount,
+                'penalty_forfeiture_amount' => $this->enProgress->penalty_forfeiture_amount,
+                'inspection_request_message' => $this->enProgress->inspection_request_message,
+                'step1_confirmed' => $this->enProgress->step1_confirmed,
+                'move_out_report_date' => $this->enProgress->move_out_report_date,
             ]);
-            $geProgress->resetNextAction();
-            $geProgress->save();
+            $enProgress->resetNextAction();
+            $enProgress->save();
 
-            foreach ($this->geProgress->step1Files as $step1File) {
+            foreach ($this->enProgress->step1Files as $step1File) {
                 $newFile = new GeProgressFile($step1File->toArray());
-                $newFile->ge_progress_id = $geProgress->id;
+                $newFile->ge_progress_id = $enProgress->id;
                 $newFile->save();
             }
 
-            foreach ($this->geProgress->moveOutSettlementFiles as $moveOutSettlementFile) {
+            foreach ($this->enProgress->moveOutSettlementFiles as $moveOutSettlementFile) {
                 $newFile = new GeProgressFile($moveOutSettlementFile->toArray());
-                $newFile->ge_progress_id = $geProgress->id;
+                $newFile->ge_progress_id = $enProgress->id;
                 $newFile->save();
             }
 
@@ -170,16 +170,16 @@ class DetailHeader extends Component
         }
 
         DB::transaction(function () {
-            $this->geProgress->kaiyaku_cancellation_date = now();
-            $this->geProgress->save();
+            $this->enProgress->kaiyaku_cancellation_date = now();
+            $this->enProgress->save();
 
-            $this->geProgress->geProgress->next_action = GeProgress::NEXT_ACTION_CANCEL;
-            $this->geProgress->geProgress->save();
+            $this->enProgress->enProgress->next_action = GeProgress::NEXT_ACTION_CANCEL;
+            $this->enProgress->enProgress->save();
         });
     }
 
     public function render()
     {
-        return view('livewire.admin.progress.ge.detail-header');
+        return view('livewire.admin.progress.en.detail-header');
     }
 }

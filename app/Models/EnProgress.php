@@ -22,6 +22,14 @@ class EnProgress extends Model
     public const SCREENING_RESULT_CONDITIONAL_APPROVAL = 2;  // 条件付き承認
     public const SCREENING_RESULT_REJECTED = 3;              // 否決
 
+    // 保証ステータス
+    public const GUARANTEE_COMPANY_STATUS_CORPORATE_EXEMPT = 1; // 法人除外
+    public const GUARANTEE_COMPANY_STATUS_JOINT_GUARANTOR = 2;  // 連帯保証
+
+    // 火災保険ステータス
+    public const FIRE_INSURANCE_STATUS_CORPORATE_EXEMPT = 1;    // 法人除外
+    public const FIRE_INSURANCE_STATUS_INDIVIDUAL = 2;          // 個人加入
+
     public const NEXT_ACTION_APPLICATION = 1;
     public const NEXT_ACTION_GUARANTEE_SCREENING = 2;
     public const NEXT_ACTION_WP_SCREENING = 3;

@@ -32,12 +32,12 @@ return new class extends Migration
             $table->date('desired_move_in_date')->nullable()->after('planned_payment_date')->comment('入居希望日');
             $table->date('contract_start_date')->nullable()->after('desired_move_in_date')->comment('契約期間（開始）');
             $table->date('contract_end_date')->nullable()->after('contract_start_date')->comment('契約期間（終了）');
-            $table->integer('renewal_fee')->nullable()->after('contract_end_date')->comment('更新料');
-            $table->string('guarantor_company_id')->nullable()->after('renewal_fee')->comment('保証会社');
-            $table->string('guarantor_plan_name')->nullable()->after('guarantor_company_id')->comment('保証プラン名');
-            $table->integer('guarantor_monthly_fee')->nullable()->after('guarantor_plan_name')->comment('保証月額費用');
-            $table->integer('guarantor_status')->nullable()->after('guarantor_monthly_fee')->comment('保証ステータス');
-            $table->string('fire_insurance_name')->nullable()->after('guarantor_status')->comment('火災保険名');
+            $table->string('renewal_fee')->nullable()->after('contract_end_date')->comment('更新料');
+            $table->string('guarantee_company_id')->nullable()->after('renewal_fee')->comment('保証会社');
+            $table->string('guarantee_company_plan')->nullable()->after('guarantee_company_id')->comment('保証プラン名');
+            $table->integer('guarantee_company_monthly_fee')->nullable()->after('guarantee_company_plan')->comment('保証月額費用');
+            $table->integer('guarantee_company_status')->nullable()->after('guarantee_company_monthly_fee')->comment('保証ステータス');
+            $table->string('fire_insurance_name')->nullable()->after('guarantee_company_status')->comment('火災保険名');
             $table->integer('fire_insurance_monthly_fee')->nullable()->after('fire_insurance_name')->comment('火災保険月額費用');
             $table->integer('fire_insurance_status')->nullable()->after('fire_insurance_monthly_fee')->comment('火災保険ステータス');
             $table->boolean('anshin_support_flag')->default(false)->after('fire_insurance_status')->comment('安心入居');
@@ -131,10 +131,10 @@ return new class extends Migration
                 'contract_start_date',
                 'contract_end_date',
                 'renewal_fee',
-                'guarantor_company_id',
-                'guarantor_plan_name',
-                'guarantor_monthly_fee',
-                'guarantor_status',
+                'guarantee_company_id',
+                'guarantee_company_plan',
+                'guarantee_company_monthly_fee',
+                'guarantee_company_status',
                 'fire_insurance_name',
                 'fire_insurance_monthly_fee',
                 'fire_insurance_status',

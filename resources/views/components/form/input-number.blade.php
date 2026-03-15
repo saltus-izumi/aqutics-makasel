@@ -14,7 +14,7 @@
     x-on:input="onInput($event)"
     @class([
         'tw:border tw:border-gray-300' => $border,
-        'tw:placeholder:text-gray-400 tw:py-2 tw:px-3 tw:w-full tw:rounded-md',
+        'tw:placeholder:text-gray-400 tw:py-2 tw:px-3 tw:w-full tw:rounded-md tw:text-right',
         'tw:bg-white' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:bg-'),
         'tw:read-only:bg-gray-100',
         'tw:inline-block' => $after_label,
