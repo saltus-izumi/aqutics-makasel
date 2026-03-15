@@ -101,6 +101,11 @@ class EnProgress extends Model
         return $this->belongsTo(Progress::class);
     }
 
+    public function broker()
+    {
+        return $this->belongsTo(Broker::class);
+    }
+
     public function responsibleUser()
     {
         return $this->belongsTo(User::class, 'responsible_user_id');
@@ -110,6 +115,13 @@ class EnProgress extends Model
     {
         return $this->belongsTo(User::class, 'executor_user_id');
     }
+
+    public function firstEnProgressOccupant()
+    {
+        return $this->hasOne(EnProgressOccupants::class)
+            ->ofMany('occupant_seq', 'min');
+    }
+
 
     public function resetNextAction()
     {

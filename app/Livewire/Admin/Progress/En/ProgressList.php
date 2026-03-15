@@ -20,8 +20,8 @@ class ProgressList extends Component
     public string $sortOrder = 'asc';
     public string $sortField = 'progress_id';
     public array $filters = [];
-    public array $genpukuResponsibleOptions = [];
-    public array $genpukuResponsibleShortOptions = [];
+    public array $enResponsibleOptions = [];
+    public array $enResponsibleShortOptions = [];
     public array $nextActionOptions = [];
     public array $averageLt = [];
 
@@ -45,8 +45,8 @@ class ProgressList extends Component
     public function mount()
     {
         $this->incompleteOnly = true;
-        $this->genpukuResponsibleOptions = User::getOptions(User::DEPARTMENT_GE);
-        $this->genpukuResponsibleShortOptions = User::getShortOptions(User::DEPARTMENT_GE);
+        $this->enResponsibleOptions = User::getOptions();
+        $this->enResponsibleShortOptions = User::getShortOptions();
         $this->nextActionOptions = EnProgress::NEXT_ACTIONS;
 
         // フィルター初期値
@@ -69,6 +69,8 @@ class ProgressList extends Component
         $query = EnProgress::query()
             ->with([
                 // 'lowerEstimateFiles',
+                'broker',
+                'firstEnProgressOccupant',
                 'progress',
                 'progress.investment',
                 'progress.investment.landlord.owner',
@@ -203,7 +205,7 @@ class ProgressList extends Component
         DB::transaction(function() use ($progressId, $field, $id) {
             $id = empty($id) ? null : $id;
 
-            $geProgress = GeProgress::query()
+            $geProgress = EnProgress::query()
                 ->with([
                     'progress',
                     'progress.investment',

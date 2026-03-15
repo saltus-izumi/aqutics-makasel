@@ -34,9 +34,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             });
             Route::prefix('en')->name('en.')->group(function () {
                 Route::get('/', [AdminEnProgress::class, 'index'])->name('index');
-                Route::get('/files/{geProgressFileId}', [AdminEnProgress::class, 'preview'])->name('preview');
-                Route::get('/{geProgressId}', [AdminEnProgress::class, 'detail'])->name('detail');
-                Route::get('/{geProgressId}/owner-settlement', [AdminEnProgress::class, 'ownerSettlement'])->name('owner-settlement');
+                Route::get('/files/{enProgressFileId}', [AdminEnProgress::class, 'preview'])->name('preview');
+                Route::get('/{enProgressId}', [AdminEnProgress::class, 'detail'])->name('detail');
+                Route::get('/{enProgressId}/owner-settlement', [AdminEnProgress::class, 'ownerSettlement'])->name('owner-settlement');
             });
         });
 

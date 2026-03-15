@@ -41,6 +41,11 @@ class EnProgressOccupants extends Model
         ];
     }
 
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(fn () => $this->last_name . '　' . $this->first_name);
+    }
+
     public function enProgress()
     {
         return $this->belongsTo(EnProgress::class);

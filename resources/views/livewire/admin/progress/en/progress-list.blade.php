@@ -12,11 +12,14 @@
             <col class="tw:w-[52px]">       {{-- 物件ID --}}
             <col class="tw:w-[182px]">      {{-- 物件名 --}}
             <col class="tw:w-[52px]">       {{-- 号室 --}}
+            <col class="tw:w-[52px]">       {{-- 番手 --}}
             <col class="tw:w-[104px]">      {{-- 入居者名 --}}
             <col class="tw:w-[52px]">       {{-- 完工予定日 --}}
             <col class="tw:w-[52px]">       {{-- 完工日 --}}
             <col class="tw:w-[52px]">       {{-- 始期日 --}}
             <col class="tw:w-[104px]">      {{-- 仲介会社 --}}
+            <col class="tw:w-[78px]">       {{-- 責任者 --}}
+            <col class="tw:w-[78px]">       {{-- 実行者 --}}
             <col class="tw:w-[182px]">      {{-- ネクストアクション --}}
             <col class="tw:w-[52px]">       {{-- 申込日 --}}
             <col class="tw:w-[52px]">       {{-- 保証審査 --}}
@@ -45,7 +48,7 @@
                     <button type="button" class="tw:ml-2 tw:text-xs tw:px-2 tw:py-0.5 tw:border tw:rounded tw:cursor-pointer" x-on:click="clearAllFilters()">フィルタークリア</button>
                 </td>
                 <td class="tw:sticky tw:left-[338px] tw:bg-white" rowspan="2"></td>
-                <td rowspan="2" colspan="6"></td>
+                <td rowspan="2" colspan="9"></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -86,11 +89,14 @@
                 <td class="tw:sticky tw:left-[104px] tw:text-center tw:bg-[#efefef]" rowspan="2">物件ID</td>
                 <td class="tw:sticky tw:left-[156px] tw:text-center tw:bg-[#efefef]" rowspan="2">物件名</td>
                 <td class="tw:sticky tw:left-[338px] tw:text-center tw:bg-[#efefef]" rowspan="2">号室</td>
+                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">番手</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">入居者名</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">完工<br>予定日</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">完工<br>日</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">始期日</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">仲介会社</td>
+                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">責任者</td>
+                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">実行者</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">ネクストアクション</td>
                 <td class="tw:text-center tw:bg-black tw:text-white">申込日</td>
                 <td class="tw:text-center tw:bg-[#efefef] tw:leading-[1.1rem]">保証<br>審査</td>
@@ -171,6 +177,16 @@
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
+                        data-filter-title="番手"
+                        data-sort-field="priority_order"
+                        data-filter-field="priority_order"
+                        data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('priority_order')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
                         data-filter-title="入居者名"
                         data-sort-field="responsible_user_id"
                         data-filter-field="responsible_user_id"
@@ -220,6 +236,30 @@
                         data-filter-select-name="select_filter"
                         data-filter-options='@json($genpukuResponsibleOptions ?? [])'
                         @class(['tw:text-red-600' => $this->hasFilter('responsible_user_id')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="責任者"
+                        data-sort-field="responsible_user_id"
+                        data-filter-field="responsible_user_id"
+                        data-filter-type="select"
+                        data-filter-select-name="select_filter"
+                        data-filter-options='@json($genpukuResponsibleOptions ?? [])'
+                        @class(['tw:text-red-600' => $this->hasFilter('responsible_user_id')])
+                    >▼</div>
+                </td>
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="実行者"
+                        data-sort-field="executor_user_id"
+                        data-filter-field="executor_user_id"
+                        data-filter-type="select"
+                        data-filter-select-name="select_filter"
+                        data-filter-options='@json($genpukuResponsibleOptions ?? [])'
+                        @class(['tw:text-red-600' => $this->hasFilter('executor_user_id')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -410,24 +450,15 @@
                     'tw:bg-[#efefef]' => $isReProposeOrCancel
                 ]) data-popup-disabled="{{ $isReProposeOrCancel ? '1' : '0' }}">
                     <td class="tw:sticky tw:left-[52px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">
-                        <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $enProgress->id]) }}" class="tw:text-pm_blue_001">
-                            {{ $enProgress->progress_id . ($enProgress->reproposal_count > 0 ? "-{$enProgress->reproposal_count}" : '' )  }}
+                        <a href="{{ route('admin.progress.en.detail', ['enProgressId' => $enProgress->id]) }}" class="tw:text-pm_blue_001">
+                            {{ $enProgress->id . ($enProgress->reproposal_count > 0 ? "-{$enProgress->reproposal_count}" : '' )  }}
                         </a>
                     </td>
                     <td class="tw:sticky tw:left-[104px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $enProgress->progress->investment_id }}</td>
                     <td class="tw:sticky tw:left-[156px] tw:z-[1] {{ $stickyCellBgClass }}">{{ $enProgress->progress?->investment?->investment_name }}</td>
                     <td class="tw:sticky tw:left-[338px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $enProgress->progress?->investment_room_uid == 0 ? '共用部' : $enProgress->progress?->investmentRoom?->investment_room_number }}</td>
-                    <td class="tw:text-center tw:px-[3px]">
-                        {{-- <x-form.select
-                            name="responsible_user_id"
-                            :options="$genpukuResponsibleShortOptions"
-                            empty="　"
-                            :value="$enProgress->responsible_user_id"
-                            wire:input="updateSelectValue({{ $enProgress->id }}, 'responsible_user_id', $event.target.value)"
-                            :disabled="$isReProposeOrCancel"
-                            class="tw:disabled:bg-[#efefef]"
-                        /> --}}
-                    </td>
+                    <td class="tw:text-center tw:px-[3px]">{{ $enProgress->priority_order }}</td>
+                    <td class="tw:text-center tw:px-[3px]">{{ $enProgress->firstEnProgressOccupant?->full_name }}</td>
                     <td class="tw:text-center tw:px-[3px]">
                         <x-tooltip :text="$enProgress?->progress?->latestGeProgress?->completion_scheduled_date?->format('Y/m/d')">
                             {{ $enProgress?->progress?->latestGeProgress?->completion_scheduled_date?->format('m/d') }}
@@ -443,7 +474,28 @@
                             {{ $enProgress?->progress?->start_date?->format('m/d') }}
                         </x-tooltip>
                     </td>
+                    <td class="tw:text-center tw:px-[3px]">{{ $enProgress->broker?->broker_name }}</td>
                     <td class="tw:text-center tw:px-[3px]">
+                        <x-form.select
+                            name="responsible_user_id"
+                            :options="$enResponsibleShortOptions"
+                            empty="　"
+                            :value="$enProgress->responsible_user_id"
+                            wire:input="updateSelectValue({{ $enProgress->id }}, 'responsible_user_id', $event.target.value)"
+                            :disabled="$isReProposeOrCancel"
+                            class="tw:disabled:bg-[#efefef]"
+                        />
+                    </td>
+                    <td class="tw:text-center tw:px-[3px]">
+                        <x-form.select
+                            name="executor_user_id"
+                            :options="$enResponsibleShortOptions"
+                            empty="　"
+                            :value="$enProgress->executor_user_id"
+                            wire:input="updateSelectValue({{ $enProgress->id }}, 'executor_user_id', $event.target.value)"
+                            :disabled="$isReProposeOrCancel"
+                            class="tw:disabled:bg-[#efefef]"
+                        />
                     </td>
                     <td class="tw:text-center">{{ App\Models\EnProgress::NEXT_ACTIONS[$enProgress?->next_action] ?? '' }}</td>
                     <td class="tw:text-center">

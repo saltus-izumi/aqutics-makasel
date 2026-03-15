@@ -151,6 +151,7 @@ class CorporateTenancyApplicationImport extends Component
                         'investment_id' => $room->investment_id,
                     ]);
                 }
+                $regData['broker_id'] = $broker->id;
 
                 $this->upsertEnProgress($regData);
             }
@@ -549,8 +550,13 @@ class CorporateTenancyApplicationImport extends Component
         $enProgress = EnProgress::firstOrNew(['application_id' => $regData['ru001'] ?? null]);
         $enProgress->progress_id = $progress->id;
         $enProgress->responsible_user_id = $regData['en_staff_id'] ?? null;
+        $enProgress->broker_id = $regData['broker_id'] ?? null;
+
+        $enProgress->application_id = $regData['ru001'] ?? null;                // 申込ID
         $enProgress->applicant_type = EnProgress::APPLICANT_TYPE_INDIVIDUAL;    // 申込人種別
         $enProgress->application_date = $regData['ru031'] ?? null;              // 申込作成日時
+        if ($enProgress->application_date) $enProgress->application_date_state = 1;
+
         $enProgress->guarantor_plan_name = $regData['ru034'] ?? null;           // 保証会社プラン名
         $enProgress->screening_result = ($regData['ru035'] ?? null) === '承認' ? EnProgress::SCREENING_RESULT_APPROVED : null;   // 審査結果
         $enProgress->priority_order = $regData['ru039'] ?? null;                // 番手
@@ -566,6 +572,7 @@ class CorporateTenancyApplicationImport extends Component
         $enProgress->desired_move_in_date = $regData['ru060'] ?? null;          // 賃貸物件内容入居希望日
         $enProgress->desired_contract_date = $regData['ru061'] ?? null;         // 賃貸物件内容契約希望日
         $enProgress->planned_payment_date = $regData['ru062'] ?? null;          // 賃貸物件内容初期費用入金予定日
+        $enProgress->resetNextAction();
         $enProgress->save();
 
         $enProgressCorporateApplicant = EnProgressCorporateApplicant::firstOrNew(['en_progress_id' => $enProgress->id]);

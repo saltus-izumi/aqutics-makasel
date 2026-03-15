@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('street')->nullable()->comment('住所・番地・丁目');
             $table->string('building')->nullable()->comment('住所・建物名・部屋番号');
             $table->string('residence_type')->nullable()->comment('居住種別');
+            $table->string('residence_years')->nullable()->comment('居住年数');
             $table->string('occupation')->nullable()->comment('職業');
             $table->string('workplace_name')->nullable()->comment('勤務先/学校名');
             $table->string('workplace_kana')->nullable()->comment('勤務先・カナ');

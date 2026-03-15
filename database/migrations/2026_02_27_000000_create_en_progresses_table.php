@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('completion_scheduled_date')->nullable()->comment('完工予定日');
             $table->date('completion_date')->nullable()->comment('完工日');
             $table->date('start_date')->nullable()->comment('始期日');
-            $table->integer('trading_company_id')->nullable()->comment('仲介会社');
+            $table->integer('broker_id')->nullable()->comment('仲介会社ID');
 
             $table->integer('next_action')->nullable()->comment('ネクストアクション');
 
