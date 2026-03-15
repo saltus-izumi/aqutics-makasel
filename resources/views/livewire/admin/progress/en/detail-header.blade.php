@@ -1,7 +1,7 @@
 <div class="tw:flex tw:gap-x-[104px] tw:border-b">
     <div class="tw:w-[832px]">
         <div class="tw:w-full tw:h-[42px] tw:flex tw:gap-x-[1.5rem] tw:items-center">
-            <div class="tw:text-[1.2rem]">ENID：{{ $enProgress->progress_id }}</div>
+            <div class="tw:text-[1.2rem]">ENID：{{ $enProgress->id }}</div>
             <div class="tw:text-[1.2rem]">物件ID：{{ $enProgress->progress?->investment_id }}</div>
             <div class="tw:text-[1.2rem]">所有者：{{ $enProgress?->responsibleUser?->user_name }}</div>
             <div class="tw:text-[1.2rem]">実行担当：{{ $enProgress?->executorUser?->user_name }}</div>

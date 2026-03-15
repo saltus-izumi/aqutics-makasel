@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Admin\Progress\En;
 
-use App\Models\GeProgress;
+use App\Models\EnProgress;
 use App\Models\GeProgressFile;
 use App\Models\GuaranteeCompany;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -28,32 +28,30 @@ class ContractTerms extends Component
     public string $componentId = '';
 
     protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
-    protected array $enProgressMap = [
-        'securityDepositAmount' => 'security_deposit_amount',
-        'proratedRentAmount' => 'prorated_rent_amount',
-        'penaltyForfeitureAmount' => 'penalty_forfeiture_amount',
-        'inspectionRequestMessage' => 'inspection_request_message',
-        'isStep1Confirmed' => 'is_step1_confirmed',
+    protected array $contractTermFieldConfig = [
+        'fr_active_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'fr_start_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
+        'fr_end_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
+        'desired_contract_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
+        'planned_payment_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
+        'desired_move_in_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
+        'renewal_fee' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'guarantee_company_id' => ['rules' => ['nullable'], 'type' => 'string'],
+        'guarantee_company_plan' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'guarantee_company_monthly_fee' => ['rules' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'guarantee_company_status' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'fire_insurance_name' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'fire_insurance_monthly_fee' => ['rules' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'fire_insurance_status' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'anshin_support_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'move_out_cleaning_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'ac_cleaning_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'cancellation_penalty_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'pet_allowed_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'instrument_allowed_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'fr_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'two_person_allowed_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
     ];
-    protected function rules(): array
-    {
-        return [
-            'securityDepositAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'proratedRentAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'penaltyForfeitureAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'inspectionRequestMessage' => ['nullable', 'string'],
-            'isStep1Confirmed' => ['boolean'],
-        ];
-    }
-
-    protected function messages(): array
-    {
-        return [
-            'securityDepositAmount.regex' => '敷金預託等は半角数字で入力してください。',
-            'proratedRentAmount.regex' => '日割り家賃は半角数字で入力してください。',
-            'penaltyForfeitureAmount.regex' => '違約金（償却）は半角数字で入力してください。',
-        ];
-    }
 
     public function mount($enProgress)
     {
@@ -73,40 +71,95 @@ class ContractTerms extends Component
         $this->loadStep1Files();
     }
 
-    public function updated($propertyName, $value)
+    public function saveFieldByName(string $fieldName, $value): void
     {
-        if (!array_key_exists($propertyName, $this->enProgressMap)) {
+        if (!$this->enProgress || !array_key_exists($fieldName, $this->contractTermFieldConfig)) {
             return;
         }
 
-        // null対策
-        if (!$this->enProgress) {
+        $ruleSet = [
+            $fieldName => $this->contractTermFieldConfig[$fieldName]['rules'],
+        ];
+
+        $validator = Validator::make([$fieldName => $value], $ruleSet);
+        if ($validator->fails()) {
             return;
         }
 
-        $this->validateOnly($propertyName);
+        $normalizedValue = $this->normalizeContractTermValue($fieldName, $value);
 
-        if ($propertyName === 'isStep1Confirmed') {
-            $value = (bool) $value;
-        } else {
-            switch($propertyName) {
-                case 'securityDepositAmount':
-                case 'proratedRentAmount':
-                case 'penaltyForfeitureAmount':
-                    $value = str_replace(',', '', (string) $value);
-                    break;
-            }
-
-            if (is_string($value)) {
-                $value = trim($value) !== '' ? trim($value) : null;
-            }
-        }
-
-        $column = $this->enProgressMap[$propertyName];
-        $this->enProgress->{$column} = $value;
+        $this->enProgress->{$fieldName} = $normalizedValue;
         $this->enProgress->save();
 
         $this->dispatch('enProgressUpdated', enProgressId: $this->enProgress->id);
+    }
+
+    protected function normalizeContractTermValue(string $fieldName, $value)
+    {
+        $type = $this->contractTermFieldConfig[$fieldName]['type'] ?? 'string';
+
+        if ($value === '') {
+            return $type === 'boolean' ? false : null;
+        }
+
+        return match ($type) {
+            'boolean' => $this->normalizeBoolean($value),
+            'integer' => $this->normalizeInteger($value),
+            'date' => $this->normalizeDate($value),
+            default => $this->normalizeString($value),
+        };
+    }
+
+    protected function normalizeBoolean($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return in_array((string) $value, ['1', 'true', 'on'], true);
+    }
+
+    protected function normalizeInteger($value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return (int) str_replace(',', '', $trimmed);
+    }
+
+    protected function normalizeDate($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $timestamp = strtotime(str_replace('/', '-', $trimmed));
+        if ($timestamp === false) {
+            return null;
+        }
+
+        return date('Y-m-d', $timestamp);
+    }
+
+    protected function normalizeString($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+        return $trimmed === '' ? null : $trimmed;
     }
 
     public function updateMoveOutReportDate(): void
@@ -206,7 +259,7 @@ class ContractTerms extends Component
             return;
         }
 
-        $this->enProgress = GeProgress::query()
+        $this->enProgress = EnProgress::query()
             ->find($this->enProgress->id);
     }
 
