@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Livewire\Admin\Progress\Ge;
+namespace App\Livewire\Admin\Progress\En;
 
-use App\Models\GeProgress;
-use App\Models\GeProgressFile;
+use App\Models\EnProgress;
+use App\Models\EnProgressFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,13 +12,13 @@ class Memo extends Component
 {
     use WithFileUploads;
 
-    public $geProgress = null;
+    public $enProgress = null;
     public $memo;
 
     public string $componentId = '';
 
-    protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
-    protected array $geProgressMap = [
+    protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
+    protected array $enProgressMap = [
         'memo' => 'memo',
     ];
     protected function rules(): array
@@ -34,21 +34,21 @@ class Memo extends Component
         ];
     }
 
-    public function mount($geProgress)
+    public function mount($enProgress)
     {
-        $this->geProgress = $geProgress;
-        $this->memo = $geProgress?->memo;
+        $this->enProgress = $enProgress;
+        $this->memo = $enProgress?->memo;
         $this->componentId = $this->getId();
     }
 
     public function updated($propertyName, $value)
     {
-        if (!array_key_exists($propertyName, $this->geProgressMap)) {
+        if (!array_key_exists($propertyName, $this->enProgressMap)) {
             return;
         }
 
         // null対策
-        if (!$this->geProgress) {
+        if (!$this->enProgress) {
             return;
         }
 
@@ -56,29 +56,29 @@ class Memo extends Component
 
         $value = trim($value) ? trim($value) : null;
 
-        $column = $this->geProgressMap[$propertyName];
-        $this->geProgress->{$column} = $value;
-        $this->geProgress->save();
+        $column = $this->enProgressMap[$propertyName];
+        $this->enProgress->{$column} = $value;
+        $this->enProgress->save();
 
-        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+        $this->dispatch('enProgressUpdated', enProgressId: $this->enProgress->id);
     }
 
-    public function reloadProgress($geProgressId = null)
+    public function reloadProgress($enProgressId = null)
     {
-        if (!$this->geProgress) {
+        if (!$this->enProgress) {
             return;
         }
 
-        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
+        if ($enProgressId !== null && (int) $enProgressId !== (int) $this->enProgress->id) {
             return;
         }
 
-        $this->geProgress = GeProgress::query()
-            ->find($this->geProgress->id);
+        $this->enProgress = EnProgress::query()
+            ->find($this->enProgress->id);
     }
 
     public function render()
     {
-        return view('livewire.admin.progress.ge.memo');
+        return view('livewire.admin.progress.en.memo');
     }
 }

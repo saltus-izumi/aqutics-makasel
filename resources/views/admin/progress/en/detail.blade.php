@@ -9,6 +9,8 @@
                     <livewire:admin.progress.en.contract-terms :enProgress="$enProgress" />
                     <livewire:admin.progress.en.monthly-payment :enProgress="$enProgress" />
                     <livewire:admin.progress.en.initial-cost :enProgress="$enProgress" />
+                    <livewire:admin.progress.en.broker :enProgress="$enProgress" />
+                    <livewire:admin.progress.en.memo :enProgress="$enProgress" />
                 </div>
                 <div class="tw:mt-[42px]">
                     <div>

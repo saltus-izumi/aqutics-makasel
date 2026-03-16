@@ -23,6 +23,7 @@ class EnProgressController
             ->with([
                 'responsibleUser',
                 'executorUser',
+                'broker',
                 'progress',
                 'progress.latestGeProgress',
                 'progress.investment',

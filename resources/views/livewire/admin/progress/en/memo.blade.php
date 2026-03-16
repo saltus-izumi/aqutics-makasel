@@ -1,10 +1,8 @@
 <div class="tw:w-[806px]">
-    <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
+    <div class="tw:w-full tw:text-[1.2rem] tw:font-bold">
         メモ
     </div>
-    <div class="tw:w-full tw:mt-[42px] tw:px-[26px]">
-        <div class="tw:mt-[21px]">
-            <x-form.textarea class="tw:!h-[231px]" placeholder="" wire:model.live="memo"></x-form.textarea>
-        </div>
+    <div class="tw:w-full">
+        <x-form.textarea class="tw:!h-[189px]" placeholder="" wire:model.live="memo"></x-form.textarea>
     </div>
 </div>
