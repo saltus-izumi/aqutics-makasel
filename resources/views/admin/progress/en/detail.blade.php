@@ -5,8 +5,10 @@
                 <livewire:admin.progress.en.detail-header :enProgress="$enProgress" />
             </div>
             <div class="tw:flex tw:gap-x-[78px]">
-                <div class="tw:mt-[42px]">
+                <div class="tw:flex tw:flex-col tw:gap-y-[21px] tw:mt-[42px]">
                     <livewire:admin.progress.en.contract-terms :enProgress="$enProgress" />
+                    <livewire:admin.progress.en.monthly-payment :enProgress="$enProgress" />
+                    <livewire:admin.progress.en.initial-cost :enProgress="$enProgress" />
                 </div>
                 <div class="tw:mt-[42px]">
                     <div>

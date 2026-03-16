@@ -1,4 +1,14 @@
-<div x-data="enContractTerms" @change="handleChange($event)">
+<div
+    x-data="enContractTerms({
+        initialFields: @js([
+            'fr_start_date' => $enProgress?->fr_start_date,
+            'fr_end_date' => $enProgress?->fr_end_date,
+            'contract_start_date' => $enProgress?->contract_start_date,
+            'contract_end_date' => $enProgress?->contract_end_date,
+        ]),
+    })"
+    @change="handleChange($event)"
+>
     <div class="tw:h-[42px] tw:flex tw:items-center tw:justify-end tw:gap-x-[26px]">
         <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">マイソク</x-button.black>
         <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">新規募集条件</x-button.black>
@@ -29,7 +39,7 @@
             <x-form.input-date name="fr_start_date" :value="$enProgress?->fr_start_date" class="tw:!h-[19px] tw:!w-[90px] tw:text-[#ff0000]" />
             〜
             <x-form.input-date name="fr_end_date" :value="$enProgress?->fr_end_date" class="tw:!h-[19px] tw:!w-[90px] tw:text-[#ff0000]" />
-            (2ヶ月)
+            (<span x-text="getPeriodText('fr_start_date', 'fr_end_date')">-</span>)
         </div>
     </div>
     <div class="tw:flex">
@@ -50,10 +60,10 @@
             <x-form.input-date name="desired_move_in_date" :value="$enProgress?->desired_move_in_date" class="tw:!h-[40px] tw:!text-center" />
         </div>
         <div class="tw:w-[286px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:leading-[40px]">
-            <x-form.input-date name="fr_start_date" :value="$enProgress?->fr_start_date" class="tw:!h-[40px] tw:!w-[90px]" />
+            <x-form.input-date name="contract_start_date" :value="$enProgress?->contract_start_date" class="tw:!h-[40px] tw:!w-[90px]" />
             〜
-            <x-form.input-date name="fr_end_date" :value="$enProgress?->fr_end_date" class="tw:!h-[40px] tw:!w-[90px]" />
-            (2ヶ月)
+            <x-form.input-date name="contract_end_date" :value="$enProgress?->contract_end_date" class="tw:!h-[40px] tw:!w-[90px]" />
+            (<span x-text="getPeriodText('contract_start_date', 'contract_end_date')">-</span>)
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">
             <x-form.input name="renewal_fee" :value="$enProgress?->renewal_fee" class="tw:!h-[40px] tw:text-center tw:border-0" />
@@ -164,7 +174,42 @@
 @push('scripts')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('enContractTerms', () => ({
+            Alpine.data('enContractTerms', (params = {}) => ({
+                fields: params.initialFields || {},
+                parseDate(value) {
+                    if (!value) {
+                        return null;
+                    }
+                    const normalized = String(value).trim().replace(/\//g, '-');
+                    const date = new Date(normalized);
+                    if (Number.isNaN(date.getTime())) {
+                        return null;
+                    }
+                    return date;
+                },
+                calcMonthDiff(startValue, endValue) {
+                    const startDate = this.parseDate(startValue);
+                    const endDate = this.parseDate(endValue);
+                    if (!startDate || !endDate) {
+                        return null;
+                    }
+
+                    const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12
+                        + (endDate.getMonth() - startDate.getMonth());
+
+                    if (monthDiff < 0) {
+                        return null;
+                    }
+
+                    return monthDiff;
+                },
+                getPeriodText(startFieldName, endFieldName) {
+                    const monthDiff = this.calcMonthDiff(this.fields[startFieldName], this.fields[endFieldName]);
+                    if (monthDiff === null) {
+                        return '-';
+                    }
+                    return `${monthDiff}ヶ月`;
+                },
                 handleChange(event) {
                     const target = event?.target;
                     if (!target) {
@@ -186,6 +231,7 @@
                         value = target.value;
                     }
 
+                    this.fields[fieldName] = value;
                     this.$wire.call('saveFieldByName', fieldName, value);
                 },
             }));

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class ContractTerms extends Component
+class MonthlyPayment extends Component
 {
     use WithFileUploads;
 
@@ -18,32 +18,24 @@ class ContractTerms extends Component
     public $latestGeProgress = null;
     public $guaranteeCompanyOptions = [];
 
+    public $securityDepositAmount = null;
+    public $proratedRentAmount = null;
+    public $penaltyForfeitureAmount = null;
+    public $inspectionRequestMessage = null;
+    public $isStep1Confirmed = false;
+    public array $step1Uploads = [];
+    public array $step1Files = [];
+    public string $componentId = '';
+
     protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
     protected array $contractTermFieldConfig = [
-        'fr_active_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'fr_start_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
-        'fr_end_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
-        'desired_contract_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
-        'planned_payment_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
-        'desired_move_in_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
-        'contract_start_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
-        'contract_end_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
-        'renewal_fee' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
-        'guarantee_company_id' => ['rules' => ['nullable'], 'type' => 'string'],
-        'guarantee_company_plan' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
-        'guarantee_company_monthly_fee' => ['rules' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'guarantee_company_status' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
-        'fire_insurance_name' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
-        'fire_insurance_monthly_fee' => ['rules' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'fire_insurance_status' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
-        'anshin_support_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'move_out_cleaning_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'ac_cleaning_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'cancellation_penalty_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'pet_allowed_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'instrument_allowed_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'fr_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
-        'two_person_allowed_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'rent_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'common_service_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'other_fixed_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'neighborhood_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'parking_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'water_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'transfer_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
     ];
 
     public function mount($enProgress)
@@ -147,16 +139,6 @@ class ContractTerms extends Component
         return $trimmed === '' ? null : $trimmed;
     }
 
-    public function updateMoveOutReportDate(): void
-    {
-        if ($this->enProgress->move_out_report_date) {
-            return;
-        }
-
-        $this->enProgress->move_out_report_date = now();
-        $this->enProgress->save();
-    }
-
     public function reloadProgress($enProgressId = null)
     {
         if (!$this->enProgress) {
@@ -174,6 +156,6 @@ class ContractTerms extends Component
 
     public function render()
     {
-        return view('livewire.admin.progress.en.contract-terms');
+        return view('livewire.admin.progress.en.monthly-payment');
     }
 }
