@@ -29,13 +29,11 @@ class InitialCost extends Component
 
     protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
     protected array $contractTermFieldConfig = [
-        'rent_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'common_service_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'other_fixed_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'neighborhood_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'parking_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'water_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'transfer_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'deposit_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'security_deposit_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'cleaning_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'key_money' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'key_antibacterial_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
     ];
 
     public function mount($enProgress)
@@ -137,6 +135,19 @@ class InitialCost extends Component
 
         $trimmed = trim((string) $value);
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    public function getInitialCostTotalProperty(): int
+    {
+        if (!$this->enProgress) {
+            return 0;
+        }
+
+        return (int) ($this->enProgress->deposit_fee ?? 0)
+            + (int) ($this->enProgress->security_deposit_fee ?? 0)
+            + (int) ($this->enProgress->cleaning_fee ?? 0)
+            + (int) ($this->enProgress->key_money ?? 0)
+            + (int) ($this->enProgress->key_antibacterial_fee ?? 0);
     }
 
     public function reloadProgress($enProgressId = null)

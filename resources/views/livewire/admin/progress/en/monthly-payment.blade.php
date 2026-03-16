@@ -1,12 +1,23 @@
 <div
-    x-data="enMonthlyPayment()"
+    x-data="enMonthlyPaymentComponent({
+        initialFields: @js([
+            'rent_fee' => $enProgress?->rent_fee,
+            'common_service_fee' => $enProgress?->common_service_fee,
+            'other_fixed_fee' => $enProgress?->other_fixed_fee,
+            'neighborhood_fee' => $enProgress?->neighborhood_fee,
+            'parking_fee' => $enProgress?->parking_fee,
+            'water_fee' => $enProgress?->water_fee,
+            'transfer_fee' => $enProgress?->transfer_fee,
+        ]),
+    })"
+    @input="handleInput($event)"
     @change="handleChange($event)"
 >
     <div class="tw:flex tw:h-[42px] tw:items-end">
         <div class="tw:w-[130px] tw:text-[1.2rem] tw:font-bold">月額支払い</div>
         <div class="tw:w-[676px] tw:text-[1.2rem] tw:font-bold tw:text-right">
             月額合計
-            <span class="tw:pl-4 tw:text-[1.9rem]">108900</span>
+            <span class="tw:pl-4 tw:text-[1.9rem]" x-text="formatMonthlyTotal()">{{ number_format($this->monthlyTotal) }}</span>
         </div>
     </div>
     <div class="tw:flex">
@@ -45,17 +56,45 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('enMonthlyPayment', () => ({
-                handleChange(event) {
-                    const target = event?.target;
+        (() => {
+            window.enMonthlyPaymentComponent = (params = {}) => ({
+                monthlyFieldNames: ['rent_fee', 'common_service_fee', 'other_fixed_fee', 'neighborhood_fee', 'parking_fee', 'water_fee', 'transfer_fee'],
+                fields: params.initialFields || {},
+                toHalfWidthDigits(value) {
+                    return String(value ?? '')
+                        .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+                        .replace(/[＋]/g, '+')
+                        .replace(/[－−]/g, '-');
+                },
+                parseInteger(value) {
+                    const normalized = this.toHalfWidthDigits(value).replace(/,/g, '').trim();
+                    if (normalized === '' || normalized === '+' || normalized === '-') {
+                        return 0;
+                    }
+
+                    const parsed = Number(normalized);
+                    if (!Number.isFinite(parsed)) {
+                        return 0;
+                    }
+
+                    return Math.trunc(parsed);
+                },
+                monthlyTotal() {
+                    return this.monthlyFieldNames.reduce((sum, fieldName) => {
+                        return sum + this.parseInteger(this.fields[fieldName]);
+                    }, 0);
+                },
+                formatMonthlyTotal() {
+                    return this.monthlyTotal().toLocaleString('ja-JP');
+                },
+                updateFieldFromTarget(target) {
                     if (!target) {
-                        return;
+                        return null;
                     }
 
                     const fieldName = (target.name || '').trim();
-                    if (!fieldName) {
-                        return;
+                    if (!fieldName || !this.monthlyFieldNames.includes(fieldName)) {
+                        return null;
                     }
 
                     let value = target.value;
@@ -63,14 +102,26 @@
                         value = target.checked;
                     } else if (target.type === 'radio') {
                         if (!target.checked) {
-                            return;
+                            return null;
                         }
                         value = target.value;
                     }
 
-                    this.$wire.call('saveFieldByName', fieldName, value);
+                    this.fields[fieldName] = value;
+                    return { fieldName, value };
                 },
-            }));
-        });
+                handleInput(event) {
+                    this.updateFieldFromTarget(event?.target);
+                },
+                handleChange(event) {
+                    const updated = this.updateFieldFromTarget(event?.target);
+                    if (!updated) {
+                        return;
+                    }
+
+                    this.$wire.call('saveFieldByName', updated.fieldName, updated.value);
+                },
+            });
+        })();
     </script>
 @endpush

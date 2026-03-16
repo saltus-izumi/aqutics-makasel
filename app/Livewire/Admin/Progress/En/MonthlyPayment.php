@@ -139,6 +139,21 @@ class MonthlyPayment extends Component
         return $trimmed === '' ? null : $trimmed;
     }
 
+    public function getMonthlyTotalProperty(): int
+    {
+        if (!$this->enProgress) {
+            return 0;
+        }
+
+        return (int) ($this->enProgress->rent_fee ?? 0)
+            + (int) ($this->enProgress->common_service_fee ?? 0)
+            + (int) ($this->enProgress->other_fixed_fee ?? 0)
+            + (int) ($this->enProgress->neighborhood_fee ?? 0)
+            + (int) ($this->enProgress->parking_fee ?? 0)
+            + (int) ($this->enProgress->water_fee ?? 0)
+            + (int) ($this->enProgress->transfer_fee ?? 0);
+    }
+
     public function reloadProgress($enProgressId = null)
     {
         if (!$this->enProgress) {

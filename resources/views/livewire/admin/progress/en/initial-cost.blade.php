@@ -1,5 +1,5 @@
 <div
-    x-data="enInitialCost({
+    x-data="enInitialCostComponent({
         initialFields: @js([
             'deposit_fee' => $enProgress?->deposit_fee,
             'security_deposit_fee' => $enProgress?->security_deposit_fee,
@@ -15,7 +15,7 @@
         <div class="tw:w-[130px] tw:text-[1.2rem] tw:font-bold">初期費用</div>
         <div class="tw:w-[676px] tw:text-[1.2rem] tw:font-bold tw:text-right">
             初期合計
-            <span class="tw:pl-4 tw:text-[1.9rem]" x-text="formatCostTotal()">0</span>
+            <span class="tw:pl-4 tw:text-[1.9rem]" x-text="formatCostTotal()">{{ number_format($this->initialCostTotal) }}</span>
         </div>
     </div>
     <div class="tw:flex">
@@ -52,8 +52,8 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('enInitialCost', (params = {}) => ({
+        (() => {
+            window.enInitialCostComponent = (params = {}) => ({
                 costFieldNames: [
                     'deposit_fee',
                     'security_deposit_fee',
@@ -62,10 +62,6 @@
                     'key_antibacterial_fee',
                 ],
                 fields: params.initialFields || {},
-                monthlyTotal: 0,
-                init() {
-                    this.recalculateMonthlyTotal();
-                },
                 toHalfWidthDigits(value) {
                     return String(value ?? '')
                         .replace(/[０-９]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
@@ -85,13 +81,13 @@
 
                     return Math.trunc(parsed);
                 },
-                recalculateMonthlyTotal() {
-                    this.monthlyTotal = this.costFieldNames.reduce((sum, fieldName) => {
+                costTotal() {
+                    return this.costFieldNames.reduce((sum, fieldName) => {
                         return sum + this.parseInteger(this.fields[fieldName]);
                     }, 0);
                 },
                 formatCostTotal() {
-                    return this.monthlyTotal.toLocaleString('ja-JP');
+                    return this.costTotal().toLocaleString('ja-JP');
                 },
                 updateField(target) {
                     if (!target) {
@@ -114,7 +110,6 @@
                     }
 
                     this.fields[fieldName] = value;
-                    this.recalculateMonthlyTotal();
 
                     return { fieldName, value };
                 },
@@ -129,7 +124,7 @@
 
                     this.$wire.call('saveFieldByName', updated.fieldName, updated.value);
                 },
-            }));
-        });
+            });
+        })();
     </script>
 @endpush
