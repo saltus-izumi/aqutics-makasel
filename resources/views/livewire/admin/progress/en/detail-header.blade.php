@@ -1,5 +1,5 @@
-<div class="tw:flex tw:gap-x-[104px] tw:border-b">
-    <div class="tw:w-[832px]">
+<div class="tw:flex tw:gap-x-[78px] tw:border-b">
+    <div class="tw:w-[806px]">
         <div class="tw:w-full tw:h-[42px] tw:flex tw:gap-x-[1.5rem] tw:items-center">
             <div class="tw:text-[1.2rem]">ENID：{{ $enProgress->id }}</div>
             <div class="tw:text-[1.2rem]">物件ID：{{ $enProgress->progress?->investment_id }}</div>
@@ -69,7 +69,7 @@
             </div>
         </div>
         <div>
-            <table class="tw:w-[780px] tw:table-fixed">
+            <table class="tw:w-[806px] tw:table-fixed">
                 <tr class="tw:h-[21px]">
                     <td class="tw:text-[1.8rem] tw:font-bold tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]" rowspan="2">
                         LT

@@ -104,6 +104,26 @@ class EnProgress extends Model
         ];
     }
 
+    public function enProgressIndividualApplicant()
+    {
+        return $this->hasOne(EnProgressIndividualApplicant::class);
+    }
+
+    public function enProgressCorporateApplicant()
+    {
+        return $this->hasOne(EnProgressCorporateApplicant::class);
+    }
+
+    public function enProgressOccupants()
+    {
+        return $this->hasMany(EnProgressOccupants::class);
+    }
+
+    public function enProgressEmergencyContact()
+    {
+        return $this->hasOne(EnProgressEmergencyContact::class);
+    }
+
     public function progress()
     {
         return $this->belongsTo(Progress::class);

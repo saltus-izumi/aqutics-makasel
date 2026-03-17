@@ -1,15 +1,36 @@
 <div
     x-data="enContractTerms({
         initialFields: @js([
+            'fr_active_flag' => (bool) $enProgress?->fr_active_flag,
             'fr_start_date' => $enProgress?->fr_start_date,
             'fr_end_date' => $enProgress?->fr_end_date,
+            'desired_contract_date' => $enProgress?->desired_contract_date,
+            'planned_payment_date' => $enProgress?->planned_payment_date,
+            'desired_move_in_date' => $enProgress?->desired_move_in_date,
             'contract_start_date' => $enProgress?->contract_start_date,
             'contract_end_date' => $enProgress?->contract_end_date,
+            'renewal_fee' => $enProgress?->renewal_fee,
+            'guarantee_company_id' => $enProgress?->guarantee_company_id,
+            'guarantee_company_plan' => $enProgress?->guarantee_company_plan,
+            'guarantee_company_monthly_fee' => $enProgress?->guarantee_company_monthly_fee,
+            'guarantee_company_status' => $enProgress?->guarantee_company_status,
+            'fire_insurance_name' => $enProgress?->fire_insurance_name,
+            'fire_insurance_monthly_fee' => $enProgress?->fire_insurance_monthly_fee,
+            'fire_insurance_status' => $enProgress?->fire_insurance_status,
+            'anshin_support_flag' => $enProgress?->anshin_support_flag,
+            'move_out_cleaning_flag' => $enProgress?->move_out_cleaning_flag,
+            'ac_cleaning_flag' => $enProgress?->ac_cleaning_flag,
+            'cancellation_penalty_flag' => $enProgress?->cancellation_penalty_flag,
+            'pet_allowed_flag' => $enProgress?->pet_allowed_flag,
+            'instrument_allowed_flag' => $enProgress?->instrument_allowed_flag,
+            'fr_flag' => $enProgress?->fr_flag,
+            'two_person_allowed_flag' => $enProgress?->two_person_allowed_flag,
         ]),
     })"
+    @input="handleInput($event)"
     @change="handleChange($event)"
 >
-    <div class="tw:h-[42px] tw:flex tw:items-center tw:justify-end tw:gap-x-[26px]">
+    <div class="tw:h-[42px] tw:flex tw:mt-[21px] tw:items-center tw:justify-end tw:gap-x-[26px]">
         <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">マイソク</x-button.black>
         <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">新規募集条件</x-button.black>
         <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">WP審査基準</x-button.black>
@@ -71,7 +92,7 @@
     </div>
     <div class="tw:flex">
         <div class="tw:w-[208px] tw:h-[21px] tw:text-center tw:bg-[#f3f3f3] tw:border tw:border-[#cccccc] tw:border-t-0">保証会社名</div>
-        <div class="tw:w-[312px] tw:h-[21px] tw:text-center tw:bg-[#f3f3f3] tw:border tw:border-[#cccccc] tw:border-t-0">プラン名</div>
+        <div class="tw:w-[312px] tw:h-[21px] tw:text-center tw:bg-[#f3f3f3] tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">プラン名</div>
         <div class="tw:w-[130px] tw:h-[21px] tw:text-center tw:bg-[#f3f3f3] tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">月額費用</div>
         <div class="tw:w-[78px] tw:h-[21px] tw:text-center tw:bg-[#f3f3f3] tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">法人除外</div>
         <div class="tw:w-[78px] tw:h-[21px] tw:text-center tw:bg-[#f3f3f3] tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">連帯保証</div>
@@ -80,7 +101,7 @@
         <div class="tw:w-[208px] tw:h-[42px] tw:border tw:border-[#cccccc] tw:border-t-0">
             <x-form.select name="guarantee_company_id" :value="$enProgress?->guarantee_company_id" :options="$guaranteeCompanyOptions" class="tw:!w-[206px] tw:!h-[40px]" />
         </div>
-        <div class="tw:w-[312px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0">
+        <div class="tw:w-[312px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">
             <x-form.input name="guarantee_company_plan" :value="$enProgress?->guarantee_company_plan" class="tw:!h-[40px]" :border="false" />
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">
@@ -176,6 +197,17 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('enContractTerms', (params = {}) => ({
                 fields: params.initialFields || {},
+                saveTimers: {},
+                saveDelayMs: 400,
+                lastSavedFields: {},
+                init() {
+                    Object.entries(this.fields).forEach(([fieldName, value]) => {
+                        this.lastSavedFields[fieldName] = this.toComparableValue(value);
+                    });
+                },
+                toComparableValue(value) {
+                    return value === null || value === undefined ? '' : String(value);
+                },
                 parseDate(value) {
                     if (!value) {
                         return null;
@@ -210,15 +242,14 @@
                     }
                     return `${monthDiff}ヶ月`;
                 },
-                handleChange(event) {
-                    const target = event?.target;
+                updateFieldFromTarget(target) {
                     if (!target) {
-                        return;
+                        return null;
                     }
 
                     const fieldName = (target.name || '').trim();
                     if (!fieldName) {
-                        return;
+                        return null;
                     }
 
                     let value = target.value;
@@ -226,13 +257,53 @@
                         value = target.checked;
                     } else if (target.type === 'radio') {
                         if (!target.checked) {
-                            return;
+                            return null;
                         }
                         value = target.value;
                     }
 
                     this.fields[fieldName] = value;
+                    return { fieldName, value };
+                },
+                saveField(fieldName, value) {
+                    const comparable = this.toComparableValue(value);
+                    if (this.lastSavedFields[fieldName] === comparable) {
+                        return;
+                    }
+
+                    this.lastSavedFields[fieldName] = comparable;
                     this.$wire.call('saveFieldByName', fieldName, value);
+                },
+                queueSave(fieldName, value) {
+                    if (this.saveTimers[fieldName]) {
+                        window.clearTimeout(this.saveTimers[fieldName]);
+                    }
+
+                    this.saveTimers[fieldName] = window.setTimeout(() => {
+                        delete this.saveTimers[fieldName];
+                        this.saveField(fieldName, value);
+                    }, this.saveDelayMs);
+                },
+                handleInput(event) {
+                    const updated = this.updateFieldFromTarget(event?.target);
+                    if (!updated) {
+                        return;
+                    }
+
+                    this.queueSave(updated.fieldName, updated.value);
+                },
+                handleChange(event) {
+                    const updated = this.updateFieldFromTarget(event?.target);
+                    if (!updated) {
+                        return;
+                    }
+
+                    if (this.saveTimers[updated.fieldName]) {
+                        window.clearTimeout(this.saveTimers[updated.fieldName]);
+                        delete this.saveTimers[updated.fieldName];
+                    }
+
+                    this.saveField(updated.fieldName, updated.value);
                 },
             }));
         });

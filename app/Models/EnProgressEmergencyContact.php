@@ -16,6 +16,10 @@ class EnProgressEmergencyContact extends Model
     // 申込者性別
     public const GENDER_MALE = 1;       // 男性
     public const GENDER_FEMALE = 2;     // 女性
+    public const GENDER = [
+        self::GENDER_MALE => '男性',
+        self::GENDER_FEMALE => '女性',
+    ];
 
     protected $table = 'en_progress_emergency_contacts';
 
