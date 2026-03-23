@@ -304,6 +304,8 @@ class ProgressList extends Component
                 } else {
                     $this->applyRelationFilter($query, 'progress.investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
                 }
+            } elseif ($filterField === 'applicant') {
+                $this->applyApplicantFilter($query, $filterValue, $filterBlank);
             } elseif (in_array($filterField, $this->getSimpleFilterFields(), true)) {
                 $this->applyColumnFilter($query, $filterField, $filterValue, $filterBlank);
             }
@@ -341,6 +343,22 @@ class ProgressList extends Component
                 ->leftJoin('investment_empty_rooms as sort_investment_empty_rooms', 'sort_investment_empty_rooms.id', '=', 'sort_progresses.investment_empty_room_id')
                 ->select('en_progresses.*')
                 ->orderBy('sort_investment_empty_rooms.cancellation_date', $sortOrder);
+        } elseif ($sortField === 'applicant') {
+            $query->leftJoin('en_progress_individual_applicants as sort_individual_applicants', function ($join) {
+                $join->on('sort_individual_applicants.en_progress_id', '=', 'en_progresses.id')
+                    ->whereNull('sort_individual_applicants.deleted_at');
+            })->leftJoin('en_progress_corporate_applicants as sort_corporate_applicants', function ($join) {
+                $join->on('sort_corporate_applicants.en_progress_id', '=', 'en_progresses.id')
+                    ->whereNull('sort_corporate_applicants.deleted_at');
+            })->select('en_progresses.*')
+                ->orderByRaw(
+                    "CASE
+                        WHEN en_progresses.applicant_type = ? THEN CONCAT(COALESCE(sort_individual_applicants.last_name, ''), '　', COALESCE(sort_individual_applicants.first_name, ''))
+                        WHEN en_progresses.applicant_type = ? THEN COALESCE(sort_corporate_applicants.company_name, '')
+                        ELSE ''
+                    END {$sortOrder}",
+                    [EnProgress::APPLICANT_TYPE_INDIVIDUAL, EnProgress::APPLICANT_TYPE_CORPORATE]
+                );
         } else {
             $query->orderBy($sortField, $sortOrder);
         }
@@ -392,6 +410,68 @@ class ProgressList extends Component
             $query->whereHas($relation, function ($q) use ($column) {
                 $q->whereNotNull($column)
                     ->where($column, '!=', '');
+            });
+        }
+    }
+
+    protected function applyApplicantFilter($query, $filterValue, $filterBlank)
+    {
+        if ($filterValue !== '') {
+            $query->whereApplicantKeyword($filterValue);
+            return;
+        }
+
+        if ($filterBlank === 'blank') {
+            $query->where(function ($q) {
+                $q->where(function ($qq) {
+                    $qq->where('applicant_type', EnProgress::APPLICANT_TYPE_INDIVIDUAL)
+                        ->where(function ($a) {
+                            $a->whereDoesntHave('enProgressIndividualApplicant')
+                                ->orWhereHas('enProgressIndividualApplicant', function ($individual) {
+                                    $individual->where(function ($name) {
+                                        $name->whereNull('last_name')
+                                            ->orWhere('last_name', '');
+                                    })->where(function ($name) {
+                                        $name->whereNull('first_name')
+                                            ->orWhere('first_name', '');
+                                    });
+                                });
+                        });
+                })->orWhere(function ($qq) {
+                    $qq->where('applicant_type', EnProgress::APPLICANT_TYPE_CORPORATE)
+                        ->where(function ($a) {
+                            $a->whereDoesntHave('enProgressCorporateApplicant')
+                                ->orWhereHas('enProgressCorporateApplicant', function ($corporate) {
+                                    $corporate->whereNull('company_name')
+                                        ->orWhere('company_name', '');
+                                });
+                        });
+                });
+            });
+            return;
+        }
+
+        if ($filterBlank === 'not_blank') {
+            $query->where(function ($q) {
+                $q->where(function ($qq) {
+                    $qq->where('applicant_type', EnProgress::APPLICANT_TYPE_INDIVIDUAL)
+                        ->whereHas('enProgressIndividualApplicant', function ($individual) {
+                            $individual->where(function ($name) {
+                                $name->whereNotNull('last_name')
+                                    ->where('last_name', '!=', '')
+                                    ->orWhere(function ($x) {
+                                        $x->whereNotNull('first_name')
+                                            ->where('first_name', '!=', '');
+                                    });
+                            });
+                        });
+                })->orWhere(function ($qq) {
+                    $qq->where('applicant_type', EnProgress::APPLICANT_TYPE_CORPORATE)
+                        ->whereHas('enProgressCorporateApplicant', function ($corporate) {
+                            $corporate->whereNotNull('company_name')
+                                ->where('company_name', '!=', '');
+                        });
+                });
             });
         }
     }
@@ -473,6 +553,7 @@ class ProgressList extends Component
         return array_merge($this->getSimpleFilterFields(), [
             'investment_name',
             'investment_room_number',
+            'applicant',
             'executor_user_id',
             'next_action',
             ...$this->getDateRangeFilterFields(),
