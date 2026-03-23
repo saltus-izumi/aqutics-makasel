@@ -21,7 +21,7 @@ return new class extends Migration
 
             $table->date('completion_scheduled_date')->nullable()->comment('完工予定日');
             $table->date('completion_date')->nullable()->comment('完工日');
-            $table->date('start_date')->nullable()->comment('始期日');
+            // $table->date('start_date')->nullable()->comment('始期日');
             $table->integer('broker_id')->nullable()->comment('仲介会社ID');
 
             $table->integer('next_action')->nullable()->comment('ネクストアクション');
@@ -80,8 +80,8 @@ return new class extends Migration
                         $enProgress = EnProgress::create([
                             'progress_id' => $progress->id,
 
-                            'start_date' => $progress->keiyaku_shiki_date,
-                            'start_date_state' => $progress->keiyaku_shiki_date ? 1 : 0,
+                            // 'start_date' => $progress->keiyaku_shiki_date,
+                            // 'start_date_state' => $progress->keiyaku_shiki_date ? 1 : 0,
 
                             'application_date' => $progress->mousikomi_date,
                             'application_date_state' => $progress->mousikomi_date ? 1 : 0,

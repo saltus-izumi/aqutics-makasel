@@ -45,4 +45,9 @@ class EnProgressCorporateApplicant extends Model
     {
         return $this->belongsTo(EnProgress::class);
     }
+
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(fn () => $this->company_name);
+    }
 }

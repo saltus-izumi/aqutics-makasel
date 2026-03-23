@@ -68,8 +68,9 @@ class ProgressList extends Component
     protected function refreshEnProgresses() {
         $query = EnProgress::query()
             ->with([
-                // 'lowerEstimateFiles',
                 'broker',
+                'enProgressIndividualApplicant',
+                'enProgressCorporateApplicant',
                 'firstEnProgressOccupant',
                 'progress',
                 'progress.investment',
@@ -90,19 +91,21 @@ class ProgressList extends Component
     protected function buildAverageLt($progresses): array
     {
         $pairs = [
-            'cancellation' => ['move_out_received_date', 'progress.investmentEmptyRoom.cancellation_date'],
-            'move_out' => ['investmentEmptyRoom.cancellation_date', 'move_out_date'],
-            'cost_received' => ['move_out_date', 'cost_received_date'],
-            // 'tsuden' => ['cost_received_date', 'tenant_charge_confirmed_date'],
-            'tenant_burden_confirmed' => ['cost_received_date', 'tenant_burden_confirmed_date'],
-            'owner_proposed' => ['tenant_burden_confirmed_date', 'owner_proposed_date'],
-            'owner_approved' => ['owner_proposed_date', 'owner_approved_date'],
-            'ordered' => ['owner_approved_date', 'ordered_date'],
-            'completion_scheduled' => ['ordered_date', 'completion_scheduled_date'],
-            'completion_received' => ['completion_scheduled_date', 'completion_received_date'],
-            'completion_reported' => ['completion_received_date', 'completion_reported_date'],
-            'kakumei_registered' => ['completion_reported_date', 'kakumei_registered_date'],
-            'complete' => ['kakumei_registered_date', 'completed_date'],
+            'guarantee_screening' => ['application_date', 'guarantee_screening_date'],
+            'wp_screening' => ['guarantee_screening_date', 'wp_screening_date'],
+            'owner_reported' => ['wp_screening_date', 'owner_reported_date'],
+            'owner_approved' => ['owner_reported_date', 'owner_approved_date'],
+            'start_date_confirmed' => ['owner_approved_date', 'start_date_confirmed_date'],
+            'key_requested' => ['start_date_confirmed_date', 'key_requested_date'],
+            'invoice_issued' => ['key_requested_date', 'invoice_issued_date'],
+            'contract_sent' => ['invoice_issued_date', 'contract_sent_date'],
+            'contract_payment' => ['contract_sent_date', 'contract_payment_date'],
+            'contract_collected' => ['contract_payment_date', 'contract_collected_date'],
+            'electricity_cancellation' => ['contract_collected_date', 'electricity_cancellation_date'],
+            'key_handover' => ['electricity_cancellation_date', 'key_handover_date'],
+            'documents_archived' => ['key_handover_date', 'documents_archived_date'],
+            'completion_reported' => ['documents_archived_date', 'completion_reported_date'],
+            'completed' => ['completion_reported_date', 'completed_date'],
         ];
 
         $averages = $this->averageDaysBatch($progresses, $pairs);

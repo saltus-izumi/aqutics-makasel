@@ -50,4 +50,9 @@ class EnProgressIndividualApplicant extends Model
     {
         return $this->belongsTo(EnProgress::class);
     }
+
+    protected function fullName(): Attribute
+    {
+        return Attribute::get(fn () => $this->last_name . '　' . $this->first_name);
+    }
 }

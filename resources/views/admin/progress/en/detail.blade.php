@@ -13,9 +13,15 @@
                     <livewire:admin.progress.en.memo :enProgress="$enProgress" />
                 </div>
                 <div class="tw:flex tw:flex-col tw:gap-y-[21px]">
-                    <livewire:admin.progress.en.individual-applicant :enProgress="$enProgress" />
-                    <livewire:admin.progress.en.individual-occupant :enProgress="$enProgress" />
-                    <livewire:admin.progress.en.individual-emergency-contact :enProgress="$enProgress" />
+                    @if ($enProgress->applicant_type == $enProgress::APPLICANT_TYPE_INDIVIDUAL)
+                        <livewire:admin.progress.en.individual-applicant :enProgress="$enProgress" />
+                        <livewire:admin.progress.en.individual-occupant :enProgress="$enProgress" />
+                        <livewire:admin.progress.en.individual-emergency-contact :enProgress="$enProgress" />
+                    @else
+                        <livewire:admin.progress.en.corporate-applicant :enProgress="$enProgress" />
+                        <livewire:admin.progress.en.corporate-occupant :enProgress="$enProgress" />
+                        <livewire:admin.progress.en.corporate-emergency-contact :enProgress="$enProgress" />
+                    @endif
                 </div>
             </div>
         </div>

@@ -53,6 +53,7 @@ class Progress extends Model
             'kaiyaku_date' => 'date',
             'last_import_date' => 'datetime',                   // 最終取り込み日
             'kaiyaku_cancellation_date' => 'date',              // 解約キャンセル日
+            'mousikomi_date' => 'date',                         // 申込日
         ];
     }
 

@@ -5,7 +5,7 @@
     'label' => '値入力',
     'blankLabel' => '空白',
     'notBlankLabel' => '空白以外',
-    'placeholder' => 'IDで絞り込み',
+    'placeholder' => '',
     'ascLabel' => '昇順',
     'descLabel' => '降順',
     'applyLabel' => '適用',

@@ -90,7 +90,7 @@
                 <td class="tw:sticky tw:left-[156px] tw:text-center tw:bg-[#efefef]" rowspan="2">物件名</td>
                 <td class="tw:sticky tw:left-[338px] tw:text-center tw:bg-[#efefef]" rowspan="2">号室</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">番手</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">入居者名</td>
+                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">申込者名</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">完工<br>予定日</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">完工<br>日</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">始期日</td>
@@ -117,29 +117,29 @@
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">実質LT</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['move_out'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['cost_received'] ?? 'ー' }}</td>
-                <td class="tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['power_activation_date'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['tenant_burden_confirmed'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['owner_proposed'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['guarantee_screening'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['wp_screening'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['owner_reported'] ?? 'ー' }}</td>
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['owner_approved'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['ordered'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['completion_scheduled'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['completion_received'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['start_date_confirmed'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['key_requested'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['invoice_issued'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['contract_sent'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['contract_payment'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['contract_collected'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['electricity_cancellation'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['key_handover'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['documents_archived'] ?? 'ー' }}</td>
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['completion_reported'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['kakumei_registered'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['complete'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['complete'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['complete'] ?? 'ー' }}</td>
-                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['complete'] ?? 'ー' }}</td>
+                <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['completed'] ?? 'ー' }}</td>
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:sticky tw:left-[52px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="ENID"
-                        data-sort-field="progress_id"
-                        data-filter-field="progress_id"
+                        data-sort-field="id"
+                        data-filter-field="id"
                         data-filter-type="text"
                         @class(['tw:text-red-600' => $this->hasFilter('id')])
                     >▼</div>
@@ -188,12 +188,10 @@
                     <div
                         data-filter-trigger
                         data-filter-title="入居者名"
-                        data-sort-field="responsible_user_id"
-                        data-filter-field="responsible_user_id"
-                        data-filter-type="select"
-                        data-filter-select-name="select_filter"
-                        data-filter-options='@json($genpukuResponsibleOptions ?? [])'
-                        @class(['tw:text-red-600' => $this->hasFilter('responsible_user_id')])
+                        data-sort-field="applicant"
+                        data-filter-field="applicant"
+                        data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('applicant')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -220,10 +218,10 @@
                     <div
                         data-filter-trigger
                         data-filter-title="始期日"
-                        data-sort-field="start_date"
-                        data-filter-field="start_date"
+                        data-sort-field="desired_contract_date"
+                        data-filter-field="desired_contract_date"
                         data-filter-type="date-range"
-                        @class(['tw:text-red-600' => $this->hasFilter('start_date')])
+                        @class(['tw:text-red-600' => $this->hasFilter('desired_contract_date')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -458,10 +456,11 @@
                     <td class="tw:sticky tw:left-[156px] tw:z-[1] {{ $stickyCellBgClass }}">{{ $enProgress->progress?->investment?->investment_name }}</td>
                     <td class="tw:sticky tw:left-[338px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $enProgress->progress?->investment_room_uid == 0 ? '共用部' : $enProgress->progress?->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:text-center tw:px-[3px]">{{ $enProgress->priority_order }}</td>
-                    <td class="tw:text-center tw:px-[3px]">{{ $enProgress->firstEnProgressOccupant?->full_name }}</td>
                     <td class="tw:text-center tw:px-[3px]">
-                        <x-tooltip :text="$enProgress?->progress?->latestGeProgress?->completion_scheduled_date?->format('Y/m/d')">
-                            {{ $enProgress?->progress?->latestGeProgress?->completion_scheduled_date?->format('m/d') }}
+                        <x-tooltip :text="$enProgress->applicant?->full_name" class="tw:!block">
+                            <div class="tw:block tw:w-full tw:truncate">
+                                {{ $enProgress->applicant?->full_name }}
+                            </div>
                         </x-tooltip>
                     </td>
                     <td class="tw:text-center tw:px-[3px]">
@@ -470,11 +469,22 @@
                         </x-tooltip>
                     </td>
                     <td class="tw:text-center tw:px-[3px]">
-                        <x-tooltip :text="$enProgress?->start_date?->format('Y/m/d')">
-                            {{ $enProgress?->progress?->start_date?->format('m/d') }}
+                        <x-tooltip :text="$enProgress?->progress?->latestGeProgress?->completion_scheduled_date?->format('Y/m/d')">
+                            {{ $enProgress?->progress?->latestGeProgress?->completion_scheduled_date?->format('m/d') }}
                         </x-tooltip>
                     </td>
-                    <td class="tw:text-center tw:px-[3px]">{{ $enProgress->broker?->broker_name }}</td>
+                    <td class="tw:text-center tw:px-[3px]">
+                        <x-tooltip :text="$enProgress?->desired_contract_date?->format('Y/m/d')">
+                            {{ $enProgress?->desired_contract_date?->format('m/d') }}
+                        </x-tooltip>
+                    </td>
+                    <td class="tw:text-center tw:px-[3px]">
+                        <x-tooltip :text="$enProgress->broker?->broker_name" class="tw:!block">
+                            <div class="tw:block tw:w-full tw:truncate">
+                                {{ $enProgress->broker?->broker_name }}
+                            </div>
+                        </x-tooltip>
+                    </td>
                     <td class="tw:text-center tw:px-[3px]">
                         <x-form.select
                             name="responsible_user_id"
@@ -684,7 +694,7 @@
         x-ref="filterPopupText"
         x-bind:style="popupStyleForFilter('text')"
         x-title="filterTitle"
-        placeholder="IDで絞り込み"
+        placeholder=""
         filter-model="filterValue"
         blank-model="filterBlank"
         sort-model="sortOrderDraft"

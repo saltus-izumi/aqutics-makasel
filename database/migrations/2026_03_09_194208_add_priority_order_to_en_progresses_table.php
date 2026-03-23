@@ -100,9 +100,11 @@ return new class extends Migration
                         $enProgress = EnProgress::query()
                             ->where('progress_id', $progress->id)
                             ->first();
-
-                        $enProgress->responsible_user_id = $progress->en_responsible_id;
-                        $enProgress->save();
+                        if ($enProgress) {
+                            $enProgress->desired_contract_date = $progress->keiyaku_shiki_date;
+                            $enProgress->responsible_user_id = $progress->en_responsible_id;
+                            $enProgress->save();
+                        }
                     }
                 });
         });

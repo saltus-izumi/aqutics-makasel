@@ -547,6 +547,10 @@ class CorporateTenancyApplicationImport extends Component
             'investment_room_uid' => $regData['investment_room_uid'],
             'complete_date' => null
         ]);
+        $progress->en_responsible_id = $regData['en_staff_id'] ?? null;
+        $progress->keiyaku_shiki_date = $regData['ru060'] ?? null;
+        $progress->mousikomi_date = $regData['ru031'] ?? null;
+        $progress->save();
 
         // 保証会社データ取得
         $guaranteeCompany = GuaranteeCompany::firstOrCreate([
@@ -559,13 +563,14 @@ class CorporateTenancyApplicationImport extends Component
         $enProgress->broker_id = $regData['broker_id'] ?? null;
 
         $enProgress->application_id = $regData['ru001'] ?? null;                // 申込ID
-        $enProgress->applicant_type = EnProgress::APPLICANT_TYPE_INDIVIDUAL;    // 申込人種別
+        $enProgress->applicant_type = EnProgress::APPLICANT_TYPE_CORPORATE;     // 申込人種別
         $enProgress->application_date = $regData['ru031'] ?? null;              // 申込作成日時
         if ($enProgress->application_date) $enProgress->application_date_state = 1;
 
         $enProgress->guarantee_company_id = $guaranteeCompany->id;              // 保証会社ID
         $enProgress->guarantee_company_plan = $regData['ru034'] ?? null;        // 保証会社プラン名
         $enProgress->screening_result = ($regData['ru035'] ?? null) === '承認' ? EnProgress::SCREENING_RESULT_APPROVED : null;   // 審査結果
+        $enProgress->approval_number = $regData['ru036'] ?? null;               // 保証番号
         $enProgress->priority_order = $regData['ru039'] ?? null;                // 番手
         $enProgress->rent_fee = $regData['ru049'] ?? null;                      // 賃貸物件内容家賃
         $enProgress->common_service_fee = $regData['ru050'] ?? null;            // 賃貸物件内容管理費／共益費

@@ -101,6 +101,7 @@ class EnProgress extends Model
             'documents_archived_date' => 'date',
             'completion_reported_date' => 'date',
             'completed_date' => 'date',
+            'desired_contract_date' => 'date',
         ];
     }
 
@@ -209,6 +210,33 @@ class EnProgress extends Model
         } elseif ($this?->completed_date_state === 0) {
             $this->next_action = self::NEXT_ACTION_COMPLETED;
         }
+    }
+
+    public function getApplicantAttribute()
+    {
+        return $this->applicant_type === self::APPLICANT_TYPE_INDIVIDUAL
+            ? $this->enProgressIndividualApplicant
+            : $this->enProgressCorporateApplicant;
+    }
+
+    public function scopeWhereApplicantKeyword($query, string $keyword)
+    {
+        $keyword = trim($keyword);
+
+        return $query->where(function ($q) use ($keyword) {
+            $q->where(function ($qq) use ($keyword) {
+                $qq->where('applicant_type', self::APPLICANT_TYPE_INDIVIDUAL)
+                ->whereHas('enProgressIndividualApplicant', function ($a) use ($keyword) {
+                    $a->where('last_name', 'like', "%{$keyword}%")
+                        ->orWhere('first_name', 'like', "%{$keyword}%");
+                });
+            })->orWhere(function ($qq) use ($keyword) {
+                $qq->where('applicant_type', self::APPLICANT_TYPE_CORPORATE)
+                ->whereHas('enProgressCorporateApplicant', function ($a) use ($keyword) {
+                    $a->where('company_name', 'like', "%{$keyword}%");
+                });
+            });
+        });
     }
 
 }

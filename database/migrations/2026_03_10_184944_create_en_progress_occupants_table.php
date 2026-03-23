@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('workplace_or_school_name')->nullable()->comment('勤務先/学校名');
             $table->string('workplace_or_school_kana')->nullable()->comment('カナ');
             $table->integer('annual_income')->nullable()->comment('税込年収');
+            $table->text('memo')->nullable()->comment('メモ');
             $table->integer('created_user_id')->nullable()->comment('データ登録スタッフID');
             $table->dateTime('user_created_at')->nullable()->comment('データ登録日時（ スタッフ）');
             $table->integer('updated_user_id')->nullable()->comment('データ更新スタッフID');
