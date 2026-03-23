@@ -13,6 +13,7 @@ class DetailHeader extends Component
     public array $averageLt = [];
     public $mode = 'move-out-settlement';
     public $tradingCompanyId = null;
+    public $cancellationReason = null;
     public $restorationCompanies = [];
 
     protected array $enProgressMap = [
@@ -116,20 +117,43 @@ class DetailHeader extends Component
         $this->dispatch('enProgressUpdated', progressId: $this->enProgress->id);
     }
 
+    public function showCancelModal()
+    {
+        if ($this->isReProposeOrCancelLocked()) {
+            return;
+        }
+
+        $this->cancellationReason = null;
+        $this->resetValidation('cancellationReason');
+        $this->dispatch('open-cancel-progress-modal');
+    }
+
     public function cancelProgress()
     {
         if ($this->isReProposeOrCancelLocked()) {
             return;
         }
 
+        if (is_string($this->cancellationReason)) {
+            $this->cancellationReason = trim($this->cancellationReason);
+        }
+
+        $this->validate([
+            'cancellationReason' => ['required', 'string'],
+        ], [
+            'cancellationReason.required' => 'キャンセル理由は必須です。',
+        ]);
+
         DB::transaction(function () {
+            $this->enProgress->cancellation_reason = $this->cancellationReason;
             $this->enProgress->cancellation_date = now();
             $this->enProgress->cancellation_date_state = 1;
-            $this->enProgress->save();
-
             $this->enProgress->next_action = EnProgress::NEXT_ACTION_CANCEL;
             $this->enProgress->save();
         });
+
+        $this->dispatch('close-cancel-progress-modal');
+        $this->dispatch('enProgressUpdated', enProgressId: $this->enProgress->id);
     }
 
     public function render()

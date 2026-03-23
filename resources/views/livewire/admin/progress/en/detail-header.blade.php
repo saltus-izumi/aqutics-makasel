@@ -62,7 +62,7 @@
                     class="tw:!h-[31px] tw:!w-[156px] tw:!rounded-lg tw:text-[1.2rem]"
                     type="button"
                     :disabled="$isReProposeOrCancelDisabled"
-                    x-on:click="if (!confirm('キャンセル処理を実施します。よろしいですか。\nこの処理は取り消しできません。')) { return; } $wire.cancelProgress();"
+                    wire:click="showCancelModal"
                 >
                     キャンセル
                 </x-button.red>
@@ -110,4 +110,31 @@
             </table>
         </div>
     </div>
+
+    <x-modal title="キャンセル" event="cancel-progress-modal">
+        <div class="tw:mb-[8px]">
+            <span class="tw:text-[1.5rem]">キャンセル理由</span><span class="tw:text-[1.5rem] tw:text-[#ff0000]">＊必須</span>
+        </div>
+        <x-form.textarea name="cancellationReason" rows="6" wire:model="cancellationReason"></x-form.textarea>
+        @error('cancellationReason')
+            <x-form.error-message>{{ $message }}</x-form.error-message>
+        @enderror
+        <div class="tw:pt-[21px] tw:flex tw:gap-x-[12px]">
+            <x-button.gray
+                class="tw:w-[120px]"
+                type="button"
+                x-on:click="window.dispatchEvent(new CustomEvent('close-cancel-progress-modal'))"
+            >
+                閉じる
+            </x-button.gray>
+            <x-button.red
+                class="tw:w-[180px]"
+                type="button"
+                :disabled="$isReProposeOrCancelDisabled"
+                wire:click="cancelProgress"
+            >
+                キャンセル実行
+            </x-button.red>
+        </div>
+    </x-modal>
 </div>
