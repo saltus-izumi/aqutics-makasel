@@ -2,8 +2,7 @@
 
 namespace App\Livewire\Admin\Progress\En;
 
-use App\Models\GeProgress;
-use App\Models\GeProgressFile;
+use App\Models\EnProgress;
 use App\Models\TradingCompany;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -82,8 +81,7 @@ class DetailHeader extends Component
     protected function isReProposeOrCancelLocked(): bool
     {
         return in_array($this->enProgress?->next_action, [
-            GeProgress::NEXT_ACTION_RE_PROPOSED,
-            GeProgress::NEXT_ACTION_CANCEL,
+            EnProgress::NEXT_ACTION_CANCEL,
         ], true);
     }
 
@@ -118,51 +116,6 @@ class DetailHeader extends Component
         $this->dispatch('enProgressUpdated', progressId: $this->enProgress->id);
     }
 
-    public function rePropose()
-    {
-        if ($this->isReProposeOrCancelLocked()) {
-            return;
-        }
-
-        DB::transaction(function () {
-            // 現在のプロセス管理データを修正
-            $this->enProgress->next_action = GeProgress::NEXT_ACTION_RE_PROPOSED;
-            $this->enProgress->save();
-
-            // 再提案データ作成
-            $enProgress = new GeProgress([
-                'progress_id' => $this->enProgress->progress_id,
-                'reproposal_count' => $this->enProgress->reproposal_count + 1,
-                'responsible_user_id' => $this->enProgress->responsible_user_id,
-                'executor_user_id' => $this->enProgress->executor_user_id,
-                'trading_company_id' => $this->enProgress->trading_company_id,
-                'move_out_received_date' => $this->enProgress->move_out_received_date,
-                'move_out_date' => $this->enProgress->move_out_date,
-                'security_deposit_amount' => $this->enProgress->security_deposit_amount,
-                'prorated_rent_amount' => $this->enProgress->prorated_rent_amount,
-                'penalty_forfeiture_amount' => $this->enProgress->penalty_forfeiture_amount,
-                'inspection_request_message' => $this->enProgress->inspection_request_message,
-                'step1_confirmed' => $this->enProgress->step1_confirmed,
-                'move_out_report_date' => $this->enProgress->move_out_report_date,
-            ]);
-            $enProgress->resetNextAction();
-            $enProgress->save();
-
-            foreach ($this->enProgress->step1Files as $step1File) {
-                $newFile = new GeProgressFile($step1File->toArray());
-                $newFile->ge_progress_id = $enProgress->id;
-                $newFile->save();
-            }
-
-            foreach ($this->enProgress->moveOutSettlementFiles as $moveOutSettlementFile) {
-                $newFile = new GeProgressFile($moveOutSettlementFile->toArray());
-                $newFile->ge_progress_id = $enProgress->id;
-                $newFile->save();
-            }
-
-        });
-    }
-
     public function cancelProgress()
     {
         if ($this->isReProposeOrCancelLocked()) {
@@ -170,11 +123,12 @@ class DetailHeader extends Component
         }
 
         DB::transaction(function () {
-            $this->enProgress->kaiyaku_cancellation_date = now();
+            $this->enProgress->cancellation_date = now();
+            $this->enProgress->cancellation_date_state = 1;
             $this->enProgress->save();
 
-            $this->enProgress->enProgress->next_action = GeProgress::NEXT_ACTION_CANCEL;
-            $this->enProgress->enProgress->save();
+            $this->enProgress->next_action = EnProgress::NEXT_ACTION_CANCEL;
+            $this->enProgress->save();
         });
     }
 

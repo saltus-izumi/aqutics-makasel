@@ -58,6 +58,8 @@ return new class extends Migration
             $table->integer('completion_reported_date_state')->default(0)->comment('完了報告ステータス');
             $table->date('completed_date')->nullable()->comment('完了日');
             $table->integer('completed_date_state')->default(0)->comment('完了日ステータス');
+            $table->date('cancellation_date')->nullable()->comment('キャンセル日');
+            $table->integer('cancellation_date_state')->default(0)->comment('キャンセル日ステータス');
 
             $table->integer('created_user_id')->nullable()->comment('データ登録スタッフID');
             $table->dateTime('user_created_at')->nullable()->comment('データ登録日時（ スタッフ）');

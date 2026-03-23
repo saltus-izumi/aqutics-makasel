@@ -43,7 +43,7 @@
                         ネクストアクション
                     </td>
                     <td class="tw:w-[208px] tw:pl-[1rem] tw:text-[1.5rem] tw:border tw:border-[#cccccc]">
-                        {{ App\Models\GeProgress::NEXT_ACTIONS[$enProgress?->next_action] ?? '' }}
+                        {{ App\Models\EnProgress::NEXT_ACTIONS[$enProgress?->next_action] ?? '' }}
                     </td>
                 </tr>
             </table>

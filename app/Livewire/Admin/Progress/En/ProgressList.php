@@ -251,7 +251,8 @@ class ProgressList extends Component
     protected function setCondition($query)
     {
         if ($this->incompleteOnly) {
-            $query->whereNull('completed_date');
+            $query->whereNull('completed_date')
+                ->where('cancellation_date');
         }
 
         if ($this->searchKeyword !== '') {
