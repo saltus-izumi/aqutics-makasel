@@ -3,43 +3,34 @@
 namespace App\Livewire\Admin\Progress\En;
 
 use App\Models\EnProgress;
-use App\Models\GeProgressFile;
-use App\Models\GuaranteeCompany;
-use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class InitialCost extends Component
+class WpScreening extends Component
 {
     use WithFileUploads;
 
     public $enProgress = null;
-    public $latestGeProgress = null;
-    public $guaranteeCompanyOptions = [];
-
-    public $securityDepositAmount = null;
-    public $proratedRentAmount = null;
-    public $penaltyForfeitureAmount = null;
-    public $inspectionRequestMessage = null;
+    public array $enResponsibleShortOptions = [];
 
     protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
     protected array $contractTermFieldConfig = [
-        'deposit_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'security_deposit_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'cleaning_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'key_money' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'key_antibacterial_fee' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'identity_verification_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'condition_match_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'antisocial_check_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'special_agreement_note_flag' => ['rules' => ['boolean'], 'type' => 'boolean'],
+        'risk_category' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'escalation_flag' => ['rules' => ['nullable', 'integer', 'in:0,1'], 'type' => 'integer'],
+        'wp_approver_id' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'wp_screening_memo' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
     ];
 
     public function mount($enProgress)
     {
         $this->enProgress = $enProgress;
-        $this->latestGeProgress = $enProgress->progress?->latestGeProgress;
-        $this->guaranteeCompanyOptions = GuaranteeCompany::query()
-            ->orderBy('id')
-            ->pluck('company_name', 'id')
-            ->toArray();
+        $this->enResponsibleShortOptions = User::getShortOptions();
     }
 
     public function saveFieldByName(string $fieldName, $value): void
@@ -133,17 +124,14 @@ class InitialCost extends Component
         return $trimmed === '' ? null : $trimmed;
     }
 
-    public function getInitialCostTotalProperty(): int
+    public function updateMoveOutReportDate(): void
     {
-        if (!$this->enProgress) {
-            return 0;
+        if ($this->enProgress->move_out_report_date) {
+            return;
         }
 
-        return (int) ($this->enProgress->deposit_fee ?? 0)
-            + (int) ($this->enProgress->security_deposit_fee ?? 0)
-            + (int) ($this->enProgress->cleaning_fee ?? 0)
-            + (int) ($this->enProgress->key_money ?? 0)
-            + (int) ($this->enProgress->key_antibacterial_fee ?? 0);
+        $this->enProgress->move_out_report_date = now();
+        $this->enProgress->save();
     }
 
     public function reloadProgress($enProgressId = null)
@@ -163,6 +151,6 @@ class InitialCost extends Component
 
     public function render()
     {
-        return view('livewire.admin.progress.en.initial-cost');
+        return view('livewire.admin.progress.en.wp-screening');
     }
 }

@@ -12,7 +12,7 @@
             <div>{{ $enProgress->broker?->broker_name }}</div>
         </div>
         <div class="tw:w-[234px] tw:h-[42px] tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:flex tw:items-center tw:px-1">
-            <div></div>
+            <div class="tw:w-full tw:text-center">{{ $enProgress->broker?->itanji_id }}</div>
         </div>
         <div class="tw:w-[312px] tw:h-[42px] tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:flex tw:items-center tw:px-1">
             <div>{{ $enProgress->broker?->broker_address }}</div>

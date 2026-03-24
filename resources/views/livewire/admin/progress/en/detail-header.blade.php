@@ -13,8 +13,8 @@
             <a href="{{ route('admin.progress.en.detail', ['enProgressId' => $enProgress->id]) }}">
                 <div @class([
                     'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
-                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'move-out-settlement'),
-                    'tw:bg-[#efefef]' => ($mode == 'owner-settlement'),
+                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'contract'),
+                    'tw:bg-[#efefef]' => ($mode == 'approval'),
                 ])>
                     契約内容
                 </div>
@@ -22,8 +22,8 @@
             <a href="{{ route('admin.progress.en.approval', ['enProgressId' => $enProgress->id]) }}">
                 <div @class([
                     'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
-                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'owner-settlement'),
-                    'tw:bg-[#efefef]' => ($mode == 'move-out-settlement'),
+                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'approval'),
+                    'tw:bg-[#efefef]' => ($mode == 'contract'),
                 ])>
                     承認プロセス
                 </div>

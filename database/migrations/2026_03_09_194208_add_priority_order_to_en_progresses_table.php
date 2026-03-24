@@ -62,12 +62,12 @@ return new class extends Migration
             $table->integer('key_antibacterial_fee')->nullable()->after('key_money')->comment('鍵・抗菌費');
             $table->integer('broker_company_id')->nullable()->after('key_antibacterial_fee')->comment('仲介会社ID');
             $table->text('memo')->nullable()->after('broker_company_id')->comment('メモ');
-            $table->integer('guarantor_company_name')->nullable()->after('memo')->comment('保証会社名');
-            $table->date('screening_application_date')->nullable()->after('guarantor_company_name')->comment('審査申込日');
+            $table->integer('approval_guarantee_company_id')->nullable()->after('memo')->comment('承認保証会社ID');
+            $table->date('screening_application_date')->nullable()->after('approval_guarantee_company_id')->comment('審査申込日');
             $table->integer('screening_result')->nullable()->after('screening_application_date')->comment('審査結果');
             $table->string('approval_number')->nullable()->after('screening_result')->comment('承認番号');
-            $table->text('guarantor_plan')->nullable()->after('approval_number')->comment('保証プラン');
-            $table->integer('guarantor_fee_burden')->nullable()->after('guarantor_plan')->comment('保証料負担');
+            $table->text('approval_guarantee_company_plan')->nullable()->after('approval_number')->comment('保証プラン');
+            $table->integer('guarantor_fee_burden')->nullable()->after('approval_guarantee_company_plan')->comment('保証料負担');
             $table->text('condition_summary')->nullable()->after('guarantor_fee_burden')->comment('条件要約');
             $table->text('approval_notice_url')->nullable()->after('condition_summary')->comment('承認通知書URL');
             $table->boolean('identity_verification_flag')->default(false)->after('approval_notice_url')->comment('本人確認');
@@ -87,8 +87,8 @@ return new class extends Migration
             $table->date('invoice_due_date')->nullable()->after('total_payment_amount')->comment('請求期限');
             $table->integer('payment_status')->nullable()->after('invoice_due_date')->comment('入金状況');
             $table->text('payment_proof_url')->nullable()->after('payment_status')->comment('入金証跡URL');
-            $table->integer('payment_confirmed_by')->nullable()->after('payment_proof_url')->comment('入金確認者');
-            $table->text('initial_cost_memo')->nullable()->after('payment_confirmed_by')->comment('初期費用メモ');
+            $table->integer('payment_confirmed_user_id')->nullable()->after('payment_proof_url')->comment('入金確認者');
+            $table->text('initial_cost_memo')->nullable()->after('payment_confirmed_user_id')->comment('初期費用メモ');
         });
 
         DB::transaction(function() {
@@ -162,11 +162,11 @@ return new class extends Migration
                 'key_antibacterial_fee',
                 'broker_company_id',
                 'memo',
-                'guarantor_company_name',
+                'approval_guarantee_company_id',
                 'screening_application_date',
                 'screening_result',
                 'approval_number',
-                'guarantor_plan',
+                'approval_guarantee_company_plan',
                 'guarantor_fee_burden',
                 'condition_summary',
                 'approval_notice_url',
@@ -187,7 +187,7 @@ return new class extends Migration
                 'invoice_due_date',
                 'payment_status',
                 'payment_proof_url',
-                'payment_confirmed_by',
+                'payment_confirmed_user_id',
                 'initial_cost_memo',
             ]);
         });

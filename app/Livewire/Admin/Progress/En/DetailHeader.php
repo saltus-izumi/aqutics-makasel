@@ -11,7 +11,7 @@ class DetailHeader extends Component
 {
     public $enProgress = null;
     public array $averageLt = [];
-    public $mode = 'move-out-settlement';
+    public $mode = 'contract';
     public $tradingCompanyId = null;
     public $cancellationReason = null;
     public $restorationCompanies = [];

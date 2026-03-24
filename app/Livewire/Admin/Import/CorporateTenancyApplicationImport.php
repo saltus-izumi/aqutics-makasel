@@ -576,6 +576,7 @@ class CorporateTenancyApplicationImport extends Component
             'broker_id' => 'broker_id',
             'application_date' => 'ru031',
             'guarantee_company_plan' => 'ru034',
+            'approval_guarantee_company_plan' => 'ru034',
             'screening_result' => 'ru035',
             'approval_number' => 'ru036',
             'priority_order' => 'ru039',
@@ -611,6 +612,17 @@ class CorporateTenancyApplicationImport extends Component
                 'company_name' => $regData['ru033'],
             ]);
             $enProgress->guarantee_company_id = $guaranteeCompany->id; // 保証会社ID
+        }
+
+        if (
+            $this->isFieldEmpty($enProgress->approval_guarantee_company_id) &&
+            array_key_exists('ru033', $regData)
+        ) {
+            // 保証会社データ取得
+            $guaranteeCompany = GuaranteeCompany::firstOrCreate([
+                'company_name' => $regData['ru033'],
+            ]);
+            $enProgress->approval_guarantee_company_id = $guaranteeCompany->id; // 保証会社ID
         }
 
         if (

@@ -49,14 +49,19 @@ class EnProgressController
             ));
     }
 
-    public function ownerSettlement(Request $request, $geProgressId)
+    public function approval(Request $request, $enProgressId)
     {
-        $geProgress = GeProgress::query()
+        $enProgress = EnProgress::query()
             ->with([
-                'step1Files',
                 'responsibleUser',
                 'executorUser',
+                'broker',
+                'enProgressIndividualApplicant',
+                'enProgressCorporateApplicant',
+                'enProgressOccupants',
+                'enProgressEmergencyContact',
                 'progress',
+                'progress.latestGeProgress',
                 'progress.investment',
                 'progress.investment.restorationCompany',
                 'progress.investment.landlord.owner',
@@ -64,15 +69,15 @@ class EnProgressController
                 'progress.investmentRoomRedidentHistory',
                 'progress.investmentEmptyRoom',
             ])
-            ->find($geProgressId);
+            ->find($enProgressId);
 
-        if (!$geProgress) {
+        if (!$enProgress) {
             abort(404);
         }
 
-        return view('admin.progress.en.owner-settlement')
+        return view('admin.progress.en.approval')
             ->with(compact(
-                'geProgress',
+                'enProgress',
             ));
     }
 

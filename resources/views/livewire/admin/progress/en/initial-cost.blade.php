@@ -15,7 +15,7 @@
         <div class="tw:w-[130px] tw:text-[1.2rem] tw:font-bold">初期費用</div>
         <div class="tw:w-[676px] tw:text-[1.2rem] tw:font-bold tw:text-right">
             初期合計
-            <span class="tw:pl-4 tw:text-[1.9rem]" x-text="formatCostTotal()">{{ number_format($this->initialCostTotal) }}</span>
+            <span class="tw:pl-4 tw:text-[1.9rem]" x-text="formatCostTotal()"></span>
         </div>
     </div>
     <div class="tw:flex">

@@ -21,6 +21,11 @@ class EnProgress extends Model
     public const SCREENING_RESULT_APPROVED = 1;              // 承認
     public const SCREENING_RESULT_CONDITIONAL_APPROVAL = 2;  // 条件付き承認
     public const SCREENING_RESULT_REJECTED = 3;              // 否決
+    public const SCREENING_RESULT = [
+        self::SCREENING_RESULT_APPROVED => '承認',
+        self::SCREENING_RESULT_CONDITIONAL_APPROVAL => '条件付き承認',
+        self::SCREENING_RESULT_REJECTED => '否決',
+    ];
 
     // 保証ステータス
     public const GUARANTEE_COMPANY_STATUS_CORPORATE_EXEMPT = 1; // 法人除外
@@ -68,6 +73,34 @@ class EnProgress extends Model
         self::NEXT_ACTION_COMPLETED => '完了日',
         self::NEXT_ACTION_RE_PROPOSED => '再提案',
         self::NEXT_ACTION_CANCEL => 'キャンセル',
+    ];
+
+    // 審査結果
+    public const RISK_CATEGORY_LOW = 1;     // 低
+    public const RISK_CATEGORY_MID = 2;     // 中
+    public const RISK_CATEGORY_HIGH = 3;    // 高
+    public const RISK_CATEGORY = [
+        self::RISK_CATEGORY_LOW => '低',
+        self::RISK_CATEGORY_MID => '中',
+        self::RISK_CATEGORY_HIGH => '高',
+    ];
+
+    // 承諾方式
+    public const APPROVAL_METHOD_BUTTON = 1;    // 承認ボタン
+    public const APPROVAL_METHOD_EMAIL = 2;     // メール
+    public const APPROVAL_METHOD = [
+        self::APPROVAL_METHOD_BUTTON => '承認ボタン',
+        self::APPROVAL_METHOD_EMAIL => 'メール',
+    ];
+
+    // 入金状況
+    const PAYMENT_STATUS_UNPAID = 1;        // 未入金
+    const PAYMENT_STATUS_PARTIAL = 2;       // 一部入金
+    const PAYMENT_STATUS_COMPLETED = 3;     // 完了
+    public const PAYMENT_STATUS = [
+        self::PAYMENT_STATUS_UNPAID => '未入金',
+        self::PAYMENT_STATUS_PARTIAL => '一部入金',
+        self::PAYMENT_STATUS_COMPLETED => '完了',
     ];
 
     protected $table = 'en_progresses';
