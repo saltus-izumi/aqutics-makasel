@@ -115,6 +115,7 @@
                     :subItems="[
                         route('admin.progress.ge.index') => '原復プロセス管理',
                         route('admin.progress.en.index') => 'ENプロセス管理',
+                        route('admin.progress.te.index') => 'TEプロセス管理',
                     ]"
                 />
 

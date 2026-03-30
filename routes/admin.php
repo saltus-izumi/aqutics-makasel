@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AuthController as AdminAuth;
 use App\Http\Controllers\Admin\OperationController as AdminOperation;
 use App\Http\Controllers\Admin\GeProgressController as AdminGeProgress;
 use App\Http\Controllers\Admin\EnProgressController as AdminEnProgress;
+use App\Http\Controllers\Admin\TeProgressController as AdminTeProgress;
 use App\Http\Controllers\Admin\ImportController as AdminImport;
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -34,9 +35,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
             });
             Route::prefix('en')->name('en.')->group(function () {
                 Route::get('/', [AdminEnProgress::class, 'index'])->name('index');
-                Route::get('/files/{enProgressFileId}', [AdminEnProgress::class, 'preview'])->name('preview');
                 Route::get('/{enProgressId}', [AdminEnProgress::class, 'detail'])->name('detail');
                 Route::get('/{enProgressId}/approval', [AdminEnProgress::class, 'approval'])->name('approval');
+            });
+            Route::prefix('te')->name('te.')->group(function () {
+                Route::get('/', [AdminTeProgress::class, 'index'])->name('index');
+                Route::get('/files/{enProgressFileId}', [AdminTeProgress::class, 'preview'])->name('preview');
+                Route::get('/{enProgressId}', [AdminTeProgress::class, 'detail'])->name('detail');
             });
         });
 
