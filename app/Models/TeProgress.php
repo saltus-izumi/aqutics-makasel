@@ -114,8 +114,16 @@ class TeProgress extends Model
         return $this->belongsTo(Category3Master::class, 'category3_master_id', 'id');
     }
 
-    public function genpukuGyousha() {
-        return $this->belongsTo(TradingCompany::class, 'genpuku_gyousha_id', 'id');
+    public function tradingCompany1() {
+        return $this->belongsTo(TradingCompany::class, 'trading_company_1_id', 'id');
+    }
+
+    public function tradingCompany2() {
+        return $this->belongsTo(TradingCompany::class, 'trading_company_2_id', 'id');
+    }
+
+    public function tradingCompany3() {
+        return $this->belongsTo(TradingCompany::class, 'trading_company_3_id', 'id');
     }
 
     public function isTodayImport(): Attribute
@@ -125,6 +133,12 @@ class TeProgress extends Model
         });
     }
 
+    public function lastTradingCompany(): Attribute
+    {
+        return Attribute::get(function () {
+            return ($this->tradingCompany3 ?? $this->tradingCompany2 ?? $this->tradingCompany1 ?? null);
+        });
+    }
 
 
     // 上代見積り

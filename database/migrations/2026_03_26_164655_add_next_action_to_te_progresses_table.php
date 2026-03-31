@@ -16,6 +16,8 @@ return new class extends Migration
         Schema::table('te_progresses', function (Blueprint $table) {
             $table->integer('next_action')->nullable()->after('contractor_no')->comment('ネクストアクション');
             $table->integer('executor_user_id')->nullable()->after('responsible_id')->comment('実行者');
+            $table->integer('trading_company_2_id')->nullable()->after('genpuku_gyousha_id')->comment('指定業者2');
+            $table->integer('trading_company_3_id')->nullable()->after('trading_company_2_id')->comment('指定業者3');
             $table->integer('nyuuden_date_state')->default(0)->after('nyuuden_date')->comment('入電日ステータス');
             $table->integer('gencho_date_state')->default(0)->after('gencho_date')->comment('現調日ステータス');
             $table->date('cost_received_date')->nullable()->after('mitsumori_date')->comment('下代受信日');

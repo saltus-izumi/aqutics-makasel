@@ -73,7 +73,9 @@ class ProgressList extends Component
             ->with([
                 'Investment',
                 'investmentRoomResidentHistory',
-                'genpukuGyousha',
+                'tradingCompany1',
+                'tradingCompany2',
+                'tradingCompany3',
                 'category1Master',
                 'category2Master',
                 'category3Master',

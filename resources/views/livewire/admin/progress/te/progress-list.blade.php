@@ -6,7 +6,7 @@
     x-on:calendar-input.window="handleCalendarInput($event)"
     x-on:keydown.escape.window="closeAll()"
 >
-    <table class="tw:table-fixed tw:w-[2236px] tw:min-w-[2236px]">
+    <table class="tw:table-fixed" :style="tableWidthStyle()">
         <colgroup>
             <col class="tw:w-[182px]">       {{-- 案件番号 --}}
             <col class="tw:w-[52px]">       {{-- TEID --}}
@@ -14,10 +14,10 @@
             <col class="tw:w-[182px]">      {{-- 物件名 --}}
             <col class="tw:w-[52px]">       {{-- 号室 --}}
             <col class="tw:w-[104px]">      {{-- 入居者名 --}}
-            <col class="tw:w-[182px]">      {{-- 案件タイトル --}}
+            <col class="tw:w-[182px]" x-show="isTitleColumnVisible">      {{-- 案件タイトル --}}
             <col class="tw:w-[52px]">       {{-- カテゴリ・大 --}}
-            <col class="tw:w-[104px]">      {{-- カテゴリ・中 --}}
-            <col class="tw:w-[104px]">      {{-- カテゴリ・小 --}}
+            <col class="tw:w-[104px]" x-show="isCategoryDetailVisible">      {{-- カテゴリ・中 --}}
+            <col class="tw:w-[104px]" x-show="isCategoryDetailVisible">      {{-- カテゴリ・小 --}}
             <col class="tw:w-[52px]">       {{-- 保守 --}}
             <col class="tw:w-[52px]">       {{-- 3万 --}}
             <col class="tw:w-[52px]">       {{-- 安心 --}}
@@ -46,15 +46,26 @@
                         <x-button.blue class="tw:!h-[21px] tw:!w-[104px] tw:!font-normal">検索</x-button.blue>
                     </div>
                 </td>
-                <td class="tw:sticky tw:left-[286px] tw:bg-white" rowspan="2" colspan="4">
+                <td class="tw:sticky tw:left-[286px] tw:bg-white" rowspan="2" colspan="2">
                     案件数  {{ $teProgresses->count() }}
                     <button type="button" class="tw:ml-2 tw:text-xs tw:px-2 tw:py-0.5 tw:border tw:rounded tw:cursor-pointer" x-on:click="clearAllFilters()">フィルタークリア</button>
                 </td>
-                <td rowspan="2">ー案件タイトル</td>
-                <td rowspan="2"></td>
-                <td rowspan="2"></td>
-                <td rowspan="2"></td>
-                <td rowspan="2"></td>
+                <td rowspan="2" :colspan="4 + (isTitleColumnVisible ? 1 : 0) + (isCategoryDetailVisible ? 2 : 0)">
+                    <div class="tw:flex tw:gap-x-[52px]">
+                        <button
+                            type="button"
+                            class="tw:cursor-pointer tw:select-none tw:text-pm_blue_001"
+                            x-on:click.stop="toggleTitleColumn()"
+                            x-text="`${isTitleColumnVisible ? 'ー' : '＋'}案件タイトル`"
+                        ></button>
+                        <button
+                            type="button"
+                            class="tw:cursor-pointer tw:select-none tw:text-pm_blue_001"
+                            x-on:click.stop="toggleCategoryDetail()"
+                            x-text="`${isCategoryDetailVisible ? 'ー' : '＋'}カテゴリ`"
+                        ></button>
+                    </div>
+                </td>
                 <td rowspan="2"></td>
                 <td rowspan="2"></td>
                 <td rowspan="2"></td>
@@ -95,8 +106,8 @@
                 <td class="tw:sticky tw:left-[338px] tw:text-center tw:bg-[#efefef]" rowspan="3">物件名</td>
                 <td class="tw:sticky tw:left-[520px] tw:text-center tw:bg-[#efefef]" rowspan="3">号室</td>
                 <td class="tw:sticky tw:left-[572px] tw:text-center tw:bg-[#efefef]" rowspan="3">入居者名</td>
-                <td class="tw:sticky tw:left-[676px] tw:text-center tw:bg-[#efefef]" rowspan="3">案件タイトル</td>
-                <td class="tw:text-center tw:bg-[#efefef]" colspan="3">カテゴリ</td>
+                <td class="tw:sticky tw:left-[676px] tw:text-center tw:bg-[#efefef]" rowspan="3" x-show="isTitleColumnVisible">案件タイトル</td>
+                <td class="tw:text-center tw:bg-[#efefef]" :colspan="isCategoryDetailVisible ? 3 : 1">カテゴリ</td>
                 <td class="tw:text-center tw:bg-[#efefef]" colspan="3">早見表</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">責任者</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">実行者</td>
@@ -117,8 +128,8 @@
             </tr>
             <tr class="tw:h-[21px]">
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">大</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">中</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">小</td>
+                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2" x-show="isCategoryDetailVisible">中</td>
+                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2" x-show="isCategoryDetailVisible">小</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">保守</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">3万</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">安心</td>
@@ -198,7 +209,7 @@
                         @class(['tw:text-red-600' => $this->hasFilter('contractor_name')])
                     >▼</div>
                 </td>
-                <td class="tw:sticky tw:left-[676px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:sticky tw:left-[676px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer" x-show="isTitleColumnVisible">
                     <div
                         data-filter-trigger
                         data-filter-title="案件タイトル"
@@ -220,7 +231,7 @@
                         @class(['tw:text-red-600' => $this->hasFilter('category1_master_id')])
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer" x-show="isCategoryDetailVisible">
                     <div
                         data-filter-trigger
                         data-filter-title="カテゴリ・中"
@@ -230,7 +241,7 @@
                         @class(['tw:text-red-600' => $this->hasFilter('category2_master')])
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer" x-show="isCategoryDetailVisible">
                     <div
                         data-filter-trigger
                         data-filter-title="カテゴリ・小"
@@ -461,10 +472,10 @@
                     <td class="tw:sticky tw:left-[338px] tw:z-[1] {{ $stickyCellBgClass }}">{{ $teProgress->investment?->investment_name }}</td>
                     <td class="tw:sticky tw:left-[520px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $teProgress->investment_room_uid == 0 ? '共用部' : $teProgress->investmentRoom?->investment_room_number }}</td>
                     <td class="tw:sticky tw:left-[572px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $teProgress->investmentRoomResidentHistory?->contractor_name }}</td>
-                    <td class="tw:sticky tw:left-[676px] tw:z-[1] tw:truncate {{ $stickyCellBgClass }}">{{ $teProgress->title }}</td>
+                    <td class="tw:sticky tw:left-[676px] tw:z-[1] tw:truncate {{ $stickyCellBgClass }}" x-show="isTitleColumnVisible">{{ $teProgress->title }}</td>
                     <td class="tw:text-center">{{ $teProgress->category1Master?->short_name }}</td>
-                    <td class="tw:truncate">{{ $teProgress->category2Master?->item_name }}</td>
-                    <td class="tw:truncate">{{ $teProgress->category3Master?->item_name }}</td>
+                    <td class="tw:truncate" x-show="isCategoryDetailVisible">{{ $teProgress->category2Master?->item_name }}</td>
+                    <td class="tw:truncate" x-show="isCategoryDetailVisible">{{ $teProgress->category3Master?->item_name }}</td>
                     <td class="tw:text-center">{{ $teProgress->investment?->facility_maintenance ? '○' : '' }}</td>
                     <td class="tw:text-center">{{ $teProgress->investment?->three_repair ? '○' : '' }}</td>
                     <td class="tw:text-center">{{ ($teProgress->investment_room_resident?->ansin_support || $teProgress->investment?->has_emergency_support) ? '○' : '' }}</td>
@@ -491,7 +502,9 @@
                         />
                     </td>
                     <td class="tw:text-center">{{ App\Models\TeProgress::NEXT_ACTIONS[$teProgress?->next_action] ?? '' }}</td>
-                    <td class="tw:text-center tw:truncate">{{ $teProgress?->genpukuGyousha?->name }}</td>
+                    <td class="tw:text-center tw:truncate">
+                    {{ $teProgress?->last_trading_company?->name }}
+                    </td>
                     <td class="tw:text-center">
                         <x-tooltip :text="$teProgress?->last_import_date?->format('Y/m/d')">
                             {{ $teProgress?->last_import_date?->format('m/d') }}
@@ -1017,6 +1030,27 @@
                         initialSortField,
                         initialFilters,
                     }),
+                    isTitleColumnVisible: true,
+                    isCategoryDetailVisible: true,
+
+                    toggleTitleColumn() {
+                        this.isTitleColumnVisible = !this.isTitleColumnVisible;
+                    },
+
+                    toggleCategoryDetail() {
+                        this.isCategoryDetailVisible = !this.isCategoryDetailVisible;
+                    },
+
+                    tableWidthStyle() {
+                        let tableWidth = 2236;
+                        if (!this.isTitleColumnVisible) {
+                            tableWidth -= 182;
+                        }
+                        if (!this.isCategoryDetailVisible) {
+                            tableWidth -= 208;
+                        }
+                        return `width: ${tableWidth}px; min-width: ${tableWidth}px;`;
+                    },
 
                     handleClick(event) {
                         const filterTrigger = event.target.closest('[data-filter-trigger]');
