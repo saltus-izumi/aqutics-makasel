@@ -6,17 +6,18 @@
     x-on:calendar-input.window="handleCalendarInput($event)"
     x-on:keydown.escape.window="closeAll()"
 >
-    <table class="tw:table-fixed tw:w-[1352px] tw:min-w-[1352px]">
+    <table class="tw:table-fixed tw:w-[2236px] tw:min-w-[2236px]">
         <colgroup>
+            <col class="tw:w-[182px]">       {{-- 案件番号 --}}
             <col class="tw:w-[52px]">       {{-- TEID --}}
             <col class="tw:w-[52px]">       {{-- 物件ID --}}
             <col class="tw:w-[182px]">      {{-- 物件名 --}}
             <col class="tw:w-[52px]">       {{-- 号室 --}}
             <col class="tw:w-[104px]">      {{-- 入居者名 --}}
+            <col class="tw:w-[182px]">      {{-- 案件タイトル --}}
             <col class="tw:w-[52px]">       {{-- カテゴリ・大 --}}
             <col class="tw:w-[104px]">      {{-- カテゴリ・中 --}}
             <col class="tw:w-[104px]">      {{-- カテゴリ・小 --}}
-            <col class="tw:w-[182px]">      {{-- 案件タイトル --}}
             <col class="tw:w-[52px]">       {{-- 保守 --}}
             <col class="tw:w-[52px]">       {{-- 3万 --}}
             <col class="tw:w-[52px]">       {{-- 安心 --}}
@@ -39,13 +40,17 @@
         </colgroup>
         <thead class="tw:sticky tw:top-0 tw:z-10">
             <tr class="tw:h-[21px] tw:bg-white">
-                <td rowspan="2" colspan="2">
-                    <x-button.blue class="tw:!h-[21px] tw:!w-[104px] tw:!font-normal">検索</x-button.blue>
+                <td class="tw:sticky tw:left-[52px] tw:bg-white" rowspan="2" colspan="2">
+                    <div class="tw:flex tw:gap-x-[10px]">
+                        <x-button.blue class="tw:!h-[21px] tw:!w-[104px] tw:!px-0 tw:!font-normal">新規作成</x-button.blue>
+                        <x-button.blue class="tw:!h-[21px] tw:!w-[104px] tw:!font-normal">検索</x-button.blue>
+                    </div>
                 </td>
-                <td class="tw:pl-[10px]" rowspan="2" colspan="4">
+                <td class="tw:sticky tw:left-[286px] tw:bg-white" rowspan="2" colspan="4">
                     案件数  {{ $teProgresses->count() }}
                     <button type="button" class="tw:ml-2 tw:text-xs tw:px-2 tw:py-0.5 tw:border tw:rounded tw:cursor-pointer" x-on:click="clearAllFilters()">フィルタークリア</button>
                 </td>
+                <td rowspan="2">ー案件タイトル</td>
                 <td rowspan="2"></td>
                 <td rowspan="2"></td>
                 <td rowspan="2"></td>
@@ -84,12 +89,14 @@
                 <td class="tw:text-[#0000ff] tw:bg-[#c9daf8] tw:text-center">ー</td>
             </tr>
             <tr class="tw:h-[50px]">
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">TEID</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">物件ID</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">物件名</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">号室</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">入居者名</td>
-                <td class="tw:text-center tw:bg-[#efefef]" colspan="4">カテゴリ</td>
+                <td class="tw:sticky tw:left-[52px] tw:text-center tw:bg-[#efefef]" rowspan="3">案件番号</td>
+                <td class="tw:sticky tw:left-[234px] tw:text-center tw:bg-[#efefef]" rowspan="3">TEID</td>
+                <td class="tw:sticky tw:left-[286px] tw:text-center tw:bg-[#efefef]" rowspan="3">物件ID</td>
+                <td class="tw:sticky tw:left-[338px] tw:text-center tw:bg-[#efefef]" rowspan="3">物件名</td>
+                <td class="tw:sticky tw:left-[520px] tw:text-center tw:bg-[#efefef]" rowspan="3">号室</td>
+                <td class="tw:sticky tw:left-[572px] tw:text-center tw:bg-[#efefef]" rowspan="3">入居者名</td>
+                <td class="tw:sticky tw:left-[676px] tw:text-center tw:bg-[#efefef]" rowspan="3">案件タイトル</td>
+                <td class="tw:text-center tw:bg-[#efefef]" colspan="3">カテゴリ</td>
                 <td class="tw:text-center tw:bg-[#efefef]" colspan="3">早見表</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">責任者</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="3">実行者</td>
@@ -112,7 +119,6 @@
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">大</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">中</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">小</td>
-                <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">案件タイトル</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">保守</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">3万</td>
                 <td class="tw:text-center tw:bg-[#efefef]" rowspan="2">安心</td>
@@ -132,7 +138,17 @@
                 <td class="tw:text-[#ff0000] tw:bg-[#c9daf8] tw:text-center">{{ $averageLt['complete'] ?? 'ー' }}</td>
             </tr>
             <tr class="tw:h-[21px]">
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:sticky tw:left-[52px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="案件番号"
+                        data-sort-field="procall_case_no"
+                        data-filter-field="procall_case_no"
+                        data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('procall_case_no')])
+                    >▼</div>
+                </td>
+                <td class="tw:sticky tw:left-[234px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="TEID"
@@ -142,7 +158,7 @@
                         @class(['tw:text-red-600' => $this->hasFilter('id')])
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:sticky tw:left-[286px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="物件ID"
@@ -152,7 +168,7 @@
                         @class(['tw:text-red-600' => $this->hasFilter('investment_id')])
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:sticky tw:left-[338px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="物件名"
@@ -162,7 +178,7 @@
                         @class(['tw:text-red-600' => $this->hasFilter('investment_name')])
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:sticky tw:left-[520px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="号室"
@@ -172,7 +188,7 @@
                         @class(['tw:text-red-600' => $this->hasFilter('investment_room_number')])
                     >▼</div>
                 </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                <td class="tw:sticky tw:left-[572px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
                     <div
                         data-filter-trigger
                         data-filter-title="入居者名"
@@ -180,6 +196,16 @@
                         data-filter-field="contractor_name"
                         data-filter-type="text"
                         @class(['tw:text-red-600' => $this->hasFilter('contractor_name')])
+                    >▼</div>
+                </td>
+                <td class="tw:sticky tw:left-[676px] tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
+                    <div
+                        data-filter-trigger
+                        data-filter-title="案件タイトル"
+                        data-sort-field="title"
+                        data-filter-field="title"
+                        data-filter-type="text"
+                        @class(['tw:text-red-600' => $this->hasFilter('title')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -212,16 +238,6 @@
                         data-filter-field="category3_master"
                         data-filter-type="text"
                         @class(['tw:text-red-600' => $this->hasFilter('category3_master')])
-                    >▼</div>
-                </td>
-                <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
-                    <div
-                        data-filter-trigger
-                        data-filter-title="案件タイトル"
-                        data-sort-field="title"
-                        data-filter-field="title"
-                        data-filter-type="text"
-                        @class(['tw:text-red-600' => $this->hasFilter('title')])
                     >▼</div>
                 </td>
                 <td class="tw:bg-[#cccccc] tw:text-center tw:text-[0.6rem] tw:cursor-pointer">
@@ -429,24 +445,26 @@
                         App\Models\TeProgress::NEXT_ACTION_RE_PROPOSED,
                         App\Models\TeProgress::NEXT_ACTION_CANCEL,
                     ], true);
+                    $stickyCellBgClass = $isReProposeOrCancel ? 'tw:bg-[#efefef]' : 'tw:bg-white';
                 @endphp
                 <tr @class([
                     'tw:h-[42px] tw:border-b tw:border-b-[#cccccc]',
                     'tw:bg-[#efefef]' => $isReProposeOrCancel
                 ]) data-popup-disabled="{{ $isReProposeOrCancel ? '1' : '0' }}">
-                    <td class="tw:text-center">
+                    <td class="tw:sticky tw:left-[52px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $teProgress->procall_case_no }}</td>
+                    <td class="tw:sticky tw:left-[234px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">
                         <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $teProgress->id]) }}" class="tw:text-pm_blue_001">
                             {{ $teProgress->id . ($teProgress->reproposal_count > 0 ? "-{$teProgress->reproposal_count}" : '' )  }}
                         </a>
                     </td>
-                    <td class="tw:text-center">{{ $teProgress->investment_id }}</td>
-                    <td>{{ $teProgress->investment?->investment_name }}</td>
-                    <td class="tw:text-center">{{ $teProgress->investment_room_uid == 0 ? '共用部' : $teProgress->investmentRoom?->investment_room_number }}</td>
-                    <td class="tw:text-center">{{ $teProgress->investmentRoomResidentHistory?->contractor_name }}</td>
+                    <td class="tw:sticky tw:left-[286px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $teProgress->investment_id }}</td>
+                    <td class="tw:sticky tw:left-[338px] tw:z-[1] {{ $stickyCellBgClass }}">{{ $teProgress->investment?->investment_name }}</td>
+                    <td class="tw:sticky tw:left-[520px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $teProgress->investment_room_uid == 0 ? '共用部' : $teProgress->investmentRoom?->investment_room_number }}</td>
+                    <td class="tw:sticky tw:left-[572px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $teProgress->investmentRoomResidentHistory?->contractor_name }}</td>
+                    <td class="tw:sticky tw:left-[676px] tw:z-[1] tw:truncate {{ $stickyCellBgClass }}">{{ $teProgress->title }}</td>
                     <td class="tw:text-center">{{ $teProgress->category1Master?->short_name }}</td>
                     <td class="tw:truncate">{{ $teProgress->category2Master?->item_name }}</td>
                     <td class="tw:truncate">{{ $teProgress->category3Master?->item_name }}</td>
-                    <td class="tw:truncate">{{ $teProgress->title }}</td>
                     <td class="tw:text-center">{{ $teProgress->investment?->facility_maintenance ? '○' : '' }}</td>
                     <td class="tw:text-center">{{ $teProgress->investment?->three_repair ? '○' : '' }}</td>
                     <td class="tw:text-center">{{ ($teProgress->investment_room_resident?->ansin_support || $teProgress->investment?->has_emergency_support) ? '○' : '' }}</td>
