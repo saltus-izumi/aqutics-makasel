@@ -94,6 +94,11 @@ class TeProgress extends Model
         return $this->belongsTo(InvestmentRoomResidentHistory::class, 'contractor_no', 'contractor_no');
     }
 
+    public function investmentRoomResident()
+    {
+        return $this->belongsTo(InvestmentRoomResident::class, 'contractor_no', 'contractor_no');
+    }
+
     public function responsible()
     {
         return $this->belongsTo(User::class, 'responsible_id', 'id');

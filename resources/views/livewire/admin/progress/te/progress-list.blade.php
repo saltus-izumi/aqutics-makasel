@@ -257,7 +257,7 @@
                         data-filter-title="保守"
                         data-sort-field="facility_maintenance"
                         data-filter-field="facility_maintenance"
-                        data-filter-type="date-range"
+                        data-filter-type="boolean"
                         @class(['tw:text-red-600' => $this->hasFilter('facility_maintenance')])
                     >▼</div>
                 </td>
@@ -267,7 +267,7 @@
                         data-filter-title="3万"
                         data-sort-field="three_repair"
                         data-filter-field="three_repair"
-                        data-filter-type="date-range"
+                        data-filter-type="boolean"
                         @class(['tw:text-red-600' => $this->hasFilter('three_repair')])
                     >▼</div>
                 </td>
@@ -277,7 +277,7 @@
                         data-filter-title="安心"
                         data-sort-field="ansin_support"
                         data-filter-field="ansin_support"
-                        data-filter-type="date-range"
+                        data-filter-type="boolean"
                         @class(['tw:text-red-600' => $this->hasFilter('ansin_support')])
                     >▼</div>
                 </td>
@@ -478,7 +478,7 @@
                     <td class="tw:truncate" x-show="isCategoryDetailVisible">{{ $teProgress->category3Master?->item_name }}</td>
                     <td class="tw:text-center">{{ $teProgress->investment?->facility_maintenance ? '○' : '' }}</td>
                     <td class="tw:text-center">{{ $teProgress->investment?->three_repair ? '○' : '' }}</td>
-                    <td class="tw:text-center">{{ ($teProgress->investment_room_resident?->ansin_support || $teProgress->investment?->has_emergency_support) ? '○' : '' }}</td>
+                    <td class="tw:text-center">{{ ($teProgress->investmentRoomResident?->ansin_support || $teProgress->investment?->has_emergency_support) ? '○' : '' }}</td>
                     <td class="tw:text-center tw:px-[3px]">
                         <x-form.select
                             name="responsible_user_id"
@@ -703,7 +703,7 @@
         x-bind:style="popupStyleForFilter('select')"
         x-title="filterTitle"
         placeholder="担当者を選択"
-        :options="$genpukuResponsibleOptions ?? []"
+        :options="$teResponsibleOptions ?? []"
         select-name="select_filter"
         :select-value="''"
         :select-empty="true"
@@ -717,6 +717,17 @@
         x-bind:style="popupStyleForFilter('date-range')"
         x-title="filterTitle"
         filter-model="filterValue"
+        blank-model="filterBlank"
+        sort-model="sortOrderDraft"
+    />
+    <x-admin.sort-filter-dialog.boolean
+        x-show="isBooleanFilter()"
+        x-ref="filterPopupBoolean"
+        x-bind:style="popupStyleForFilter('boolean')"
+        x-title="filterTitle"
+        label="条件"
+        true-label="○あり"
+        false-label="○なし"
         blank-model="filterBlank"
         sort-model="sortOrderDraft"
     />
@@ -878,6 +889,8 @@
                             this.filterType = 'select';
                         } else if (nextFilterType === 'date-range') {
                             this.filterType = 'date-range';
+                        } else if (nextFilterType === 'boolean') {
+                            this.filterType = 'boolean';
                         } else {
                             this.filterType = 'text';
                         }
@@ -885,6 +898,8 @@
                             if (!currentValue || typeof currentValue !== 'object') {
                                 this.filterValue = { from: '', to: '' };
                             }
+                        } else if (this.filterType === 'boolean') {
+                            this.filterValue = '';
                         }
 
                         this.filterSelectName = trigger.dataset.filterSelectName ?? '';
@@ -905,7 +920,9 @@
                         this.filterOpen = true;
                         const popupRef = this.filterType === 'select'
                             ? 'filterPopupSelect'
-                            : (this.filterType === 'date-range' ? 'filterPopupDateRange' : 'filterPopupText');
+                            : (this.filterType === 'date-range'
+                                ? 'filterPopupDateRange'
+                                : (this.filterType === 'boolean' ? 'filterPopupBoolean' : 'filterPopupText'));
                         this.setPopupPosition(event, popupRef, 260, 'filterPopupStyle');
                     },
 
@@ -938,6 +955,9 @@
                     },
 
                     isFilterValueFilled() {
+                        if (this.filterType === 'boolean') {
+                            return false;
+                        }
                         if (this.filterType === 'date-range') {
                             const from = this.filterValue?.from ?? '';
                             const to = this.filterValue?.to ?? '';
@@ -1001,6 +1021,10 @@
 
                     isDateRangeFilter() {
                         return this.filterOpen && this.filterType === 'date-range';
+                    },
+
+                    isBooleanFilter() {
+                        return this.filterOpen && this.filterType === 'boolean';
                     },
 
                     popupStyleForFilter(type) {

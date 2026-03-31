@@ -73,6 +73,7 @@ class ProgressList extends Component
             ->with([
                 'Investment',
                 'investmentRoomResidentHistory',
+                'investmentRoomResident',
                 'tradingCompany1',
                 'tradingCompany2',
                 'tradingCompany3',
@@ -257,11 +258,11 @@ class ProgressList extends Component
             $keyword = $this->searchKeyword;
             $query->where(function ($q) use ($keyword) {
                 $q
-                    ->orWhereHas('progress.investment', function ($q) use ($keyword) {
+                    ->orWhereHas('investment', function ($q) use ($keyword) {
                         $q->where('investment_name', 'like', '%' . $keyword . '%')
                             ->orWhere('id', $keyword);
                     })
-                    ->orWhereHas('progress.investment.landlord.owner', function ($q) use ($keyword) {
+                    ->orWhereHas('investment.landlord.owner', function ($q) use ($keyword) {
                         $q->where('name', 'like', '%' . $keyword . '%')
                             ->orWhere('id', $keyword);
                     });
@@ -273,6 +274,17 @@ class ProgressList extends Component
             $filterValue = is_array($rawValue) ? $this->normalizeDateRangeValue($rawValue) : trim((string) $rawValue);
             $filterBlank = $this->normalizeFilterBlank($filter['blank'] ?? '');
             if ($filterValue === '' && $filterBlank === '') {
+                continue;
+            }
+
+            if ($filterField === 'ansin_support') {
+                $this->applyAnsinSupportFilter($query, $filterValue, $filterBlank);
+                continue;
+            }
+
+            if (array_key_exists($filterField, $this->getBooleanRelationFilterMap())) {
+                $column = $this->getBooleanRelationFilterMap()[$filterField];
+                $this->applyInvestmentBooleanFilter($query, $column, $filterValue, $filterBlank);
                 continue;
             }
 
@@ -290,19 +302,29 @@ class ProgressList extends Component
             }
 
             if ($filterField === 'investment_id') {
-                $this->applyRelationFilter($query, 'progress', 'investment_id', $filterValue, $filterBlank, true);
+                $this->applyColumnFilter($query, 'investment_id', $filterValue, $filterBlank);
             } elseif ($filterField === 'investment_name') {
-                $this->applyRelationFilter($query, 'progress.investment', 'investment_name', $filterValue, $filterBlank, true);
+                $this->applyRelationFilter($query, 'investment', 'investment_name', $filterValue, $filterBlank, true);
             } elseif ($filterField === 'investment_room_number') {
                 if ($filterValue !== '') {
                     if ($filterValue === '共用部') {
-                        $query->where('investment_room_number', 0);
+                        $query->where('investment_room_uid', 0);
                     } else {
-                        $this->applyRelationFilter($query, 'progress.investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
+                        $this->applyRelationFilter($query, 'investmentRoom', 'investment_room_number', $filterValue, $filterBlank, true);
                     }
                 } else {
-                    $this->applyRelationFilter($query, 'progress.investmentRoom', 'investment_room_number', $filterValue, $filterBlank);
+                    $this->applyRelationFilter($query, 'investmentRoom', 'investment_room_number', $filterValue, $filterBlank, true);
                 }
+            } elseif ($filterField === 'contractor_name') {
+                $this->applyRelationFilter($query, 'investmentRoomResidentHistory', 'contractor_name', $filterValue, $filterBlank, true);
+            } elseif ($filterField === 'category2_master') {
+                $this->applyRelationFilter($query, 'category2Master', 'item_name', $filterValue, $filterBlank, true);
+            } elseif ($filterField === 'category3_master') {
+                $this->applyRelationFilter($query, 'category3Master', 'item_name', $filterValue, $filterBlank, true);
+            } elseif ($filterField === 'genpuku_gyousha_id') {
+                $this->applyTradingCompanyFilter($query, $filterValue, $filterBlank);
+            } elseif (in_array($filterField, $this->getLikeFilterFields(), true)) {
+                $this->applyColumnFilterLike($query, $filterField, $filterValue, $filterBlank);
             } elseif (in_array($filterField, $this->getSimpleFilterFields(), true)) {
                 $this->applyColumnFilter($query, $filterField, $filterValue, $filterBlank);
             }
@@ -316,30 +338,35 @@ class ProgressList extends Component
         $sortOrder = $this->normalizeSortOrder($this->sortOrder);
         $sortField = $this->sortField;
 
-    // dump($sortField);
         if ($sortField === 'investment_id') {
-            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
-                ->select('ge_progresses.*')
-                ->orderBy('sort_progresses.investment_id', $sortOrder);
+            $query->orderBy('investment_id', $sortOrder);
         } elseif ($sortField === 'investment_name') {
-            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
-                ->leftJoin('investments as sort_investments', 'sort_investments.id', '=', 'sort_progresses.investment_id')
-                ->select('ge_progresses.*')
+            $query->leftJoin('investments as sort_investments', 'sort_investments.id', '=', 'te_progresses.investment_id')
+                ->select('te_progresses.*')
                 ->orderBy('sort_investments.investment_name', $sortOrder);
         } elseif ($sortField === 'investment_room_number') {
-            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
-                ->leftJoin('investment_rooms as sort_investment_rooms', 'sort_investment_rooms.id', '=', 'sort_progresses.investment_room_uid')
-                ->select('ge_progresses.*')
+            $query->leftJoin('investment_rooms as sort_investment_rooms', 'sort_investment_rooms.id', '=', 'te_progresses.investment_room_uid')
+                ->select('te_progresses.*')
                 ->orderBy('sort_investment_rooms.investment_room_number', $sortOrder);
-        } elseif ($sortField === 'executor_user_id') {
-            $query->orderBy('executor_user_id', $sortOrder);
-        } elseif ($sortField === 'next_action') {
-            $query->orderBy('next_action', $sortOrder);
-        } elseif ($sortField === 'cancellation_date') {
-            $query->leftJoin('progresses as sort_progresses', 'sort_progresses.id', '=', 'ge_progresses.progress_id')
-                ->leftJoin('investment_empty_rooms as sort_investment_empty_rooms', 'sort_investment_empty_rooms.id', '=', 'sort_progresses.investment_empty_room_id')
-                ->select('ge_progresses.*')
-                ->orderBy('sort_investment_empty_rooms.cancellation_date', $sortOrder);
+        } elseif ($sortField === 'contractor_name') {
+            $query->leftJoin('investment_room_resident_histories as sort_resident_histories', 'sort_resident_histories.contractor_no', '=', 'te_progresses.contractor_no')
+                ->select('te_progresses.*')
+                ->orderBy('sort_resident_histories.contractor_name', $sortOrder);
+        } elseif ($sortField === 'category2_master') {
+            $query->leftJoin('category2_masters as sort_category2_masters', 'sort_category2_masters.id', '=', 'te_progresses.category2_master_id')
+                ->select('te_progresses.*')
+                ->orderBy('sort_category2_masters.item_name', $sortOrder);
+        } elseif ($sortField === 'category3_master') {
+            $query->leftJoin('category3_masters as sort_category3_masters', 'sort_category3_masters.id', '=', 'te_progresses.category3_master_id')
+                ->select('te_progresses.*')
+                ->orderBy('sort_category3_masters.item_name', $sortOrder);
+        } elseif ($sortField === 'facility_maintenance' || $sortField === 'three_repair' || $sortField === 'ansin_support') {
+            $column = $sortField === 'ansin_support' ? 'has_emergency_support' : $sortField;
+            $query->leftJoin('investments as sort_investments', 'sort_investments.id', '=', 'te_progresses.investment_id')
+                ->select('te_progresses.*')
+                ->orderBy('sort_investments.' . $column, $sortOrder);
+        } elseif ($sortField === 'genpuku_gyousha_id') {
+            $query->orderBy('trading_company_1_id', $sortOrder);
         } else {
             $query->orderBy($sortField, $sortOrder);
         }
@@ -395,6 +422,123 @@ class ProgressList extends Component
         }
     }
 
+    protected function applyColumnFilterLike($query, $column, $filterValue, $filterBlank)
+    {
+        if ($filterValue !== '') {
+            $query->where($column, 'like', '%' . $filterValue . '%');
+        } elseif ($filterBlank === 'blank') {
+            $query->where(function ($q) use ($column) {
+                $q->whereNull($column)
+                    ->orWhere($column, '');
+            });
+        } elseif ($filterBlank === 'not_blank') {
+            $query->whereNotNull($column)
+                ->where($column, '!=', '');
+        }
+    }
+
+    protected function applyInvestmentBooleanFilter($query, $column, $filterValue, $filterBlank)
+    {
+        if ($this->isFilledFilterValue($filterValue) || $filterBlank === 'not_blank') {
+            $query->whereHas('investment', function ($q) use ($column) {
+                $q->whereNotNull($column);
+            });
+            return;
+        }
+
+        if ($filterBlank !== 'blank') {
+            return;
+        }
+
+        $query->where(function ($q) use ($column) {
+            $q->whereDoesntHave('investment')
+                ->orWhereHas('investment', function ($iq) use ($column) {
+                    $iq->whereNull($column);
+                });
+        });
+    }
+
+    protected function applyAnsinSupportFilter($query, $filterValue, $filterBlank)
+    {
+        if ($this->isFilledFilterValue($filterValue) || $filterBlank === 'not_blank') {
+            $query->where(function ($q) {
+                $q->whereHas('investmentRoomResident', function ($rq) {
+                    $rq->whereNotNull('ansin_support');
+                })->orWhereHas('investment', function ($iq) {
+                    $iq->where('has_emergency_support', true);
+                });
+            });
+            return;
+        }
+
+        if ($filterBlank !== 'blank') {
+            return;
+        }
+
+        $query->where(function ($q) {
+            $q->where(function ($qq) {
+                $qq->whereDoesntHave('investmentRoomResident')
+                    ->orWhereHas('investmentRoomResident', function ($rq) {
+                        $rq->whereNull('ansin_support');
+                    });
+            })->where(function ($qq) {
+                $qq->whereDoesntHave('investment')
+                    ->orWhereHas('investment', function ($iq) {
+                        $iq->where('has_emergency_support', false);
+                    });
+            });
+        });
+    }
+
+    protected function applyTradingCompanyFilter($query, $filterValue, $filterBlank)
+    {
+        if ($filterValue !== '') {
+            $query->where(function ($q) use ($filterValue) {
+                if (is_numeric($filterValue)) {
+                    $id = (int) $filterValue;
+                    $q->orWhere('trading_company_1_id', $id)
+                        ->orWhere('trading_company_2_id', $id)
+                        ->orWhere('trading_company_3_id', $id);
+                }
+
+                $q->orWhereHas('tradingCompany1', function ($qq) use ($filterValue) {
+                    $qq->where('name', 'like', '%' . $filterValue . '%');
+                })->orWhereHas('tradingCompany2', function ($qq) use ($filterValue) {
+                    $qq->where('name', 'like', '%' . $filterValue . '%');
+                })->orWhereHas('tradingCompany3', function ($qq) use ($filterValue) {
+                    $qq->where('name', 'like', '%' . $filterValue . '%');
+                });
+            });
+            return;
+        }
+
+        if ($filterBlank === 'blank') {
+            $query->whereNull('trading_company_1_id')
+                ->whereNull('trading_company_2_id')
+                ->whereNull('trading_company_3_id');
+            return;
+        }
+
+        if ($filterBlank === 'not_blank') {
+            $query->where(function ($q) {
+                $q->whereNotNull('trading_company_1_id')
+                    ->orWhereNotNull('trading_company_2_id')
+                    ->orWhereNotNull('trading_company_3_id');
+            });
+        }
+    }
+
+    protected function isFilledFilterValue($filterValue): bool
+    {
+        if (is_array($filterValue)) {
+            $from = trim((string) ($filterValue['from'] ?? ''));
+            $to = trim((string) ($filterValue['to'] ?? ''));
+            return $from !== '' || $to !== '';
+        }
+
+        return trim((string) $filterValue) !== '';
+    }
+
     public function hasFilter($field)
     {
         if (!is_string($field) || $field === '') {
@@ -444,10 +588,15 @@ class ProgressList extends Component
                 if (
                     !in_array($field, $this->getDateRangeFilterFields(), true)
                     && !array_key_exists($field, $this->getDateRangeRelationFields())
+                    && !array_key_exists($field, $this->getBooleanRelationFilterMap())
                 ) {
                     continue;
                 }
-                $value = $this->normalizeDateRangeValue($valueRaw);
+                if (array_key_exists($field, $this->getBooleanRelationFilterMap())) {
+                    $value = '';
+                } else {
+                    $value = $this->normalizeDateRangeValue($valueRaw);
+                }
             } else {
                 $value = trim((string) $valueRaw);
             }
@@ -470,10 +619,14 @@ class ProgressList extends Component
     protected function getAllowedFilterFields()
     {
         return array_merge($this->getSimpleFilterFields(), [
+            ...$this->getLikeFilterFields(),
             'investment_name',
             'investment_room_number',
-            'executor_user_id',
-            'next_action',
+            'contractor_name',
+            'category2_master',
+            'category3_master',
+            'genpuku_gyousha_id',
+            ...array_keys($this->getBooleanRelationFilterMap()),
             ...$this->getDateRangeFilterFields(),
             ...array_keys($this->getDateRangeRelationFields()),
         ]);
@@ -483,39 +636,52 @@ class ProgressList extends Component
     {
         return [
             'id',
-            'progress_id',
             'investment_id',
-            'genpuku_responsible_id',
+            'category1_master_id',
+            'responsible_id',
+            'executor_user_id',
+            'next_action',
+        ];
+    }
+
+    protected function getLikeFilterFields()
+    {
+        return [
+            'procall_case_no',
+            'title',
+        ];
+    }
+
+    protected function getBooleanRelationFilterMap()
+    {
+        return [
+            'facility_maintenance' => 'facility_maintenance',
+            'three_repair' => 'three_repair',
+            'ansin_support' => 'has_emergency_support',
         ];
     }
 
     protected function getDateRangeFilterFields()
     {
         return [
-            'move_out_received_date',               // 退去受付日
-            'move_out_date',                        // 退去日
-            'cost_received_date',                   // 下代受信日
-            'power_activation_date',                // 通電日
-            'tenant_burden_confirmed_date',         // 借主負担確定日
-            'owner_proposed_date',                  // 貸主提案日
-            'owner_approved_date',                  // 貸主承諾日
-            'ordered_date',                         // 発注日
-            'completion_scheduled_date',            // 完工予定日
-            'completion_received_date',             // 完工受信日
-            'completion_reported_date',             // 完工報告日
-            'kakumei_registered_date',              // 革命控除登録日
-            'completed_date',                       // 完了日
+            'last_import_date',
+            'nyuuden_date',
+            'gencho_date',
+            'cost_received_date',
+            'own_suggestion_date',
+            'own_consent_date',
+            'pc_hachu_date',
+            'kanko_yotei_date',
+            'pc_kanko_receive_date',
+            'pc_kanko_report_date',
+            'kakumei_koujo_date',
+            'complete_date',
         ];
     }
 
     protected function getDateRangeRelationFields()
     {
-        return [
-            'cancellation_date' => [
-                'relation' => 'progress.investmentEmptyRoom',
-                'column' => 'cancellation_date',
-            ],
-        ];
+        return [];
     }
 
     protected function normalizeDateRangeValue($value)
