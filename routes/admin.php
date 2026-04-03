@@ -40,8 +40,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             });
             Route::prefix('te')->name('te.')->group(function () {
                 Route::get('/', [AdminTeProgress::class, 'index'])->name('index');
-                Route::get('/files/{enProgressFileId}', [AdminTeProgress::class, 'preview'])->name('preview');
-                Route::get('/{enProgressId}', [AdminTeProgress::class, 'detail'])->name('detail');
+                Route::get('/files/{teProgressFileId}', [AdminTeProgress::class, 'preview'])->name('preview');
+                Route::get('/{teProgressId}', [AdminTeProgress::class, 'detail'])->name('detail');
             });
         });
 

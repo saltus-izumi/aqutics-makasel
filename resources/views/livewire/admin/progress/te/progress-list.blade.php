@@ -464,7 +464,7 @@
                 ]) data-popup-disabled="{{ $isReProposeOrCancel ? '1' : '0' }}">
                     <td class="tw:sticky tw:left-[52px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">{{ $teProgress->procall_case_no }}</td>
                     <td class="tw:sticky tw:left-[234px] tw:z-[1] tw:text-center {{ $stickyCellBgClass }}">
-                        <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $teProgress->id]) }}" class="tw:text-pm_blue_001">
+                        <a href="{{ route('admin.progress.te.detail', ['teProgressId' => $teProgress->id]) }}" class="tw:text-pm_blue_001">
                             {{ $teProgress->id . ($teProgress->reproposal_count > 0 ? "-{$teProgress->reproposal_count}" : '' )  }}
                         </a>
                     </td>

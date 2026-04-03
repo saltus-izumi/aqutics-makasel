@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Livewire\Admin\Progress\Ge;
+namespace App\Livewire\Admin\Progress\Te;
 
-use App\Models\GeProgress;
-use App\Models\GeProgressFile;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Category1Master;
+use App\Models\Category2Master;
+use App\Models\Category3Master;
+use App\Models\TeProgress;
+use App\Models\TradingCompany;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -13,196 +15,240 @@ class Step1 extends Component
 {
     use WithFileUploads;
 
-    public $geProgress = null;
-    public $securityDepositAmount = null;
-    public $proratedRentAmount = null;
-    public $penaltyForfeitureAmount = null;
-    public $inspectionRequestMessage = null;
-    public $isStep1Confirmed = false;
+    public $teProgress = null;
+    public $category1MasterOptions = [];
+    public $category2MasterOptions = [];
+    public $category3MasterOptions = [];
+    public $tradingCompanyOptions = [];
     public array $step1Uploads = [];
     public array $step1Files = [];
     public string $componentId = '';
 
-    protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
-    protected array $geProgressMap = [
-        'securityDepositAmount' => 'security_deposit_amount',
-        'proratedRentAmount' => 'prorated_rent_amount',
-        'penaltyForfeitureAmount' => 'penalty_forfeiture_amount',
-        'inspectionRequestMessage' => 'inspection_request_message',
-        'isStep1Confirmed' => 'is_step1_confirmed',
+    protected $listeners = ['teProgressUpdated' => 'reloadProgress'];
+    protected array $step1FieldConfig = [
+        'category1_master_id' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'category2_master_id' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'category3_master_id' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'title' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'trading_company_1_id' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'trading_company_2_id' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
+        'trading_company_3_id' => ['rules' => ['nullable', 'integer'], 'type' => 'integer'],
     ];
-    protected function rules(): array
-    {
-        return [
-            'securityDepositAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'proratedRentAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'penaltyForfeitureAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'inspectionRequestMessage' => ['nullable', 'string'],
-            'isStep1Confirmed' => ['boolean'],
-        ];
-    }
 
-    protected function messages(): array
+    public function mount($teProgress)
     {
-        return [
-            'securityDepositAmount.regex' => '敷金預託等は半角数字で入力してください。',
-            'proratedRentAmount.regex' => '日割り家賃は半角数字で入力してください。',
-            'penaltyForfeitureAmount.regex' => '違約金（償却）は半角数字で入力してください。',
-        ];
-    }
+        $this->teProgress = $teProgress;
 
-    public function mount($geProgress)
-    {
-        $this->geProgress = $geProgress;
-        $this->securityDepositAmount = $geProgress?->security_deposit_amount;
-        $this->proratedRentAmount = $geProgress?->prorated_rent_amount;
-        $this->penaltyForfeitureAmount = $geProgress?->penalty_forfeiture_amount;
-        $this->inspectionRequestMessage = $geProgress?->inspection_request_message;
-        $this->isStep1Confirmed = $geProgress?->is_step1_confirmed;
+        $this->category1MasterOptions = Category1Master::query()
+            ->orderBy('id')
+            ->pluck('item_name', 'id')
+            ->toArray();
+
+        $this->loadCategory2MasterOptions($teProgress->category1_master_id);
+        $this->loadCategory3MasterOptions($teProgress->category2_master_id);
+
+        $this->tradingCompanyOptions = TradingCompany::query()
+            ->where('trading_status', TradingCompany::TRADING_STATUS_ENABLE)
+            ->orderBy('id')
+            ->pluck('name', 'id')
+            ->toArray();
+
         $this->componentId = $this->getId();
-        $this->loadStep1Files();
     }
 
-    public function updated($propertyName, $value)
+    public function saveFieldByName(string $fieldName, $value): void
     {
-        if (!array_key_exists($propertyName, $this->geProgressMap)) {
+        if (!$this->teProgress || !array_key_exists($fieldName, $this->step1FieldConfig)) {
             return;
         }
 
-        // null対策
-        if (!$this->geProgress) {
+        $validator = Validator::make(
+            [$fieldName => $value],
+            [$fieldName => $this->step1FieldConfig[$fieldName]['rules']]
+        );
+
+        if ($validator->fails()) {
             return;
         }
 
-        $this->validateOnly($propertyName);
+        $normalizedValue = $this->normalizeFieldValue($fieldName, $value);
+        $this->teProgress->{$fieldName} = $normalizedValue;
 
-        if ($propertyName === 'isStep1Confirmed') {
-            $value = (bool) $value;
-        } else {
-            switch($propertyName) {
-                case 'securityDepositAmount':
-                case 'proratedRentAmount':
-                case 'penaltyForfeitureAmount':
-                    $value = str_replace(',', '', (string) $value);
-                    break;
+        $this->syncCategoryDependents($fieldName);
+
+        $this->teProgress->save();
+
+        $this->dispatch('teProgressUpdated', teProgressId: $this->teProgress->id);
+    }
+
+    protected function normalizeFieldValue(string $fieldName, $value)
+    {
+        $type = $this->step1FieldConfig[$fieldName]['type'] ?? 'string';
+
+        if ($value === '') {
+            return null;
+        }
+
+        return match ($type) {
+            'integer' => $this->normalizeInteger($value),
+            default => $this->normalizeString($value),
+        };
+    }
+
+    protected function normalizeInteger($value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return (int) str_replace(',', '', $trimmed);
+    }
+
+    protected function normalizeString($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+        return $trimmed === '' ? null : $trimmed;
+    }
+
+    protected function syncCategoryDependents(string $fieldName): void
+    {
+        if ($fieldName === 'category1_master_id') {
+            $this->loadCategory2MasterOptions($this->teProgress->category1_master_id);
+
+            if (!$this->optionContainsValue($this->teProgress->category2_master_id, $this->category2MasterOptions)) {
+                $this->teProgress->category2_master_id = null;
             }
 
-            if (is_string($value)) {
-                $value = trim($value) !== '' ? trim($value) : null;
+            $this->loadCategory3MasterOptions($this->teProgress->category2_master_id);
+
+            if (!$this->optionContainsValue($this->teProgress->category3_master_id, $this->category3MasterOptions)) {
+                $this->teProgress->category3_master_id = null;
+            }
+
+            $this->dispatchCategory2Options();
+            $this->dispatchCategory3Options();
+
+            return;
+        }
+
+        if ($fieldName === 'category2_master_id') {
+            $this->loadCategory3MasterOptions($this->teProgress->category2_master_id);
+
+            if (!$this->optionContainsValue($this->teProgress->category3_master_id, $this->category3MasterOptions)) {
+                $this->teProgress->category3_master_id = null;
+            }
+
+            $this->dispatchCategory3Options();
+        }
+    }
+
+    protected function optionContainsValue($value, array $options): bool
+    {
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        $target = (string) $value;
+
+        foreach (array_keys($options) as $optionKey) {
+            if ((string) $optionKey === $target) {
+                return true;
             }
         }
 
-        $column = $this->geProgressMap[$propertyName];
-        $this->geProgress->{$column} = $value;
-        $this->geProgress->save();
+        return false;
+    }
 
-        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+    protected function loadCategory2MasterOptions($category1MasterId): void
+    {
+        if ($category1MasterId === null || $category1MasterId === '') {
+            $this->category2MasterOptions = [];
+            return;
+        }
+
+        $this->category2MasterOptions = Category2Master::query()
+            ->where('category1_master_id', $category1MasterId)
+            ->orderBy('id')
+            ->pluck('item_name', 'id')
+            ->toArray();
+    }
+
+    protected function loadCategory3MasterOptions($category2MasterId): void
+    {
+        if ($category2MasterId === null || $category2MasterId === '') {
+            $this->category3MasterOptions = [];
+            return;
+        }
+
+        $this->category3MasterOptions = Category3Master::query()
+            ->where('category2_master_id', $category2MasterId)
+            ->orderBy('id')
+            ->pluck('item_name', 'id')
+            ->toArray();
+    }
+
+    protected function dispatchCategory2Options(): void
+    {
+        $this->dispatch(
+            'select-search-options',
+            name: 'category2_master_id',
+            options: $this->category2MasterOptions,
+            value: $this->teProgress->category2_master_id === null ? '' : (string) $this->teProgress->category2_master_id,
+        );
+    }
+
+    protected function dispatchCategory3Options(): void
+    {
+        $this->dispatch(
+            'select-search-options',
+            name: 'category3_master_id',
+            options: $this->category3MasterOptions,
+            value: $this->teProgress->category3_master_id === null ? '' : (string) $this->teProgress->category3_master_id,
+        );
     }
 
     public function updateMoveOutReportDate(): void
     {
-        if ($this->geProgress->move_out_report_date) {
+        if ($this->teProgress->move_out_report_date) {
             return;
         }
 
-        $this->geProgress->move_out_report_date = now();
-        $this->geProgress->save();
+        $this->teProgress->move_out_report_date = now();
+        $this->teProgress->save();
     }
 
-    public function saveStep1Uploads(): void
+    public function reloadProgress($teProgressId = null)
     {
-        foreach ($this->step1Uploads as $file) {
-            $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$this->geProgress->id}");
-
-            GeProgressFile::create([
-                'ge_progress_id' => $this->geProgress->id,
-                'file_kind' => GeProgressFile::FILE_KIND_STEP1,
-                'file_name' => $original,
-                'file_path' => $path,
-                'upload_at' => now(),
-            ]);
-        }
-
-        $this->step1Uploads = [];
-        $this->loadStep1Files();
-    }
-
-    public function removeStep1File($fileId): void
-    {
-        if (!$this->geProgress || !$fileId) {
+        if (!$this->teProgress) {
             return;
         }
 
-        $file = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_STEP1)
-            ->where('id', $fileId)
-            ->first();
-
-        if (!$file) {
+        if ($teProgressId !== null && (int) $teProgressId !== (int) $this->teProgress->id) {
             return;
         }
 
-        if ($file->file_path && Storage::disk('local')->exists($file->file_path)) {
-            Storage::disk('local')->delete($file->file_path);
-        }
+        $this->teProgress = TeProgress::query()
+            ->find($this->teProgress->id);
 
-        $file->delete();
-        $this->loadStep1Files();
-    }
-
-    protected function loadStep1Files(): void
-    {
-        if (!$this->geProgress) {
-            $this->step1Files = [];
+        if (!$this->teProgress) {
             return;
         }
 
-        $files = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_STEP1)
-            ->orderBy('id')
-            ->get();
-
-        $this->step1Files = $files->map(function (GeProgressFile $file) {
-            return [
-                'id' => $file->id,
-                'file_name' => $file->file_name ?? '',
-                'url' => route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]),
-                'file_path' => $file->file_path ?? '',
-                'mime_type' => $this->getFileMimeType($file),
-            ];
-        })->all();
+        $this->loadCategory2MasterOptions($this->teProgress->category1_master_id);
+        $this->loadCategory3MasterOptions($this->teProgress->category2_master_id);
     }
-
-    protected function getFileMimeType(GeProgressFile $file): string
-    {
-        if (!$file->file_path || !Storage::disk('local')->exists($file->file_path)) {
-            return '';
-        }
-
-        $fullPath = Storage::disk('local')->path($file->file_path);
-        return mime_content_type($fullPath) ?: '';
-    }
-
-    public function reloadProgress($geProgressId = null)
-    {
-        if (!$this->geProgress) {
-            return;
-        }
-
-        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
-            return;
-        }
-
-        $this->geProgress = GeProgress::query()
-            ->find($this->geProgress->id);
-    }
-
 
     public function render()
     {
-        return view('livewire.admin.progress.ge.step1');
+        return view('livewire.admin.progress.te.step1');
     }
 }

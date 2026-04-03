@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Livewire\Admin\Progress\Ge;
+namespace App\Livewire\Admin\Progress\Te;
 
-use App\Models\GeProgress;
-use App\Models\GeProgressFile;
-use Illuminate\Support\Facades\Log;
+use App\Models\TeProgress;
+use App\Models\TeProgressFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -13,145 +12,133 @@ class Step2 extends Component
 {
     use WithFileUploads;
 
-    public $geProgress = null;
-    public $transferDueDate;
-    public $subtotalAAmount;
-    public $subtotalBAmount;
-    public $subtotalCAmount;
-    public $otherAmount;
-    public $inspectionCompletedMessage;
+    public $teProgress = null;
+    public $costAmount;
+    public $chargeAmount;
+    public $profitAmount;
+    public $profitRate;
+    public $executorToResponsibleMessage;
 
-    public $constructionCostExclTax;        // 工事負担額（税抜）
-    public $constructionCostInclTax;        // 工事負担額（税込）
-    public $settlementAmount;               // 精算額
-
-    // 退去時清算書
-    public array $moveOutSettlementUploads = [];
-    public array $moveOutSettlementFiles = [];
+    // 現調報告書
+    public array $onSiteInspectionReportUploads = [];
+    public array $onSiteInspectionReportFiles = [];
 
     // 下代見積もり
     public array $lowerEstimateUploads = [];
     public array $lowerEstimateFiles = [];
 
-    // 立会写真
-    public array $walkthroughPhotoUploads = [];
-    public array $walkthroughPhotoFiles = [];
+    // 上代見積もり
+    public array $retailEstimateUploads = [];
+    public array $retailEstimateFiles = [];
     public string $componentId = '';
 
-    protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
-    protected array $geProgressMap = [
-        'transferDueDate' => 'transfer_due_date',
-        'subtotalAAmount' => 'subtotal_a_amount',
-        'subtotalBAmount' => 'subtotal_b_amount',
-        'subtotalCAmount' => 'subtotal_c_amount',
-        'otherAmount' => 'other_amount',
-        'inspectionCompletedMessage' => 'inspection_completed_message',
+    protected $listeners = ['teProgressUpdated' => 'reloadProgress'];
+    protected array $teProgressMap = [
+        'costAmount' => 'cost_amount',
+        'chargeAmount' => 'charge_amount',
+        'executorToResponsibleMessage' => 'executor_to_responsible_message',
     ];
     protected function rules(): array
     {
         return [
-            'transferDueDate' => ['nullable', 'date'],
-            'subtotalAAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'subtotalBAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'subtotalCAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'otherAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
-            'inspectionCompletedMessage' => ['nullable', 'string'],
+            'costAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'chargeAmount' => ['nullable', 'regex:/^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'],
+            'executorToResponsibleMessage' => ['nullable', 'string'],
         ];
     }
 
     protected function messages(): array
     {
         return [
-            'subtotalAAmount.regex' => '小計Aは半角数字で入力してください。',
-            'subtotalBAmount.regex' => '小計Bは半角数字で入力してください。',
-            'subtotalCAmount.regex' => '小計Cは半角数字で入力してください。',
-            'otherAmount.regex' => 'その他は半角数字で入力してください。',
+            'costAmount.regex' => '下代は半角数字で入力してください。',
+            'chargeAmount.regex' => '上代は半角数字で入力してください。',
         ];
     }
 
 
-    public function mount($geProgress)
+    public function mount($teProgress)
     {
-        $this->geProgress = $geProgress;
-        $this->transferDueDate = $geProgress?->transfer_due_date?->format('Y-m-d');
-Log::debug($this->transferDueDate);
-
-        $this->subtotalAAmount = $geProgress?->subtotal_a_amount;
-        $this->subtotalBAmount = $geProgress?->subtotal_b_amount;
-        $this->subtotalCAmount = $geProgress?->subtotal_c_amount;
-        $this->otherAmount = $geProgress?->other_amount;
-        $this->inspectionCompletedMessage = $geProgress?->inspection_completed_message;
+        $this->teProgress = $teProgress;
+        $this->costAmount = $teProgress?->cost_amount;
+        $this->chargeAmount = $teProgress?->charge_amount;
+        $this->calcProfit();
+        $this->executorToResponsibleMessage = $teProgress?->executor_to_responsible_message;
         $this->componentId = $this->getId();
-        $this->loadMoveOutSettlementFiles();
+        $this->loadOnSiteInspectionReportFiles();
         $this->loadLowerEstimateFiles();
-        $this->loadWalkthroughPhotoFiles();
-        $this->calcConstructionCost();
+        $this->loadRetailEstimateFiles();
     }
 
-    public function updated($propertyName, $value)
+    public function updatedCostAmount($value): void
     {
-        if (!array_key_exists($propertyName, $this->geProgressMap)) {
-            return;
-        }
+        $this->saveMappedField('costAmount', $value);
+    }
 
-        // null対策
-        if (!$this->geProgress) {
+    public function updatedChargeAmount($value): void
+    {
+        $this->saveMappedField('chargeAmount', $value);
+    }
+
+    public function updatedExecutorToResponsibleMessage($value): void
+    {
+        $this->saveMappedField('executorToResponsibleMessage', $value);
+    }
+
+    protected function saveMappedField(string $propertyName, $value): void
+    {
+        if (!array_key_exists($propertyName, $this->teProgressMap) || !$this->teProgress) {
             return;
         }
 
         $this->validateOnly($propertyName);
 
-        switch($propertyName) {
-            case 'subtotalAAmount':
-            case 'subtotalBAmount':
-            case 'subtotalCAmount':
-            case 'otherAmount':
-                $value = str_replace(',', '', (string) $value);
-                break;
+        if (in_array($propertyName, ['costAmount', 'chargeAmount'], true)) {
+            $value = str_replace(',', '', (string) $value);
         }
 
-        $value = trim($value) ? trim($value) : null;
+        $trimmed = is_string($value) ? trim($value) : trim((string) $value);
+        $normalized = $trimmed === '' ? null : $trimmed;
 
-        $column = $this->geProgressMap[$propertyName];
-        $this->geProgress->{$column} = $value;
-        $this->geProgress->save();
+        $column = $this->teProgressMap[$propertyName];
+        $this->teProgress->{$column} = $normalized;
+        $this->teProgress->save();
 
-        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
-        $this->calcConstructionCost();
+        $this->calcProfit();
+        $this->dispatch('teProgressUpdated', teProgressId: $this->teProgress->id);
     }
 
-    public function saveMoveOutSettlementUploads(): void
+    public function saveOnSiteInspectionReportUploads(): void
     {
-        if (!$this->geProgress) {
+        if (!$this->teProgress) {
             return;
         }
 
-        foreach ($this->moveOutSettlementUploads as $file) {
+        foreach ($this->onSiteInspectionReportUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$this->geProgress->id}");
+            $path = $file->store("progress/te/{$this->teProgress->id}");
 
-            GeProgressFile::create([
-                'ge_progress_id' => $this->geProgress->id,
-                'file_kind' => GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT,
+            TeProgressFile::create([
+                'te_progress_id' => $this->teProgress->id,
+                'file_kind' => TeProgressFile::FILE_KIND_ON_SITE_INSPECTION_REPORT,
                 'file_name' => $original,
                 'file_path' => $path,
                 'upload_at' => now(),
             ]);
         }
 
-        $this->moveOutSettlementUploads = [];
-        $this->loadMoveOutSettlementFiles();
+        $this->onSiteInspectionReportUploads = [];
+        $this->loadOnSiteInspectionReportFiles();
     }
 
-    public function removeMoveOutSettlementFile($fileId): void
+    public function removeOnSiteInspectionReportFile($fileId): void
     {
-        if (!$this->geProgress || !$fileId) {
+        if (!$this->teProgress || !$fileId) {
             return;
         }
 
-        $file = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT)
+        $file = TeProgressFile::query()
+            ->where('te_progress_id', $this->teProgress->id)
+            ->where('file_kind', TeProgressFile::FILE_KIND_ON_SITE_INSPECTION_REPORT)
             ->where('id', $fileId)
             ->first();
 
@@ -164,22 +151,22 @@ Log::debug($this->transferDueDate);
         }
 
         $file->delete();
-        $this->loadMoveOutSettlementFiles();
+        $this->loadOnSiteInspectionReportFiles();
     }
 
     public function saveLowerEstimateUploads(): void
     {
-        if (!$this->geProgress) {
+        if (!$this->teProgress) {
             return;
         }
 
         foreach ($this->lowerEstimateUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$this->geProgress->id}");
+            $path = $file->store("progress/te/{$this->teProgress->id}");
 
-            GeProgressFile::create([
-                'ge_progress_id' => $this->geProgress->id,
-                'file_kind' => GeProgressFile::FILE_KIND_LOWER_ESTIMATE,
+            TeProgressFile::create([
+                'te_progress_id' => $this->teProgress->id,
+                'file_kind' => TeProgressFile::FILE_KIND_LOWER_ESTIMATE,
                 'file_name' => $original,
                 'file_path' => $path,
                 'upload_at' => now(),
@@ -187,11 +174,11 @@ Log::debug($this->transferDueDate);
         }
 
         // ファイルがなければ見積書受信日をNULLにする
-        if (count($this->lowerEstimateUploads) > 0 && !$this->geProgress->cost_received_date) {
-            $this->geProgress->cost_received_date = now();
-            $this->geProgress->cost_received_date_state = 1;
-            $this->geProgress->save();
-            $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+        if (count($this->lowerEstimateUploads) > 0 && !$this->teProgress->cost_received_date) {
+            $this->teProgress->cost_received_date = now();
+            $this->teProgress->cost_received_date_state = 1;
+            $this->teProgress->save();
+            $this->dispatch('teProgressUpdated', teProgressId: $this->teProgress->id);
         }
 
         $this->lowerEstimateUploads = [];
@@ -200,13 +187,13 @@ Log::debug($this->transferDueDate);
 
     public function removeLowerEstimateFile($fileId): void
     {
-        if (!$this->geProgress || !$fileId) {
+        if (!$this->teProgress || !$fileId) {
             return;
         }
 
-        $file = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
+        $file = TeProgressFile::query()
+            ->where('te_progress_id', $this->teProgress->id)
+            ->where('file_kind', TeProgressFile::FILE_KIND_LOWER_ESTIMATE)
             ->where('id', $fileId)
             ->first();
 
@@ -220,54 +207,54 @@ Log::debug($this->transferDueDate);
 
         $file->delete();
 
-        $fileCount = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
+        $fileCount = TeProgressFile::query()
+            ->where('te_progress_id', $this->teProgress->id)
+            ->where('file_kind', TeProgressFile::FILE_KIND_LOWER_ESTIMATE)
             ->count();
 
         // ファイルがなければ見積書受信日をNULLにする
-        if ($fileCount == 0 && $this->geProgress->cost_received_date) {
-            $this->geProgress->genpuku_mitsumori_recieved_date = null;
-            $this->geProgress->genpuku_mitsumori_recieved_date_state = 0;
-            $this->geProgress->save();
-            $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+        if ($fileCount == 0 && $this->teProgress->cost_received_date) {
+            $this->teProgress->cost_received_date = null;
+            $this->teProgress->cost_received_date_state = 0;
+            $this->teProgress->save();
+            $this->dispatch('teProgressUpdated', teProgressId: $this->teProgress->id);
         }
 
         $this->loadLowerEstimateFiles();
     }
 
-    public function saveWalkthroughPhotoUploads(): void
+    public function saveRetailEstimateUploads(): void
     {
-        if (!$this->geProgress) {
+        if (!$this->teProgress) {
             return;
         }
 
-        foreach ($this->walkthroughPhotoUploads as $file) {
+        foreach ($this->retailEstimateUploads as $file) {
             $original = $file->getClientOriginalName();
-            $path = $file->store("progress/ge/{$this->geProgress->id}");
+            $path = $file->store("progress/te/{$this->teProgress->id}");
 
-            GeProgressFile::create([
-                'ge_progress_id' => $this->geProgress->id,
-                'file_kind' => GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO,
+            TeProgressFile::create([
+                'te_progress_id' => $this->teProgress->id,
+                'file_kind' => TeProgressFile::FILE_KIND_RETAIL_ESTIMATE,
                 'file_name' => $original,
                 'file_path' => $path,
                 'upload_at' => now(),
             ]);
         }
 
-        $this->walkthroughPhotoUploads = [];
-        $this->loadWalkthroughPhotoFiles();
+        $this->retailEstimateUploads = [];
+        $this->loadRetailEstimateFiles();
     }
 
-    public function removeWalkthroughPhotoFile($fileId): void
+    public function removeRetailEstimateFile($fileId): void
     {
-        if (!$this->geProgress || !$fileId) {
+        if (!$this->teProgress || !$fileId) {
             return;
         }
 
-        $file = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO)
+        $file = TeProgressFile::query()
+            ->where('te_progress_id', $this->teProgress->id)
+            ->where('file_kind', TeProgressFile::FILE_KIND_RETAIL_ESTIMATE)
             ->where('id', $fileId)
             ->first();
 
@@ -280,43 +267,46 @@ Log::debug($this->transferDueDate);
         }
 
         $file->delete();
-        $this->loadWalkthroughPhotoFiles();
+        $this->loadRetailEstimateFiles();
     }
 
-    public function reloadProgress($geProgressId = null)
+    public function reloadProgress($teProgressId = null)
     {
-        if (!$this->geProgress) {
+        if (!$this->teProgress) {
             return;
         }
 
-        if ($geProgressId !== null && (int) $geProgressId !== (int) $this->geProgress->id) {
+        if ($teProgressId !== null && (int) $teProgressId !== (int) $this->teProgress->id) {
             return;
         }
 
-        $this->geProgress = GeProgress::query()
-            ->find($this->geProgress->id);
+        $this->teProgress = TeProgress::query()
+            ->find($this->teProgress->id);
 
-        $this->calcConstructionCost();
+        $this->costAmount = $this->teProgress?->cost_amount;
+        $this->chargeAmount = $this->teProgress?->charge_amount;
+        $this->executorToResponsibleMessage = $this->teProgress?->executor_to_responsible_message;
+        $this->calcProfit();
     }
 
-    protected function loadMoveOutSettlementFiles(): void
+    protected function loadOnSiteInspectionReportFiles(): void
     {
-        if (!$this->geProgress) {
-            $this->moveOutSettlementFiles = [];
+        if (!$this->teProgress) {
+            $this->onSiteInspectionReportFiles = [];
             return;
         }
 
-        $files = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_MOVE_OUT_SETTLEMENT)
+        $files = TeProgressFile::query()
+            ->where('te_progress_id', $this->teProgress->id)
+            ->where('file_kind', TeProgressFile::FILE_KIND_ON_SITE_INSPECTION_REPORT)
             ->orderBy('id')
             ->get();
 
-        $this->moveOutSettlementFiles = $files->map(function (GeProgressFile $file) {
+        $this->onSiteInspectionReportFiles = $files->map(function (TeProgressFile $file) {
             return [
                 'id' => $file->id,
                 'file_name' => $file->file_name ?? '',
-                'url' => route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]),
+                'url' => route('admin.progress.te.preview', ['teProgressFileId' => $file->id]),
                 'file_path' => $file->file_path ?? '',
                 'mime_type' => $this->getFileMimeType($file),
             ];
@@ -325,53 +315,53 @@ Log::debug($this->transferDueDate);
 
     protected function loadLowerEstimateFiles(): void
     {
-        if (!$this->geProgress) {
+        if (!$this->teProgress) {
             $this->lowerEstimateFiles = [];
             return;
         }
 
-        $files = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_LOWER_ESTIMATE)
+        $files = TeProgressFile::query()
+            ->where('te_progress_id', $this->teProgress->id)
+            ->where('file_kind', TeProgressFile::FILE_KIND_LOWER_ESTIMATE)
             ->orderBy('id')
             ->get();
 
-        $this->lowerEstimateFiles = $files->map(function (GeProgressFile $file) {
+        $this->lowerEstimateFiles = $files->map(function (TeProgressFile $file) {
             return [
                 'id' => $file->id,
                 'file_name' => $file->file_name ?? '',
-                'url' => route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]),
+                'url' => route('admin.progress.te.preview', ['teProgressFileId' => $file->id]),
                 'file_path' => $file->file_path ?? '',
                 'mime_type' => $this->getFileMimeType($file),
             ];
         })->all();
     }
 
-    protected function loadWalkthroughPhotoFiles(): void
+    protected function loadRetailEstimateFiles(): void
     {
-        if (!$this->geProgress) {
-            $this->walkthroughPhotoFiles = [];
+        if (!$this->teProgress) {
+            $this->retailEstimateFiles = [];
             return;
         }
 
-        $files = GeProgressFile::query()
-            ->where('ge_progress_id', $this->geProgress->id)
-            ->where('file_kind', GeProgressFile::FILE_KIND_WALKTHROUGH_PHOTO)
+        $files = TeProgressFile::query()
+            ->where('te_progress_id', $this->teProgress->id)
+            ->where('file_kind', TeProgressFile::FILE_KIND_RETAIL_ESTIMATE)
             ->orderBy('id')
             ->get();
 
-        $this->walkthroughPhotoFiles = $files->map(function (GeProgressFile $file) {
+        $this->retailEstimateFiles = $files->map(function (TeProgressFile $file) {
             return [
                 'id' => $file->id,
                 'file_name' => $file->file_name ?? '',
-                'url' => route('admin.progress.ge.preview', ['geProgressFileId' => $file->id]),
+                'url' => route('admin.progress.te.preview', ['teProgressFileId' => $file->id]),
                 'file_path' => $file->file_path ?? '',
                 'mime_type' => $this->getFileMimeType($file),
             ];
         })->all();
     }
 
-    protected function getFileMimeType(GeProgressFile $file): string
+    protected function getFileMimeType(TeProgressFile $file): string
     {
         if (!$file->file_path || !Storage::disk('local')->exists($file->file_path)) {
             return '';
@@ -381,19 +371,34 @@ Log::debug($this->transferDueDate);
         return mime_content_type($fullPath) ?: '';
     }
 
-    protected function calcConstructionCost() {
-        $this->constructionCostExclTax = (int)$this->subtotalAAmount + (int)$this->subtotalBAmount + (int)$this->subtotalCAmount;
-        $this->constructionCostInclTax = floor($this->constructionCostExclTax * 1.1);
+    protected function calcProfit() {
+        if ($this->teProgress) {
+            $this->costAmount = $this->teProgress->cost_amount;
+            $this->chargeAmount = $this->teProgress->charge_amount;
+        }
 
-        $this->settlementAmount = $this->constructionCostInclTax +
-            (int)$this->geProgress?->security_deposit_amount +
-            (int)$this->geProgress?->prorated_rent_amount -
-            (int)$this->geProgress?->penalty_forfeiture_amount +
-            (int)$this->otherAmount;
+        $costAmount = (int) str_replace(',', '', (string) ($this->costAmount ?? 0));
+        $chargeAmount = (int) str_replace(',', '', (string) ($this->chargeAmount ?? 0));
+
+        if (!$this->teProgress && $costAmount === 0 && $chargeAmount === 0) {
+            $this->profitAmount = number_format(0);
+            $this->profitRate = 0;
+            return;
+        }
+
+        $profitAmount = $chargeAmount - $costAmount;
+        if ($chargeAmount > 0) {
+            $profitRate = $profitAmount / $chargeAmount * 100;
+        } else {
+            $profitRate = 0;
+        }
+
+        $this->profitAmount = number_format($profitAmount);
+        $this->profitRate = round($profitRate, 2);
     }
 
     public function render()
     {
-        return view('livewire.admin.progress.ge.step2');
+        return view('livewire.admin.progress.te.step2');
     }
 }

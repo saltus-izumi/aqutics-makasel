@@ -1,128 +1,78 @@
 <div
     class="tw:w-[832px]"
-    x-data="geProgressStep1"
-    @multi-file-upload2:selected.window="handleSelect($event)"
-    @multi-file-upload2:removed.window="handleRemove($event)"
+    x-data="teProgressStep1({
+        initialFields: @js([
+            'category1_master_id' => $teProgress?->category1_master_id,
+            'category2_master_id' => $teProgress?->category2_master_id,
+            'category3_master_id' => $teProgress?->category3_master_id,
+            'title' => $teProgress?->title,
+            'trading_company_1_id' => $teProgress?->trading_company_1_id,
+            'trading_company_2_id' => $teProgress?->trading_company_2_id,
+            'trading_company_3_id' => $teProgress?->trading_company_3_id,
+        ]),
+    })"
+    @input="handleInput($event)"
+    @change="handleChange($event)"
 >
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
-        STEP１（退去立会依頼）
+        STEP１（実行担当：提案準備）
     </div>
-    <div class="tw:w-full tw:px-[26px] tw:pt-[26px]">
-        <div class="tw:h-[21px] tw:text-[0.9rem] tw:text-[#999999]">実行担当入力（AQUTICS）</div>
-        <table class="tw:w-full tw:table-fixed">
-            <tr class="tw:h-[42px]">
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">敷金預託等</td>
-                <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="securityDepositAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="securityDepositAmount" />
-                </td>
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">日割り家賃</td>
-                <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="proratedRentAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="proratedRentAmount" />
-                </td>
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">違約金（償却）</td>
-                <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input-number name="penaltyForfeitureAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="penaltyForfeitureAmount" />
-                </td>
-            </tr>
-        </table>
-        @error('securityDepositAmount')
-            <x-form.error-message>{{ $message }}</x-form.error-message>
-        @enderror
-        @error('proratedRentAmount')
-            <x-form.error-message>{{ $message }}</x-form.error-message>
-        @enderror
-        @error('penaltyForfeitureAmount')
-            <x-form.error-message>{{ $message }}</x-form.error-message>
-        @enderror
+    <div class="tw:w-full tw:px-[26px]">
+        <div class="tw:w-full tw:pr-1 tw:text-right tw:text-[1.2rem]">
+            最終更新日 {{ $teProgress->updated_at->format('Y/m/d') }}
+        </div>
+        <div class="tw:w-full tw:flex tw:flex-between">
+            <div>
+                <table class="tw:table-fixed">
+                    <tr class="tw:h-[42px]">
+                        <td class="tw:w-[52px] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">保守</td>
+                        <td class="tw:w-[52px] tw:text-center tw:border tw:border-[#cccccc]">{{ $teProgress->investment?->facility_maintenance ? '○' : '' }}</td>
+                        <td class="tw:w-[52px] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">3万</td>
+                        <td class="tw:w-[52px] tw:text-center tw:border tw:border-[#cccccc]">{{ $teProgress->investment?->three_repair ? '○' : '' }}</td>
+                        <td class="tw:w-[52px] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">安心</td>
+                        <td class="tw:w-[52px] tw:text-center tw:border tw:border-[#cccccc]">{{ ($teProgress->investmentRoomResident?->ansin_support || $teProgress->investment?->has_emergency_support) ? '○' : '' }}</td>
 
-        <table class="tw:w-full tw:table-fixed tw:mt-[42px]">
-            <tr class="tw:h-[42px]">
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">退去受付</td>
-                <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $geProgress->move_out_received_date?->format('Y/m/d') }}
-                </td>
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">革命登録</td>
-                <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $geProgress->kakumei_registered_date?->format('Y/m/d') }}
-                </td>
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">退去報告</td>
-                <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $geProgress->move_out_report_date?->format('Y/m/d') }}
-                </td>
-            </tr>
-            <tr class="tw:h-[42px]">
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">解約日</td>
-                <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $geProgress?->progress?->investmentEmptyRoom?->cancellation_date?->format('Y/m/d') }}
-                </td>
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">退去日</td>
-                <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $geProgress->move_out_date?->format('Y/m/d') }}
-                </td>
-                <td class="tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">見積り受信日</td>
-                <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">
-                    {{ $geProgress->cost_received_date?->format('Y/m/d') }}
-                </td>
-            </tr>
-        </table>
-        <div class="tw:h-[63px] tw:mb-[21px] tw:flex tw:gap-x-[26px] tw:items-end">
-            <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">立会パッケージ</x-button.black>
-            <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">退去時精算書</x-button.black>
-        </div>
-        <div class="tw:mb-[21px]">
-            <div class="tw:h-[21px] tw:text-[0.9rem] tw:text-[#999999]">
-                添付ファイル・画像、ＰＤＦ、Excel、Wordファイルが送信可能です。（可能ファイル数：20個／1ファイルの最大サイズ：25MB）
+                    </tr>
+                </table>
             </div>
-            <div class="tw:w-full">
-                <x-form.multi_file_upload2
-                    name="step1_files"
-                    instanceId="ge-progress-step1-{{ $geProgress->id }}"
-                    class="tw:h-[42px]"
-                    maxFileCount="20"
-                    maxFileSize="25MB"
-                    :allowMimeTypes="[
-                        'image/jpeg',
-                        'image/png',
-                        'image/gif',
-                        'image/webp',
-                        'image/bmp',
-                        'image/tiff',
-                        'image/heic',
-                        'image/heif',
-                        'application/pdf',
-                        'application/vnd.ms-excel',
-                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                        'application/msword',
-                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    ]"
-                    :files="$step1Files"
-                />
+            <div class="tw:h-[42px] tw:flex-1 tw:flex tw:items-center tw:justify-end tw:gap-x-[26px]">
+                <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[120px]">漏水標準価格</x-button.black>
+                <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[120px]">設備標準価格</x-button.black>
+                <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[120px]">適正判断基準</x-button.black>
             </div>
         </div>
-        <div class="tw:mb-[21px]">
-            立会依頼メッセージ<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="inspectionRequestMessage"></x-form.textarea>
-        </div>
-        <div class="tw:h-[42px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
-            <div>
-                <x-form.checkbox
-                    name="isStep1Confirmed"
-                    :checked="$isStep1Confirmed"
-                    label_class="tw:!text-[1.1rem]"
-                    wire:model.live="isStep1Confirmed"
-                >
-                    立会パッケージ、退去時清算書格納の確認
-                </x-form.checkbox>
+        <div class="tw:h-[62px] tw:w-full tw:mt-[21px] tw:flex tw:gap-x-[26px]">
+            <div class="tw:w-[234px]">
+                大カテゴリ<br>
+                <x-form.select-search name="category1_master_id" :value="$teProgress->category1_master_id" :options="$category1MasterOptions" />
             </div>
-            <div>
-                <x-button.blue
-                    class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
-                    :disabled="!$isStep1Confirmed"
-                    type="button"
-                    x-on:click="if (!confirm('立会依頼送信します。よろしいですか。')) { return; } $wire.updateMoveOutReportDate();"
-                >
-                    立会依頼送信
-                </x-button.blue>
+            <div class="tw:w-[234px]">
+                中カテゴリ<br>
+                <x-form.select-search name="category2_master_id" :value="$teProgress->category2_master_id" :options="$category2MasterOptions" />
+            </div>
+            <div class="tw:w-[234px]">
+                小カテゴリ<br>
+                <x-form.select-search name="category3_master_id" :value="$teProgress->category3_master_id" :options="$category3MasterOptions" />
+            </div>
+        </div>
+        <div class="tw:h-[62px] tw:w-full">
+            <div class="tw:w-[754px]">
+                タイトル<br>
+                <x-form.input name="title" :value="$teProgress->title"  />
+            </div>
+        </div>
+        <div class="tw:h-[62px] tw:w-full tw:mt-[21px] tw:flex tw:gap-x-[26px]">
+            <div class="tw:w-[234px]">
+                1次対応指定業者<br>
+                <x-form.select-search name="trading_company_1_id" :value="$teProgress->trading_company_1_id" :options="$tradingCompanyOptions" empty=" " />
+            </div>
+            <div class="tw:w-[234px]">
+                2次対応指定業者<br>
+                <x-form.select-search name="trading_company_2_id" :value="$teProgress->trading_company_2_id" :options="$tradingCompanyOptions" empty=" " />
+            </div>
+            <div class="tw:w-[234px]">
+                3次対応指定業者<br>
+                <x-form.select-search name="trading_company_3_id" :value="$teProgress->trading_company_3_id" :options="$tradingCompanyOptions" empty=" " />
             </div>
         </div>
     </div>
@@ -131,35 +81,81 @@
 @push('scripts')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('geProgressStep1', () => ({
-                instanceMap: [
-                    {
-                        instanceId: @js('ge-progress-step1-' . $geProgress->id),
-                        uploadProperty: 'step1Uploads',
-                        saveMethod: 'saveStep1Uploads',
-                        removeMethod: 'removeStep1File',
-                    },
-                ],
-                handleSelect(event) {
-                    const target = this.instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
-                    if (!target) {
-                        return;
-                    }
-                    const files = event.detail?.files || [];
-                    if (files.length === 0) {
-                        return;
-                    }
-                    this.$wire.uploadMultiple(target.uploadProperty, files, () => {
-                        this.$wire.call(target.saveMethod);
+            Alpine.data('teProgressStep1', (params = {}) => ({
+                fields: params.initialFields || {},
+                saveTimers: {},
+                saveDelayMs: 400,
+                lastSavedFields: {},
+                init() {
+                    Object.entries(this.fields).forEach(([fieldName, value]) => {
+                        this.lastSavedFields[fieldName] = this.toComparableValue(value);
                     });
                 },
-                handleRemove(event) {
-                    const target = this.instanceMap.find((item) => item.instanceId === event?.detail?.instanceId);
+                toComparableValue(value) {
+                    return value === null || value === undefined ? '' : String(value);
+                },
+                updateFieldFromTarget(target) {
                     if (!target) {
+                        return null;
+                    }
+
+                    const fieldName = (target.name || '').trim();
+                    if (!fieldName) {
+                        return null;
+                    }
+
+                    let value = target.value;
+                    if (target.type === 'checkbox') {
+                        value = target.checked;
+                    } else if (target.type === 'radio') {
+                        if (!target.checked) {
+                            return null;
+                        }
+                        value = target.value;
+                    }
+
+                    this.fields[fieldName] = value;
+                    return { fieldName, value };
+                },
+                saveField(fieldName, value) {
+                    const comparable = this.toComparableValue(value);
+                    if (this.lastSavedFields[fieldName] === comparable) {
                         return;
                     }
-                    const fileId = event?.detail?.file?.id || null;
-                    this.$wire.call(target.removeMethod, fileId);
+
+                    this.lastSavedFields[fieldName] = comparable;
+                    this.$wire.call('saveFieldByName', fieldName, value);
+                },
+                queueSave(fieldName, value) {
+                    if (this.saveTimers[fieldName]) {
+                        window.clearTimeout(this.saveTimers[fieldName]);
+                    }
+
+                    this.saveTimers[fieldName] = window.setTimeout(() => {
+                        delete this.saveTimers[fieldName];
+                        this.saveField(fieldName, value);
+                    }, this.saveDelayMs);
+                },
+                handleInput(event) {
+                    const updated = this.updateFieldFromTarget(event?.target);
+                    if (!updated) {
+                        return;
+                    }
+
+                    this.queueSave(updated.fieldName, updated.value);
+                },
+                handleChange(event) {
+                    const updated = this.updateFieldFromTarget(event?.target);
+                    if (!updated) {
+                        return;
+                    }
+
+                    if (this.saveTimers[updated.fieldName]) {
+                        window.clearTimeout(this.saveTimers[updated.fieldName]);
+                        delete this.saveTimers[updated.fieldName];
+                    }
+
+                    this.saveField(updated.fieldName, updated.value);
                 },
             }));
         });

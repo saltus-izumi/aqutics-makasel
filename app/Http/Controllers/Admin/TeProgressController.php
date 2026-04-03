@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use App\Models\GeProgress;
+use App\Models\TeProgress;
 use App\Models\GeProgressFile;
 
 class TeProgressController
@@ -17,30 +17,20 @@ class TeProgressController
         return view('admin.progress.te.index');
     }
 
-    public function detail(Request $request, $geProgressId)
+    public function detail(Request $request, $teProgressId)
     {
-        $geProgress = GeProgress::query()
+        $teProgress = TeProgress::query()
             ->with([
-                'step1Files',
-                'responsibleUser',
-                'executorUser',
-                'progress',
-                'progress.investment',
-                'progress.investment.restorationCompany',
-                'progress.investment.landlord.owner',
-                'progress.investmentRoom',
-                'progress.investmentRoomRedidentHistory',
-                'progress.investmentEmptyRoom',
             ])
-            ->find($geProgressId);
+            ->find($teProgressId);
 
-        if (!$geProgress) {
+        if (!$teProgress) {
             abort(404);
         }
 
-        return view('admin.progress.ge.detail')
+        return view('admin.progress.te.detail')
             ->with(compact(
-                'geProgress',
+                'teProgress',
             ));
     }
 

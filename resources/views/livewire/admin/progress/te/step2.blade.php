@@ -1,86 +1,40 @@
 <div
     class="tw:w-[806px]"
-    x-data="geProgressStep2"
+    x-data="teProgressStep2"
     @multi-file-upload2:selected.window="handleSelect($event)"
     @multi-file-upload2:removed.window="handleRemove($event)"
 >
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
-        STEP２（退去立会報告）
+        ハード｜STEP１（実行担当＿提案準備）
     </div>
     <div class="tw:w-full tw:px-[26px]">
-        <div class="tw:h-[47px] tw:flex tw:gap-x-[26px] tw:items-center">
-            <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">原復価格規定</x-button.black>
-            <x-button.black class="tw:!h-[28px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">精算ルール</x-button.black>
-        </div>
-        <table class="tw:w-full tw:table-fixed">
+
+        <table class="tw:w-full tw:mt-[42px] tw:table-fixed">
             <tr class="tw:h-[42px]">
-                <td class="tw:w-[130px] tw:text-center tw:bg-black tw:text-[1.3rem] tw:font-bold tw:text-white tw:border tw:border-[#cccccc]">
-                    {{ $settlementAmount >= 0 ? '振込額' : '返金額' }}
-                </td>
-                <td class="tw:pr-5 tw:border tw:border-[#cccccc] tw:text-[1.8rem] tw:text-right tw:font-bold">
-                    {{ number_format($settlementAmount) }}
-                </td>
-                <td class="tw:w-[130px] tw:text-center tw:bg-black tw:text-[1.3rem] tw:font-bold tw:text-white tw:border tw:border-[#cccccc]">振込期日</td>
+                <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">下代</td>
                 <td class="tw:border tw:border-[#cccccc]">
-                    <x-form.input type="date" class="tw:text-[1.8rem] tw:font-bold" wire:model.lazy="transferDueDate" />
+                    <x-form.input-number name="costAmount" class="tw:text-right tw:pr-[20px] tw:font-bold tw:text-[1.7rem]" :border="false" wire:model.live="costAmount" />
+                </td>
+                <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">上代</td>
+                <td class="tw:border tw:border-[#cccccc]">
+                    <x-form.input-number name="chargeAmount" class="tw:text-right tw:pr-[20px] tw:font-bold tw:text-[1.7rem]" :border="false" wire:model.live="chargeAmount" />
+                </td>
+            </tr>
+            <tr class="tw:h-[42px]">
+                <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">利益</td>
+                <td class="tw:text-right tw:pr-[20px] tw:font-bold tw:text-[1.7rem] tw:border tw:border-[#cccccc]">
+                    {{ $profitAmount }}
+                </td>
+                <td class="tw:w-[130px] tw:text-[1.4rem] tw:text-center tw:text-white tw:bg-black tw:border tw:border-[#cccccc]">利益率</td>
+                <td @class([
+                    'tw:text-right tw:pr-[20px] tw:text-center tw:font-bold tw:text-[1.7rem] tw:border tw:border-[#cccccc]',
+                    'tw:text-red-600' => $profitRate < 30,
+                ])>
+                    @if ($profitRate < 30)<span class="tw:pr-3">×</span>@endif
+                    {{ $profitRate }}%
                 </td>
             </tr>
         </table>
-        <div class="tw:mt-[21px]">
-            <div class="tw:h-[21px] tw:text-[0.9rem] tw:text-[#999999]">原復会社様入力</div>
-            <table class="tw:w-full tw:table-fixed tw:mt-[px]">
-                <tr class="tw:h-[42px]">
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">小計A</td>
-                    <td class="tw:border tw:border-[#cccccc]">
-                        <x-form.input-number name="subtotalAAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="subtotalAAmount" />
-                    </td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">敷金預託等</td>
-                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
-                        {{ number_format($geProgress?->security_deposit_amount)}}
-                    </td>
-                </tr>
-                <tr class="tw:h-[42px]">
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">小計B</td>
-                    <td class="tw:border tw:border-[#cccccc]">
-                        <x-form.input-number name="subtotalBAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="subtotalBAmount" />
-                    </td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">日割り家賃</td>
-                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
-                        {{ number_format($geProgress?->prorated_rent_amount) }}
-                    </td>
-                </tr>
-                <tr class="tw:h-[42px]">
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">小計C</td>
-                    <td class="tw:border tw:border-[#cccccc]">
-                        <x-form.input-number name="subtotalCAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="subtotalCAmount" />
-                    </td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">違約金（償却等）</td>
-                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
-                        {{ number_format($geProgress?->penalty_forfeiture_amount) }}
-                    </td>
-                </tr>
-                <tr class="tw:h-[42px]">
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">工事負担額（税抜）</td>
-                    <td class="tw:text-right tw:pr-3 tw:text-[1.2rem] tw:border tw:border-[#cccccc]">
-                        {{ number_format($constructionCostExclTax) }}
-                    </td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:border tw:border-[#cccccc]">その他</td>
-                    <td class="tw:border tw:border-[#cccccc]">
-                        <x-form.input-number name="otherAmount" class="tw:text-right tw:text-[1.2rem]" :border="false" wire:model.live="otherAmount" />
-                    </td>
-                </tr>
-                <tr class="tw:h-[42px]">
-                    <td class="tw:text-[1.2rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">工事負担額（税込）</td>
-                    <td class="tw:text-right tw:pr-3 tw:text-[1.5rem] tw:font-bold tw:border tw:border-[#cccccc]">
-                        {{ number_format($constructionCostInclTax) }}
-                    </td>
-                    <td class="tw:text-[1.2rem] tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]">精算額</td>
-                    <td class="tw:text-right tw:pr-3 tw:text-[1.5rem] tw:font-bold tw:border tw:border-[#cccccc]">
-                        {{ number_format($settlementAmount) }}
-                    </td>
-                </tr>
-            </table>
-        </div>
 
         <div class="tw:mt-[21px]">
             <div class="tw:h-[21px] tw:text-[0.9rem] tw:text-[#999999]">
@@ -90,9 +44,9 @@
                 <div class="tw:flex-1">
                     <div class="tw:w-full">
                         <x-form.multi_file_upload2
-                            name="move_out_settlement"
-                            title="退去時清算書"
-                            instanceId="ge-progress-move-out-settlement-{{ $geProgress->id }}"
+                            name="on_site_inspection_report"
+                            title="現調報告書"
+                            instanceId="te-progress-on-site-inspection-report-{{ $teProgress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -111,7 +65,7 @@
                                 'application/msword',
                                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                             ]"
-                            :files="$moveOutSettlementFiles"
+                            :files="$onSiteInspectionReportFiles"
                         />
                     </div>
                 </div>
@@ -120,7 +74,7 @@
                         <x-form.multi_file_upload2
                             name="lower_estimate"
                             title="下代見積もり"
-                            instanceId="ge-progress-lower-estimate-{{ $geProgress->id }}"
+                            instanceId="te-progress-lower-estimate-{{ $teProgress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -146,9 +100,9 @@
                 <div class="tw:flex-1">
                     <div class="tw:w-full">
                         <x-form.multi_file_upload2
-                            name="walkthrough_photo"
-                            title="立会写真"
-                            instanceId="ge-progress-walkthrough-photo-{{ $geProgress->id }}"
+                            name="retail_estimate"
+                            title="上代見積もり"
+                            instanceId="te-progress-retail-estimate-{{ $teProgress->id }}"
                             class="tw:h-[42px]"
                             maxFileCount="20"
                             maxFileSize="25MB"
@@ -167,19 +121,19 @@
                                 'application/msword',
                                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                             ]"
-                            :files="$walkthroughPhotoFiles"
+                            :files="$retailEstimateFiles"
                         />
                     </div>
                 </div>
             </div>
         </div>
         <div class="tw:mt-[21px]">
-            立会完了メッセージ<br>
-            <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="inspectionCompletedMessage"></x-form.textarea>
+            実行担当 ⇒ 責任担当<br>
+            <x-form.textarea class="tw:!h-[105px]" placeholder="実行担当 ⇒ 責任担当" wire:model.live="executorToResponsibleMessage"></x-form.textarea>
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
-                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">立会完了送信</x-button.blue>
+                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">実行担当判断完了</x-button.blue>
             </div>
         </div>
     </div>
@@ -188,25 +142,25 @@
 @push('scripts')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('geProgressStep2', () => ({
+            Alpine.data('teProgressStep2', () => ({
                 instanceMap: [
                     {
-                        instanceId: @js('ge-progress-move-out-settlement-' . $geProgress->id),
-                        uploadProperty: 'moveOutSettlementUploads',
-                        saveMethod: 'saveMoveOutSettlementUploads',
-                        removeMethod: 'removeMoveOutSettlementFile',
+                        instanceId: @js('te-progress-on-site-inspection-report-' . $teProgress->id),
+                        uploadProperty: 'onSiteInspectionReportUploads',
+                        saveMethod: 'saveOnSiteInspectionReportUploads',
+                        removeMethod: 'removeOnSiteInspectionReportFile',
                     },
                     {
-                        instanceId: @js('ge-progress-lower-estimate-' . $geProgress->id),
+                        instanceId: @js('te-progress-lower-estimate-' . $teProgress->id),
                         uploadProperty: 'lowerEstimateUploads',
                         saveMethod: 'saveLowerEstimateUploads',
                         removeMethod: 'removeLowerEstimateFile',
                     },
                     {
-                        instanceId: @js('ge-progress-walkthrough-photo-' . $geProgress->id),
-                        uploadProperty: 'walkthroughPhotoUploads',
-                        saveMethod: 'saveWalkthroughPhotoUploads',
-                        removeMethod: 'removeWalkthroughPhotoFile',
+                        instanceId: @js('te-progress-retail-estimate-' . $teProgress->id),
+                        uploadProperty: 'retailEstimateUploads',
+                        saveMethod: 'saveRetailEstimateUploads',
+                        removeMethod: 'removeRetailEstimateFile',
                     },
                 ],
                 handleSelect(event) {

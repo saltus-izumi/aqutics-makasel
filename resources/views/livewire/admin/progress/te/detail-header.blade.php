@@ -1,46 +1,21 @@
 <div class="tw:flex tw:gap-x-[104px] tw:border-b">
     <div class="tw:w-[832px]">
         <div class="tw:w-full tw:h-[42px] tw:flex tw:gap-x-[1.5rem] tw:items-center">
-            <div class="tw:text-[1.2rem]">原復ID：{{ $geProgress->progress_id }}</div>
-            <div class="tw:text-[1.2rem]">物件ID：{{ $geProgress->progress?->investment_id }}</div>
-            <div class="tw:max-w-[340px] tw:text-[1.2rem] tw:flex tw:items-center">
-                {{-- 工事会社：{{ $progress->investment?->restorationCompany?->name }}（担当：{{ $progress->investment?->restorationCompany?->personnel1 }}） --}}
-                <div>工事会社：</div>
-                <x-form.select-search :value="$tradingCompanyId" :options="$restorationCompanies" class="tw:w-[240px] tw:!text-[1rem]" wire:model.live="tradingCompanyId" />
-            </div>
-            <div class="tw:text-[1.2rem]">所有者：{{ $geProgress?->responsibleUser?->user_name }}</div>
-            <div class="tw:text-[1.2rem]">実行担当：{{ $geProgress?->executorUser?->user_name }}</div>
+            <div class="tw:text-[1.2rem]">TEID：{{ $teProgress->id }}</div>
+            <div class="tw:text-[1.2rem]">物件ID：{{ $teProgress?->investment_id }}</div>
+            <div class="tw:text-[1.2rem]">所有者：{{ $teProgress?->responsibleUser?->user_name }}</div>
+            <div class="tw:text-[1.2rem]">実行担当：{{ $teProgress?->executorUser?->user_name }}</div>
         </div>
         <div class="tw:h-[42px] tw:mb-[21px] tw:leading-[42px] tw:text-[2.6rem] tw:font-bold">
-            {{ $geProgress->progress?->investment->investment_name }}　{{ $geProgress->progress?->investmentRoom->investment_room_number }}（{{ $geProgress->progress?->investmentRoomResidentHisotry?->contractor_name }}さま）
-        </div>
-        <div class="tw:h-[42px] tw:flex">
-            <a href="{{ route('admin.progress.ge.detail', ['geProgressId' => $geProgress->id]) }}">
-                <div @class([
-                    'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
-                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'move-out-settlement'),
-                    'tw:bg-[#efefef]' => ($mode == 'owner-settlement'),
-                ])>
-                    退去精算
-                </div>
-            </a>
-            <a href="{{ route('admin.progress.ge.owner-settlement', ['geProgressId' => $geProgress->id]) }}">
-                <div @class([
-                    'tw:w-[130px] tw:h-full tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center',
-                    'tw:bg-[#cccccc] tw:border-b-4 tw:border-[#1155cc]' => ($mode == 'owner-settlement'),
-                    'tw:bg-[#efefef]' => ($mode == 'move-out-settlement'),
-                ])>
-                    貸主精算
-                </div>
-            </a>
+            {{ $teProgress?->investment?->investment_name }}　{{ $teProgress?->investmentRoom?->investment_room_number ?: '共用部' }}（{{ $teProgress?->investmentRoomResidentHistory?->contractor_name }}さま）
         </div>
     </div>
     <div>
         <div class="tw:mb-[21px] tw:flex tw:items-center tw:gap-x-[26px]">
             @php
-                $isReProposeOrCancelDisabled = in_array($geProgress?->next_action, [
-                    App\Models\GeProgress::NEXT_ACTION_RE_PROPOSED,
-                    App\Models\GeProgress::NEXT_ACTION_CANCEL,
+                $isReProposeOrCancelDisabled = in_array($teProgress?->next_action, [
+                    App\Models\TeProgress::NEXT_ACTION_RE_PROPOSED,
+                    App\Models\TeProgress::NEXT_ACTION_CANCEL,
                 ], true);
             @endphp
             <table>
@@ -49,7 +24,7 @@
                         ネクストアクション
                     </td>
                     <td class="tw:w-[208px] tw:pl-[1rem] tw:text-[1.5rem] tw:border tw:border-[#cccccc]">
-                        {{ App\Models\GeProgress::NEXT_ACTIONS[$geProgress?->next_action] ?? '' }}
+                        {{ App\Models\TeProgress::NEXT_ACTIONS[$teProgress?->next_action] ?? '' }}
                     </td>
                 </tr>
             </table>
