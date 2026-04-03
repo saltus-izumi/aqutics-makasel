@@ -68,33 +68,32 @@ class OperationController
     {
         $teProgressId = null;
         $geProgressId = null;
-        $geProgressStep = null;
+        $progressStep = null;
 
         return view('admin.operation.create')
             ->with(compact(
                 'operationId',
                 'teProgressId',
                 'geProgressId',
-                'geProgressStep',
+                'progressStep',
             ));
     }
 
-    public function createTe($teProgressId = null)
+    public function createTe($teProgressId = null, $progressStep = null)
     {
         $operationId = null;
         $geProgressId = null;
-        $geProgressStep = null;
 
         return view('admin.operation.create')
             ->with(compact(
                 'operationId',
                 'teProgressId',
                 'geProgressId',
-                'geProgressStep',
+                'progressStep',
             ));
     }
 
-    public function createGe($geProgressId = null, $geProgressStep = null)
+    public function createGe($geProgressId = null, $progressStep = null)
     {
         $operationId = null;
         $teProgressId = null;
@@ -104,7 +103,7 @@ class OperationController
                 'operationId',
                 'teProgressId',
                 'geProgressId',
-                'geProgressStep',
+                'progressStep',
             ));
     }
 
@@ -271,8 +270,8 @@ class OperationController
             }
 
             if ($geProgress) {
-                if ($geProgressStep = $request->input('ge_progress_step')) {
-                    switch ($geProgressStep) {
+                if ($progressStep = $request->input('progress_step')) {
+                    switch ($progressStep) {
                         case 'owner_proposal':          // オーナー提案
                             $geProgress->owner_proposal_operation_id = $operation->id;
                             break;
@@ -281,6 +280,18 @@ class OperationController
                             break;
                     }
                     $geProgress->save();
+                }
+            } elseif ($teProgress) {
+                if ($progressStep = $request->input('progress_step')) {
+                    switch ($progressStep) {
+                        case 'owner_proposal':          // オーナー提案
+                            $teProgress->owner_proposal_operation_id = $operation->id;
+                            break;
+                        case 'completion_report':       // 完了報告
+                            $teProgress->completion_report_operation_id = $operation->id;
+                            break;
+                    }
+                    $teProgress->save();
                 }
             }
 

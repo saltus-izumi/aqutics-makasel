@@ -20,8 +20,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [AdminOperation::class, 'index'])->name('index');
             Route::get('/create', [AdminOperation::class, 'create'])->name('create');
             Route::post('/create', [AdminOperation::class, 'store'])->name('store');
-            Route::get('/create/te/{teProgressId}', [AdminOperation::class, 'createTe'])->name('create.te');
-            Route::get('/create/ge/{geProgressId}/{geProgressStep}', [AdminOperation::class, 'createGe'])->name('create.ge');
+            Route::get('/create/te/{teProgressId}/{progressStep}', [AdminOperation::class, 'createTe'])->name('create.te');
+            Route::get('/create/ge/{geProgressId}/{progressStep}', [AdminOperation::class, 'createGe'])->name('create.ge');
             Route::get('/{operationId}', [AdminOperation::class, 'create'])->name('edit');
 
         });

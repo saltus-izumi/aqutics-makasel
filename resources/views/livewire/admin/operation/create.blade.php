@@ -92,5 +92,5 @@
     <input type="hidden" name="thread_id" value="{{ $threadId }}">
     <input type="hidden" name="operation_id" value="{{ $operation?->id }}">
     <input type="hidden" name="thread_message_id" value="{{ $operation?->thread_message_id }}">
-    <input type="hidden" name="ge_progress_step" value="{{ $geProgressStep }}">
+    <input type="hidden" name="progress_step" value="{{ $progressStep }}">
 </div>

@@ -1,6 +1,6 @@
 <div
     class="tw:w-[806px]"
-    x-data="teProgressStep2"
+    x-data="teProgressHardStep1"
     @multi-file-upload2:selected.window="handleSelect($event)"
     @multi-file-upload2:removed.window="handleRemove($event)"
 >
@@ -142,7 +142,7 @@
 @push('scripts')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('teProgressStep2', () => ({
+            Alpine.data('teProgressHardStep1', () => ({
                 instanceMap: [
                     {
                         instanceId: @js('te-progress-on-site-inspection-report-' . $teProgress->id),

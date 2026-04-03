@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class Step2 extends Component
+class HardStep1 extends Component
 {
     use WithFileUploads;
 
@@ -399,6 +399,6 @@ class Step2 extends Component
 
     public function render()
     {
-        return view('livewire.admin.progress.te.step2');
+        return view('livewire.admin.progress.te.hard-step1');
     }
 }

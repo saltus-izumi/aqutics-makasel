@@ -40,7 +40,7 @@ class Create extends Component
     public $teProgressId = null;
     public $teProgress = null;
     public $geProgressId = null;
-    public $geProgressStep = null;
+    public $progressStep = null;
     public $geProgress = null;
 
     public function mount()

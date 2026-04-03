@@ -35,6 +35,12 @@ return new class extends Migration
             $table->integer('kanko_yotei_date_state')->default(0)->after('kanko_yotei_date')->comment('完工予定日ステータス');
             $table->integer('complete_date_state')->default(0)->after('complete_date')->comment('完了日ステータス');
             $table->text('executor_to_responsible_message')->nullable()->after('kakumei_memo')->comment('実行担当 ⇒ 責任担当');
+            $table->integer('is_proper_work_burden')->nullable()->after('executor_to_responsible_message')->comment('適正工事（負担）');
+            $table->integer('is_proper_price')->nullable()->after('is_proper_work_burden')->comment('適正価格');
+            $table->text('correction_instruction_message')->nullable()->after('is_proper_price')->comment('実行担当へ修正指示');
+            $table->text('estimate_note_message')->nullable()->after('correction_instruction_message')->comment('見積書備考入力内容');
+            $table->integer('owner_proposal_operation_id')->nullable()->after('operation_id')->comment('オーナー提案オペレーションID');
+            $table->integer('completion_report_operation_id')->nullable()->after('owner_proposal_operation_id')->comment('完了報告オペレーションID');
         });
 
         DB::transaction(function() {
@@ -95,6 +101,12 @@ return new class extends Migration
                 'kanko_yotei_date_state',
                 'complete_date_state',
                 'executor_to_responsible_message',
+                'is_proper_work_burden',
+                'is_proper_price',
+                'correction_instruction_message',
+                'estimate_note_message',
+                'owner_proposal_operation_id',
+                'completion_report_operation_id',
             ]);
         });
     }

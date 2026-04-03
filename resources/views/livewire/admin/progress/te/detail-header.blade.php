@@ -49,7 +49,7 @@
                 </x-button.red>
             </div>
         </div>
-        <div>
+        <div class="tw:pb-[21px]">
             <table class="tw:w-[780px] tw:table-fixed">
                 <tr class="tw:h-[21px]">
                     <td class="tw:text-[1.8rem] tw:font-bold tw:text-center tw:bg-[#efefef] tw:border tw:border-[#cccccc]" rowspan="2">

@@ -10,13 +10,15 @@
                         <livewire:admin.progress.te.step1 :teProgress="$teProgress" />
                     </div>
                     <div class="tw:mt-[21px]">
-                        <livewire:admin.progress.te.step2 :teProgress="$teProgress" />
+                        <livewire:admin.progress.te.hard-step1 :teProgress="$teProgress" />
                     </div>
                 </div>
                 <div class="tw:mt-[42px]">
                     <div>
+                        <livewire:admin.progress.te.hard-step2 :teProgress="$teProgress" />
                     </div>
-                    <div class="tw:mt-[21px] tw:pb-[21px]">
+                    <div class="tw:mt-[42px] tw:pb-[21px]">
+                        <livewire:admin.progress.te.hard-step3 :teProgress="$teProgress" />
                     </div>
                 </div>
             </div>
