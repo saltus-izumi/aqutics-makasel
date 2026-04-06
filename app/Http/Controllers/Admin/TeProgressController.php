@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use App\Models\TeProgress;
-use App\Models\GeProgressFile;
+use App\Models\TeProgressFile;
 
 class TeProgressController
 {
@@ -61,9 +61,9 @@ class TeProgressController
             ));
     }
 
-    public function preview(Request $request, $geProgressFileId)
+    public function preview(Request $request, $teProgressFileId)
     {
-        $file = GeProgressFile::query()->find($geProgressFileId);
+        $file = TeProgressFile::query()->find($teProgressFileId);
         if (!$file) {
             abort(404);
         }

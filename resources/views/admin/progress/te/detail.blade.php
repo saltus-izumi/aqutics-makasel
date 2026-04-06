@@ -20,6 +20,12 @@
                     <div class="tw:mt-[42px] tw:pb-[21px]">
                         <livewire:admin.progress.te.hard-step3 :teProgress="$teProgress" />
                     </div>
+                    <div class="tw:pb-[21px]">
+                        <livewire:admin.progress.te.hard-step4 :teProgress="$teProgress" />
+                    </div>
+                    <div class="tw:pb-[21px]">
+                        <livewire:admin.progress.te.hard-step5 :teProgress="$teProgress" />
+                    </div>
                 </div>
             </div>
         </div>

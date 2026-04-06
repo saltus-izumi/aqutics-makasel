@@ -1,4 +1,4 @@
-<div class="tw:w-[806px]">
+<div class="tw:w-[832px]">
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         ハード｜STEP３（実行担当＿貸主提案）
     </div>
