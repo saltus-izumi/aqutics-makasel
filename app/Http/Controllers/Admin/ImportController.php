@@ -25,7 +25,18 @@ class ImportController
 
     public function importProcall()
     {
-        return view('admin.import.import-procall');
+        return view('admin.import.import-procall', [
+            'isUpdate' => false,
+            'title' => 'PMView（新規）',
+        ]);
+    }
+
+    public function importProcallUpdate()
+    {
+        return view('admin.import.import-procall', [
+            'isUpdate' => true,
+            'title' => 'PMView（更新）',
+        ]);
     }
 
     public function importIndividualTenancyApplication()

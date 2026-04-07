@@ -46,7 +46,7 @@ class Onsite extends Model
                         'investment_room_id'=> $inventmentRoom->investment_room_id,	// 物件部屋ID
                         'request_date'      => $now,                                // 依頼日時
                         'request_kind_id'   => $requestId,                         // 依頼種別ID
-                        'due_date'          => $leavingDate->addDay(),
+                        'due_date'          => $leavingDate->copy()->addDays($mapAddDays[$requestId] ?? 0),
                                                                                     // 期限日時
                         'responsible_id'  => $loginUser['id'],	                    // 担当者ID
                         'investment_empty_room_id' => $inventmentRoom->id,	        // 空き部屋情報ID
@@ -56,7 +56,7 @@ class Onsite extends Model
                 }
                 self::create($data);
             }
-        } elseif($leavingDate->isSameDay($inventmentRoom->leaving_date)) {
+        } elseif(!$leavingDate->isSameDay($inventmentRoom->leaving_date)) {
             // 退去日が変更の場合、該当ONSITEがある場合は更新、
             // 更新処理
             $onsites = self::where('investment_empty_room_id', $inventmentRoom->id)
@@ -74,7 +74,7 @@ class Onsite extends Model
                     // 日付変更
                     $data['due_date'] = $leavingDate->copy()->addDays($mapAddDays[$request_id]);
                 }
-                $onsite->fill($onsite);
+                $onsite->fill($data);
                 $onsite->save();
             }
 

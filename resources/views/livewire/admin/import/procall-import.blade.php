@@ -11,6 +11,9 @@
             @if ($insertCount !== null && $errorCount === 0)
                 <div>新規登録件数：{{ $insertCount }}件</div>
             @endif
+            @if ($updateCount !== null && $updateCount > 0)
+                <div>{{ $isUpdate ? '更新件数' : '案件番号重複' }}：{{ $updateCount }}件</div>
+            @endif
             @if ($errorCount !== null && $errorCount > 0)
                 <div class="tw:text-[#ff5555]"><span class="tw:font-bold">取り込みに失敗しました。</span>エラー件数：{{ $errorCount }}件</div>
             @endif

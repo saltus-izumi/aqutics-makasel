@@ -57,7 +57,7 @@
                                 <li><a href="{{ route('admin.import.individual-tenancy-application') }}">個人申込</a></li>
                                 <li><a href="{{ route('admin.import.corporate-tenancy-application') }}">法人申込</a></li>
                                 <li><a href="{{ route('admin.import.procall') }}">PMView（新規）</a></li>
-                                <li><a href="/app/admin/CsvImports/11">PMView（更新）</a></li>
+                                <li><a href="{{ route('admin.import.procall-update') }}">PMView（更新）</a></li>
                                 <li><a href="/app/admin/CsvImports/9">入居者状況一覧</a></li>
                                 <li><a href="/app/admin/CsvImports/12">解約予定一覧</a></li>
                                 <li><a href="/app/admin/CsvImports/13">オーナー情報</a></li>

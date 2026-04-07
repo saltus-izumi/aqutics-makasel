@@ -8,6 +8,7 @@ use App\Models\Category2Master;
 use App\Models\Category3Master;
 use App\Models\FortificationsProposal;
 use App\Models\GeProgress;
+use App\Models\EnProgress;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\InvestmentRoomResident;
@@ -34,6 +35,11 @@ class ProcallImport extends Component
     public $updateCount = null;
     public $errorCount = null;
     public $errorMessages = [];
+
+    public function mount(bool $isUpdate = false): void
+    {
+        $this->isUpdate = $isUpdate;
+    }
 
     protected $messages = [
         'procallFile.required' => 'ファイルを選択してください。',
@@ -78,7 +84,11 @@ class ProcallImport extends Component
             }
         } catch (\Throwable $e) {
             DB::rollBack();
-            throw $e; // 必要なら再スロー
+            report($e);
+            $this->errorCount++;
+            $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e->getMessage() . ')';
+            $this->reset('procallFile');
+            return;
         }
 
         if ($this->errorCount == 0) {
@@ -103,8 +113,8 @@ class ProcallImport extends Component
         $procallExists = Procall::where('pr001', $record[0])->exists();
 
         if ($procallExists && $this->isUpdate == false) {
-            $this->errorCount++;
-            return "すでに登録済みデータです。（案件ID：{$record[0]}）";
+            $this->updateCount++;
+            return true;
         } elseif ($procallExists && $this->isUpdate) {
             return $this->update($record);
         }
@@ -180,7 +190,6 @@ class ProcallImport extends Component
                         'trading_company_id' => $inventment->restoration_company_id,
                     ]);
 
-
                     $this->insertCount++;
 
                     // fortifications_proposalsにデータ追加
@@ -214,67 +223,26 @@ class ProcallImport extends Component
                 }
             } else {
                 $typeId = 0;
-                $leavingDate = new Carbon($record[32]);
                 if ($record[28] == '完了') {
                     $pcStatus = 1;
                 }
                 else {
                     $pcStatus = 0;
                 }
-                $category1Id = 0;
-                $category2Id = 0;
-                $category3Id = 0;
                 $category1Name = $record[23];
                 $category2Name = $record[24];
                 $category3Name = $record[25];
+                [$category1Id, $category2Id, $category3Id] = $this->resolveCategoryIds(
+                    $category1Name,
+                    $category2Name,
+                    $category3Name
+                );
 
-                if ($category1Name != '') {
-                    $category1 = Category1Master::where('item_name', $category1Name)
-                        ->first();
-                    if ($category1) {
-                        $category1Id = $category1->id;
-                    }
-                    else {
-                        $category1 = Category1Master::create([
-                            'item_name' => $category1Name
-                        ]);
-                        $category1Id = $category1->id;
-                    }
-                }
-                if ($category2Name != '' && $category2Name != 'ー') {
-                    $category2 = Category2Master::where('category1_master_id', $category1Id)
-                        ->where('item_name', $category2Name)
-                        ->first();
-                    if ($category2) {
-                        $category2Id = $category2->id;
-                    }
-                    else {
-                        $category2 = Category2Master::create([
-                            'item_name' => $category2Name,
-                            'category1_master_id' => $category1Id
-                        ]);
-                        $category2Id = $category2->id;
-                    }
-                }
-                if ($category3Name != '' && $category3Name != 'ー') {
-                    $category3 = Category3Master::where('category2_master_id', $category2Id)
-                        ->where('item_name', $category3Name)
-                        ->first();
-                    if ($category3) {
-                        $category3Id = $category3->id;
-                    }
-                    else{
-                        $category3 = Category3Master::create([
-                            'item_name' => $category3Name,
-                            'category2_master_id' => $category2Id
-                        ]);
-                        $category3Id = $category3->id;
-                    }
-                }
-                if (!TeProgress::where('procall_deal_id', $record[0])->exists()) {
+                if (!TeProgress::where('procall_case_no', $record[1])->exists()) {
                     $progress = new TeProgress([
                         'investment_id' => $inventment->id,
-                        'investment_room_id' => $inventmentRoom->investment_room_id,
+                        'investment_room_id' => $inventmentRoom->investment_room_id ?? 0,
+                        'investment_room_uid' => $inventmentRoom->id ?? null,
                         'contractor_no' => $investmentRoomResident?->contractor_no ?? null,
                         'investment_name' => $record[17],
                         'investment_room_name' => $record[18],
@@ -293,29 +261,32 @@ class ProcallImport extends Component
                         'category3_master_id' => $category3Id,
                         'pc_status_remarks' => $record[35], // 連絡内容
                         'pc_status' => $pcStatus,
-                        'nyuuden_date' => $record[32], // 連絡日時を入電日
+                        'nyuuden_date' => $this->nullIfEmpty(str_replace('/', '-', $record[32] ?? '')), // 連絡日時を入電日
                         'type_id' => $typeId,
                         'type_name' => $record[9], // カテゴリ1階層を案件分類に
-                        'complete_date' => $this->nullIfEmpty($record[31]),
+                        'complete_date' => $this->nullIfEmpty(str_replace('/', '-', $record[31] ?? '')),
                         'last_import_date' => now(),
                     ]);
                     $progress->save();
                     $this->insertCount++;
-
-                    // fortifications_proposalsにデータ追加
-                    $fortificationsProposal = FortificationsProposal::create([
-                        'investment_id' => $inventment->id,
-                        'investment_room_id' => $inventmentRoom->investment_room_id ?? 0,
-                        'te_progress_id' => $progress->id,
-                    ]);
-
-                    $progress->fortifications_proposal_id = $fortificationsProposal->id;
-                    $progress->te_id = $progress->te_id ? $progress->te_id : $progress->id;
-                    $progress->save();
-
-                    // ksfデータ作成(入電日)
-                    $this->createKsfForTe($progress->id);
+                } else {
+                    $this->updateCount++;
+                    return true;
                 }
+
+                // fortifications_proposalsにデータ追加
+                $fortificationsProposal = FortificationsProposal::create([
+                    'investment_id' => $inventment->id,
+                    'investment_room_id' => $inventmentRoom->investment_room_id ?? 0,
+                    'te_progress_id' => $progress->id,
+                ]);
+
+                $progress->fortifications_proposal_id = $fortificationsProposal->id;
+                $progress->te_id = $progress->te_id ? $progress->te_id : $progress->id;
+                $progress->save();
+
+                // ksfデータ作成(入電日)
+                $this->createKsfForTe($progress->id);
             }
         } catch (\Exception $e) {
             $this->errorCount++;
@@ -353,82 +324,75 @@ class ProcallImport extends Component
                 })
                 ->first();
 
-            if ($teProgress) {
-                $category1Id = 0;
-                $category2Id = 0;
-                $category3Id = 0;
-                $category1Name = $record[23];
-                $category2Name = $record[24];
-                $category3Name = $record[25];
-                if ($category1Name != '') {
-                    $category1 = Category1Master::where('item_name', $category1Name)
-                        ->first();
-                    if ($category1) {
-                        $category1Id = $category1->id;
-                    }
-                    else {
-                        $category1 = Category1Master::create([
-                            'item_name' => $category1Name
-                        ]);
-                        $category1Id = $category1->id;
-                    }
-                }
-                if ($category2Name != '' && $category2Name != 'ー') {
-                    $category2 = Category2Master::where('category1_master_id', $category1Id)
-                        ->where('item_name', $category2Name)
-                        ->first();
-                    if ($category2) {
-                        $category2Id = $category2->id;
-                    }
-                    else {
-                        $category2 = Category2Master::create([
-                            'item_name' => $category2Name,
-                            'category1_master_id' => $category1Id
-                        ]);
-                        $category2Id = $category2->id;
-                    }
-                }
-                if ($category3Name != '' && $category3Name != 'ー') {
-                    $category3 = Category3Master::where('category2_master_id', $category2Id)
-                        ->where('item_name', $category3Name)
-                        ->first();
-                    if ($category3) {
-                        $category3Id = $category3->id;
-                    }
-                    else{
-                        $category3 = Category3Master::create([
-                            'item_name' => $category3Name,
-                            'category2_master_id' => $category2Id
-                        ]);
-                        $category3Id = $category3->id;
-                    }
-                }
+                if ($teProgress) {
+                    $category1Name = $record[23];
+                    $category2Name = $record[24];
+                    $category3Name = $record[25];
+                    [$category1Id, $category2Id, $category3Id] = $this->resolveCategoryIds(
+                        $category1Name,
+                        $category2Name,
+                        $category3Name
+                    );
 
-                $teProgress->procall_deal_id = $record[0];
-                $teProgress->title = $record[22];
-                $teProgress->category1 = $category1Name;
-                $teProgress->category2 = $category2Name;
-                $teProgress->category3 = $category3Name;
-                $teProgress->category1_master_id = $category1Id;
-                $teProgress->category2_master_id = $category2Id;
-                $teProgress->category3_master_id = $category3Id;
-                $teProgress->nyuuden_date = str_replace('/', '-', $record[32] ?? '');
-                $teProgress->pc_status_remarks = $record[35];
-// dd($te_progress);
-                $teProgress->last_import_date = now();
-                $teProgress->last_import_kind = TeProgress::LAST_IMPORT_KIND_UPDATE;
-                if ($record[28] != '完了') {
-                    $teProgress->complete_date = null;
+                    $teProgress->procall_deal_id = $record[0];
+                    $teProgress->title = $record[22];
+                    $teProgress->category1 = $category1Name;
+                    $teProgress->category2 = $category2Name;
+                    $teProgress->category3 = $category3Name;
+                    $teProgress->category1_master_id = $category1Id;
+                    $teProgress->category2_master_id = $category2Id;
+                    $teProgress->category3_master_id = $category3Id;
+                    $teProgress->nyuuden_date = $this->nullIfEmpty(str_replace('/', '-', $record[32] ?? ''));
+                    $teProgress->pc_status_remarks = $record[35];
+                    $teProgress->last_import_date = now();
+                    $teProgress->last_import_kind = TeProgress::LAST_IMPORT_KIND_UPDATE;
+                    if ($record[28] != '完了') {
+                        $teProgress->complete_date = null;
+                    }
+                    $teProgress->save();
+
+                    $this->updateCount++;
+
+                    $this->syncKsfForTe($teProgress->id);
                 }
-                $teProgress->save();
-
-                $this->updateCount++;
-
-                $this->syncKsfForTe($teProgress->id);
             }
-        }
 
         return true;
+    }
+
+    /**
+     * @return array{0:int,1:int,2:int}
+     */
+    protected function resolveCategoryIds(string $category1Name, string $category2Name, string $category3Name): array
+    {
+        $category1Id = 0;
+        $category2Id = 0;
+        $category3Id = 0;
+
+        if ($category1Name !== '') {
+            $category1 = Category1Master::firstOrCreate([
+                'item_name' => $category1Name,
+            ]);
+            $category1Id = $category1->id;
+        }
+
+        if ($category2Name !== '' && $category2Name !== 'ー') {
+            $category2 = Category2Master::firstOrCreate([
+                'category1_master_id' => $category1Id,
+                'item_name' => $category2Name,
+            ]);
+            $category2Id = $category2->id;
+        }
+
+        if ($category3Name !== '' && $category3Name !== 'ー') {
+            $category3 = Category3Master::firstOrCreate([
+                'category2_master_id' => $category2Id,
+                'item_name' => $category3Name,
+            ]);
+            $category3Id = $category3->id;
+        }
+
+        return [$category1Id, $category2Id, $category3Id];
     }
 
     protected function insertProcall($record) {
