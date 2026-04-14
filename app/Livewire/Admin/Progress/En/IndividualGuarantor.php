@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin\Progress\En;
 
 use App\Models\EnProgress;
-use App\Models\EnProgressOccupant;
+use App\Models\EnProgressGuarantor;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -13,7 +13,7 @@ class IndividualGuarantor extends Component
     use WithFileUploads;
 
     public $enProgress = null;
-    public $enProgressOccupants = null;
+    public $enProgressGuarantors = null;
     public $latestGeProgress = null;
 
     protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
@@ -28,27 +28,40 @@ class IndividualGuarantor extends Component
         'mobile_phone_number' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
         'workplace_or_school_name' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
         'workplace_or_school_kana' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'phone_number' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'residence_type' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'residence_years' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'occupation' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'workplace_name' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'workplace_kana' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'workplace_phone_number' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'industry' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'years_of_service' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'annual_income' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'capital' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
+        'established_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
+        'income_day' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
     ];
 
     public function mount($enProgress)
     {
         $this->enProgress = $enProgress;
-        $this->enProgressOccupants = $enProgress->enProgressOccupants
-            ?->sortBy('occupant_seq')
+        $this->enProgressGuarantors = $enProgress->enProgressGuarantors
+            ?->sortBy('guarator_seq')
             ->values() ?? collect();
     }
 
-    public function saveFieldByName(int $occupantId, string $fieldName, $value): void
+    public function saveFieldByName(int $guarantorId, string $fieldName, $value): void
     {
-        if (!$this->enProgress || !$occupantId || !array_key_exists($fieldName, $this->contractTermFieldConfig)) {
+        if (!$this->enProgress || !$guarantorId || !array_key_exists($fieldName, $this->contractTermFieldConfig)) {
             return;
         }
 
-        $occupant = EnProgressOccupant::query()
-            ->where('id', $occupantId)
+        $guarantor = EnProgressGuarantor::query()
+            ->where('id', $guarantorId)
             ->where('en_progress_id', $this->enProgress->id)
             ->first();
-        if (!$occupant) {
+        if (!$guarantor) {
             return;
         }
 
@@ -63,8 +76,8 @@ class IndividualGuarantor extends Component
 
         $normalizedValue = $this->normalizeContractTermValue($fieldName, $value);
 
-        $occupant->{$fieldName} = $normalizedValue;
-        $occupant->save();
+        $guarantor->{$fieldName} = $normalizedValue;
+        $guarantor->save();
 
         $this->dispatch('enProgressUpdated', enProgressId: $this->enProgress->id);
     }
@@ -153,33 +166,33 @@ class IndividualGuarantor extends Component
             return;
         }
 
-        $nextOccupantSeq = (int) EnProgressOccupant::query()
+        $nextOccupantSeq = (int) EnProgressGuarantor::query()
             ->where('en_progress_id', $this->enProgress->id)
-            ->max('occupant_seq') + 1;
+            ->max('guarator_seq') + 1;
 
-        EnProgressOccupant::query()->create([
+        EnProgressGuarantor::query()->create([
             'en_progress_id' => $this->enProgress->id,
-            'occupant_seq' => $nextOccupantSeq,
+            'guarator_seq' => $nextOccupantSeq,
         ]);
 
         $this->reloadProgress($this->enProgress->id);
     }
 
-    public function removeOccupant(int $occupantId): void
+    public function removeOccupant(int $guarantorId): void
     {
-        if (!$this->enProgress || !$occupantId) {
+        if (!$this->enProgress || !$guarantorId) {
             return;
         }
 
-        $occupant = EnProgressOccupant::query()
-            ->where('id', $occupantId)
+        $guarantor = EnProgressGuarantor::query()
+            ->where('id', $guarantorId)
             ->where('en_progress_id', $this->enProgress->id)
             ->first();
-        if (!$occupant) {
+        if (!$guarantor) {
             return;
         }
 
-        $occupant->delete();
+        $guarantor->delete();
         $this->reloadProgress($this->enProgress->id);
     }
 
@@ -194,10 +207,10 @@ class IndividualGuarantor extends Component
         }
 
         $this->enProgress = EnProgress::query()
-            ->with('enProgressOccupants')
+            ->with('enProgressGuarantors')
             ->find($this->enProgress->id);
-        $this->enProgressOccupants = $this->enProgress?->enProgressOccupants
-            ?->sortBy('occupant_seq')
+        $this->enProgressGuarantors = $this->enProgress?->enProgressGuarantors
+            ?->sortBy('guarator_seq')
             ->values() ?? collect();
     }
 

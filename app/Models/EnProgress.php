@@ -153,6 +153,11 @@ class EnProgress extends Model
         return $this->hasMany(EnProgressOccupant::class);
     }
 
+    public function enProgressGuarantors()
+    {
+        return $this->hasMany(EnProgressGuarantor::class);
+    }
+
     public function enProgressEmergencyContact()
     {
         return $this->hasOne(EnProgressEmergencyContact::class);

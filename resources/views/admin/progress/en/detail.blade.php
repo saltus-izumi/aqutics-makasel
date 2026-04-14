@@ -17,6 +17,7 @@
                         <livewire:admin.progress.en.individual-applicant :enProgress="$enProgress" />
                         <livewire:admin.progress.en.individual-occupant :enProgress="$enProgress" />
                         <livewire:admin.progress.en.individual-emergency-contact :enProgress="$enProgress" />
+                        <livewire:admin.progress.en.individual-guarantor :enProgress="$enProgress" />
                     @else
                         <livewire:admin.progress.en.corporate-applicant :enProgress="$enProgress" />
                         <livewire:admin.progress.en.corporate-occupant :enProgress="$enProgress" />
