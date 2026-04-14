@@ -9,7 +9,7 @@ use App\Models\EnProgress;
 use App\Models\EnProgressEmergencyContact;
 use App\Models\EnProgressGuarantor;
 use App\Models\EnProgressCorporateApplicant;
-use App\Models\EnProgressOccupants;
+use App\Models\EnProgressOccupant;
 use App\Models\GuaranteeCompany;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
@@ -794,7 +794,7 @@ class CorporateTenancyApplicationImport extends Component
      */
     protected function upsertOccupant(int $enProgressId, int $occupantSeq, array $fieldMap, array $regData): void
     {
-        $enProgressOccupants = EnProgressOccupants::firstOrNew([
+        $enProgressOccupants = EnProgressOccupant::firstOrNew([
             'en_progress_id' => $enProgressId,
             'occupant_seq' => $occupantSeq,
         ]);

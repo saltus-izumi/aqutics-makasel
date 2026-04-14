@@ -8,7 +8,7 @@ use App\Models\EnProgress;
 use App\Models\EnProgressEmergencyContact;
 use App\Models\EnProgressGuarantor;
 use App\Models\EnProgressIndividualApplicant;
-use App\Models\EnProgressOccupants;
+use App\Models\EnProgressOccupant;
 use App\Models\GuaranteeCompany;
 use App\Models\Investment;
 use App\Models\InvestmentRoom;
@@ -736,7 +736,7 @@ class IndividualTenancyApplicationImport extends Component
             'workplace_or_school_name' => 'ru104',
             'workplace_or_school_kana' => 'ru105',
         ], $regData, [
-            'gender' => fn ($value) => $this->getGender($value, EnProgressOccupants::class),
+            'gender' => fn ($value) => $this->getGender($value, EnProgressOccupant::class),
         ]);
 
         // 入居者2
@@ -753,7 +753,7 @@ class IndividualTenancyApplicationImport extends Component
                 'workplace_or_school_name' => 'ru115',
                 'workplace_or_school_kana' => 'ru116',
             ], $regData, [
-                'gender' => fn ($value) => $this->getGender($value, EnProgressOccupants::class),
+                'gender' => fn ($value) => $this->getGender($value, EnProgressOccupant::class),
             ]);
         }
 
@@ -771,7 +771,7 @@ class IndividualTenancyApplicationImport extends Component
                 'workplace_or_school_name' => 'ru126',
                 'workplace_or_school_kana' => 'ru127',
             ], $regData, [
-                'gender' => fn ($value) => $this->getGender($value, EnProgressOccupants::class),
+                'gender' => fn ($value) => $this->getGender($value, EnProgressOccupant::class),
             ]);
         }
 
@@ -789,7 +789,7 @@ class IndividualTenancyApplicationImport extends Component
                 'workplace_or_school_name' => 'ru137',
                 'workplace_or_school_kana' => 'ru138',
             ], $regData, [
-                'gender' => fn ($value) => $this->getGender($value, EnProgressOccupants::class),
+                'gender' => fn ($value) => $this->getGender($value, EnProgressOccupant::class),
             ]);
         }
 
@@ -869,7 +869,7 @@ class IndividualTenancyApplicationImport extends Component
         array $regData,
         array $transforms = []
     ): void {
-        $enProgressOccupants = EnProgressOccupants::firstOrNew([
+        $enProgressOccupants = EnProgressOccupant::firstOrNew([
             'en_progress_id' => $enProgressId,
             'occupant_seq' => $occupantSeq,
         ]);

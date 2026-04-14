@@ -150,7 +150,7 @@ class EnProgress extends Model
 
     public function enProgressOccupants()
     {
-        return $this->hasMany(EnProgressOccupants::class);
+        return $this->hasMany(EnProgressOccupant::class);
     }
 
     public function enProgressEmergencyContact()
@@ -180,7 +180,7 @@ class EnProgress extends Model
 
     public function firstEnProgressOccupant()
     {
-        return $this->hasOne(EnProgressOccupants::class)
+        return $this->hasOne(EnProgressOccupant::class)
             ->ofMany('occupant_seq', 'min');
     }
 

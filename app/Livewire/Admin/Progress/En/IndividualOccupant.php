@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin\Progress\En;
 
 use App\Models\EnProgress;
-use App\Models\EnProgressOccupants;
+use App\Models\EnProgressOccupant;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -44,7 +44,7 @@ class IndividualOccupant extends Component
             return;
         }
 
-        $occupant = EnProgressOccupants::query()
+        $occupant = EnProgressOccupant::query()
             ->where('id', $occupantId)
             ->where('en_progress_id', $this->enProgress->id)
             ->first();
@@ -153,11 +153,11 @@ class IndividualOccupant extends Component
             return;
         }
 
-        $nextOccupantSeq = (int) EnProgressOccupants::query()
+        $nextOccupantSeq = (int) EnProgressOccupant::query()
             ->where('en_progress_id', $this->enProgress->id)
             ->max('occupant_seq') + 1;
 
-        EnProgressOccupants::query()->create([
+        EnProgressOccupant::query()->create([
             'en_progress_id' => $this->enProgress->id,
             'occupant_seq' => $nextOccupantSeq,
         ]);
@@ -171,7 +171,7 @@ class IndividualOccupant extends Component
             return;
         }
 
-        $occupant = EnProgressOccupants::query()
+        $occupant = EnProgressOccupant::query()
             ->where('id', $occupantId)
             ->where('en_progress_id', $this->enProgress->id)
             ->first();

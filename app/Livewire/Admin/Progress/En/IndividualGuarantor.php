@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class CorporateOccupant extends Component
+class IndividualGuarantor extends Component
 {
     use WithFileUploads;
 
@@ -26,8 +26,8 @@ class CorporateOccupant extends Component
         'birth_date' => ['rules' => ['nullable', 'date'], 'type' => 'date'],
         'relationship' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
         'mobile_phone_number' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
-        'annual_income' => ['rules' => ['nullable', 'regex:/^$|^[+-]?(?:\d+|\d{1,3}(,\d{3})+)$/'], 'type' => 'integer'],
-        'memo' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'workplace_or_school_name' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
+        'workplace_or_school_kana' => ['rules' => ['nullable', 'string'], 'type' => 'string'],
     ];
 
     public function mount($enProgress)
@@ -204,6 +204,6 @@ class CorporateOccupant extends Component
 
     public function render()
     {
-        return view('livewire.admin.progress.en.corporate-occupant');
+        return view('livewire.admin.progress.en.individual-guarantor');
     }
 }
