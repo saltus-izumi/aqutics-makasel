@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Import;
 
+use App\Models\Investment;
 use App\Models\InvestmentRoom;
 use App\Models\InvestmentRoomResident;
 use App\Models\InvestmentRoomResidentHistory;
@@ -50,6 +51,8 @@ class TenantImport extends Component
 
         try {
             $csv = new \SplFileObject($this->tenantFile->getRealPath(), 'r');
+            // CP932で0x5Cを含む文字(例: 彌)の誤エスケープを防ぐため、escapeは無効化する
+            $csv->setCsvControl(',', '"', '');
             $rowNo = 0;
 
             while (! $csv->eof()) {
@@ -70,8 +73,37 @@ class TenantImport extends Component
 
                 $this->readCount++;
 
+                $investmentLabel = trim((string) ($record[1] ?? ''));
+                $investmentId = (string) ($record[0] ?? '');
+                $roomNumber = trim((string) ($record[2] ?? ''));
+
+                $investment = $this->findInvestment($investmentId);
+                if (!$investment) {
+                    $this->errorCount++;
+                    $this->errorMessages[] = sprintf(
+                        '%d行目: %s (%s) に該当する物件情報がありません。',
+                        $rowNo,
+                        $investmentLabel,
+                        $investmentId
+                    );
+                    continue;
+                }
+
+                $room = $this->findRoom($investment, $roomNumber);
+                if (!$room) {
+                    $this->errorCount++;
+                    $this->errorMessages[] = sprintf(
+                        '%d行目: %s (%s) %s に該当する部屋情報がありません。',
+                        $rowNo,
+                        $investmentLabel,
+                        $investmentId,
+                        $roomNumber
+                    );
+                    continue;
+                }
+
                 try {
-                    $this->upsertRow($record);
+                    $this->upsertRow($record, $room);
                 } catch (\Throwable $e) {
                     report($e);
                     $this->errorCount++;
@@ -103,6 +135,28 @@ class TenantImport extends Component
         return view('livewire.admin.import.tenant-import');
     }
 
+    protected function findInvestment(string $investmentId): ?Investment
+    {
+        $id = (int) $investmentId;
+        if ($id <= 0) {
+            return null;
+        }
+
+        return Investment::query()->find($id);
+    }
+
+    protected function findRoom(Investment $investment, string $roomNumber): ?InvestmentRoom
+    {
+        if ($roomNumber === '') {
+            return null;
+        }
+
+        return InvestmentRoom::query()
+            ->where('investment_id', $investment->id)
+            ->where('investment_room_number', $roomNumber)
+            ->first();
+    }
+
     /**
      * @param array<int, mixed> $row
      * @return array<int, mixed>
@@ -123,29 +177,8 @@ class TenantImport extends Component
     /**
      * @param array<int, mixed> $record
      */
-    protected function upsertRow(array $record): void
+    protected function upsertRow(array $record, InvestmentRoom $room): void
     {
-        $investmentId = (int) ($record[0] ?? 0);
-        $roomNumber = (string) ($record[2] ?? '');
-
-        $room = InvestmentRoom::query()
-            ->where('investment_id', $investmentId)
-            ->where('investment_room_number', $roomNumber)
-            ->first();
-
-        if (!$room) {
-            $nextRoomId = ((int) InvestmentRoom::query()
-                ->where('investment_id', $investmentId)
-                ->max('investment_room_id')) + 1;
-
-            $room = new InvestmentRoom([
-                'investment_id' => $investmentId,
-                'investment_room_id' => $nextRoomId,
-                'investment_room_number' => $roomNumber,
-            ]);
-            $this->insertRoomCount++;
-        }
-
         $this->assignIfNotEmpty($room, 'money', $record[6] ?? null);
         $this->assignIfNotEmpty($room, 'sikikin', $record[14] ?? null);
         $this->assignIfNotEmpty($room, 'hosyokin', $record[15] ?? null);
@@ -212,6 +245,10 @@ class TenantImport extends Component
         $resident->contract_type = $contractType === false ? null : $contractType;
 
         $resident->save();
+
+        if ($resident->contractor_no === null || $resident->contractor_no === '') {
+            return;
+        }
 
         $historyQuery = InvestmentRoomResidentHistory::query()
             ->where('investment_id', $resident->investment_id)
