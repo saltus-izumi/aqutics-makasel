@@ -49,4 +49,9 @@ class ImportController
         return view('admin.import.import-corporate-tenancy-application');
     }
 
+    public function importTenant()
+    {
+        return view('admin.import.import-tenant');
+    }
+
 }
