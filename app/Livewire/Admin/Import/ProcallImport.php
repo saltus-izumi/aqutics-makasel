@@ -47,57 +47,60 @@ class ProcallImport extends Component
 
     public function import(): void
     {
-        $this->validate([
-            'procallFile' => ['required', 'file'],
-        ]);
-
-        $this->insertCount = 0;
-        $this->updateCount = 0;
-        $this->errorCount = 0;
-        $this->errorMessages = [];
-
-
-        DB::beginTransaction();
-
         try {
-            $file = new \SplFileObject($this->procallFile->getRealPath(), 'r');
-            $rowCount = 1;
+            $this->validate([
+                'procallFile' => ['required', 'file'],
+            ]);
 
-            while (! $file->eof()) {
-                $row = $file->fgetcsv();
-                if ($row === [null] || $row === false) {
-                    continue;
-                }
+            $this->insertCount = 0;
+            $this->updateCount = 0;
+            $this->errorCount = 0;
+            $this->errorMessages = [];
 
-                // ヘッダー行読み飛ばし
-                if ($rowCount === 1) {
+            DB::beginTransaction();
+
+            try {
+                $file = new \SplFileObject($this->procallFile->getRealPath(), 'r');
+                $rowCount = 1;
+
+                while (! $file->eof()) {
+                    $row = $file->fgetcsv();
+                    if ($row === [null] || $row === false) {
+                        continue;
+                    }
+
+                    // ヘッダー行読み飛ばし
+                    if ($rowCount === 1) {
+                        $rowCount++;
+                        continue;
+                    }
+
+                    // $row = mb_convert_encoding($row, 'UTF-8', 'SJIS-win');
+                    $result = $this->insert($row);
+                    if ($result !== true) {
+                        $this->errorMessages[] = "{$rowCount}行目：" . $result;
+                    }
                     $rowCount++;
-                    continue;
                 }
-
-                // $row = mb_convert_encoding($row, 'UTF-8', 'SJIS-win');
-                $result = $this->insert($row);
-                if ($result !== true) {
-                    $this->errorMessages[] = "{$rowCount}行目：" . $result;
-                }
-                $rowCount++;
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                report($e);
+                $this->errorCount++;
+                $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e->getMessage() . ')';
+                $this->reset('procallFile');
+                return;
             }
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            report($e);
-            $this->errorCount++;
-            $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e->getMessage() . ')';
+
+            if ($this->errorCount == 0) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+
             $this->reset('procallFile');
-            return;
+        } finally {
+            $this->dispatch('close-procall-import-loading-modal');
         }
-
-        if ($this->errorCount == 0) {
-            DB::commit();
-        } else {
-            DB::rollBack();
-        }
-
-        $this->reset('procallFile');
     }
 
     public function render()

@@ -41,139 +41,143 @@ class IndividualTenancyApplicationImport extends Component
 
     public function import(): void
     {
-        $this->validate([
-            'individualTenancyApplicationFile' => ['required', 'file'],
-        ]);
-
-        $this->readCount = 0;
-        $this->insertResidentCount = 0;
-        $this->updateResidentCount = 0;
-        $this->errorCount = 0;
-        $this->errorMessages = [];
-
-        $originalName = $this->individualTenancyApplicationFile->getClientOriginalName();
-        if (!preg_match('/^個人申込-([0-9]{8})\.csv$/u', $originalName, $matches)) {
-            $this->errorCount = 1;
-            $this->errorMessages[] = '不正なファイル名です。';
-            return;
-        }
-
-        $startYear = (int) substr($matches[1], 0, 4);
-        $startMonth = (int) substr($matches[1], 4, 2);
-        $startDay = (int) substr($matches[1], 6, 2);
-        if (!checkdate($startMonth, $startDay, $startYear)) {
-            $this->errorCount = 1;
-            $this->errorMessages[] = '不正なファイル名です。';
-            return;
-        }
-
-        $samplingDate = Carbon::create($startYear, $startMonth, $startDay)->startOfDay();
-        $startDate = $samplingDate->copy();
-        $endDate = $startDate->copy()->addDays(6);
-
-        DB::beginTransaction();
-
         try {
-            SummaryPeriod::query()->firstOrCreate(
-                ['start_date' => $startDate->toDateString()],
-                ['end_date' => $endDate->toDateString()]
-            );
+            $this->validate([
+                'individualTenancyApplicationFile' => ['required', 'file'],
+            ]);
 
-            ReactionPersonal::query()
-                ->whereDate('sampling_date', $samplingDate->toDateString())
-                ->delete();
+            $this->readCount = 0;
+            $this->insertResidentCount = 0;
+            $this->updateResidentCount = 0;
+            $this->errorCount = 0;
+            $this->errorMessages = [];
 
-            $csv = new \SplFileObject($this->individualTenancyApplicationFile->getRealPath(), 'r');
-            $rowNo = 0;
-            while (!$csv->eof()) {
-                $row = $csv->fgetcsv();
-                if ($row === false || $row === [null]) {
-                    continue;
-                }
+            $originalName = $this->individualTenancyApplicationFile->getClientOriginalName();
+            if (!preg_match('/^個人申込-([0-9]{8})\.csv$/u', $originalName, $matches)) {
+                $this->errorCount = 1;
+                $this->errorMessages[] = '不正なファイル名です。';
+                return;
+            }
 
-                $rowNo++;
-                if ($rowNo === 1) {
-                    continue;
-                }
+            $startYear = (int) substr($matches[1], 0, 4);
+            $startMonth = (int) substr($matches[1], 4, 2);
+            $startDay = (int) substr($matches[1], 6, 2);
+            if (!checkdate($startMonth, $startDay, $startYear)) {
+                $this->errorCount = 1;
+                $this->errorMessages[] = '不正なファイル名です。';
+                return;
+            }
 
-                $record = $this->convertEncoding($row);
-                $this->insertLog($record);
+            $samplingDate = Carbon::create($startYear, $startMonth, $startDay)->startOfDay();
+            $startDate = $samplingDate->copy();
+            $endDate = $startDate->copy()->addDays(6);
 
-                $regData = $this->mapCsvRow($record);
-                if ($regData === []) {
-                    continue;
-                }
+            DB::beginTransaction();
 
-                $this->readCount++;
+            try {
+                SummaryPeriod::query()->firstOrCreate(
+                    ['start_date' => $startDate->toDateString()],
+                    ['end_date' => $endDate->toDateString()]
+                );
 
-                $regData['sampling_date'] = $samplingDate->toDateString();
+                ReactionPersonal::query()
+                    ->whereDate('sampling_date', $samplingDate->toDateString())
+                    ->delete();
 
-                $investment = $this->findInvestment($regData['ru003'] ?? '');
-                $room = $this->findRoom($investment, $regData['ru004'] ?? '');
-                $regData['investment_id'] = 0;
-                $regData['investment_room_id'] = 0;
-                $regData['en_staff_id'] = null;
-
-                if ($investment) {
-                    $regData['investment_id'] = $investment->id;
-                    $regData['en_staff_id'] = $investment->en_staff_id;
-                }
-                if ($room) {
-                    $regData['investment_room_id'] = $room->investment_room_id;
-                    $regData['investment_room_uid'] = $room->id;
-                } elseif (($regData['ru001'] ?? null) === "\x1a") {
-                    continue;
-                } else {
-                    if (!$investment) {
-                        $this->errorCount = ($this->errorCount ?? 0) + 1;
-                        $this->errorMessages[] = sprintf(
-                            '%d行目: %s に該当する物件情報がありません。',
-                            $rowNo,
-                            $regData['ru003'] ?? ''
-                        );
-                    } else {
-                        $this->errorCount = ($this->errorCount ?? 0) + 1;
-                        $this->errorMessages[] = sprintf(
-                            '%d行目: %s %s に該当する部屋情報がありません。',
-                            $rowNo,
-                            $regData['ru003'] ?? '',
-                            $regData['ru004'] ?? ''
-                        );
+                $csv = new \SplFileObject($this->individualTenancyApplicationFile->getRealPath(), 'r');
+                $rowNo = 0;
+                while (!$csv->eof()) {
+                    $row = $csv->fgetcsv();
+                    if ($row === false || $row === [null]) {
+                        continue;
                     }
-                    continue;
+
+                    $rowNo++;
+                    if ($rowNo === 1) {
+                        continue;
+                    }
+
+                    $record = $this->convertEncoding($row);
+                    $this->insertLog($record);
+
+                    $regData = $this->mapCsvRow($record);
+                    if ($regData === []) {
+                        continue;
+                    }
+
+                    $this->readCount++;
+
+                    $regData['sampling_date'] = $samplingDate->toDateString();
+
+                    $investment = $this->findInvestment($regData['ru003'] ?? '');
+                    $room = $this->findRoom($investment, $regData['ru004'] ?? '');
+                    $regData['investment_id'] = 0;
+                    $regData['investment_room_id'] = 0;
+                    $regData['en_staff_id'] = null;
+
+                    if ($investment) {
+                        $regData['investment_id'] = $investment->id;
+                        $regData['en_staff_id'] = $investment->en_staff_id;
+                    }
+                    if ($room) {
+                        $regData['investment_room_id'] = $room->investment_room_id;
+                        $regData['investment_room_uid'] = $room->id;
+                    } elseif (($regData['ru001'] ?? null) === "\x1a") {
+                        continue;
+                    } else {
+                        if (!$investment) {
+                            $this->errorCount = ($this->errorCount ?? 0) + 1;
+                            $this->errorMessages[] = sprintf(
+                                '%d行目: %s に該当する物件情報がありません。',
+                                $rowNo,
+                                $regData['ru003'] ?? ''
+                            );
+                        } else {
+                            $this->errorCount = ($this->errorCount ?? 0) + 1;
+                            $this->errorMessages[] = sprintf(
+                                '%d行目: %s %s に該当する部屋情報がありません。',
+                                $rowNo,
+                                $regData['ru003'] ?? '',
+                                $regData['ru004'] ?? ''
+                            );
+                        }
+                        continue;
+                    }
+
+                    ReactionPersonal::query()->create($regData);
+
+                    // if (($regData['ru035'] ?? null) === '承認' && $room) {
+                    //     $this->upsertInvestmentRoomResident($room, $regData);
+                    // }
+
+                    $broker = $this->upsertBroker($regData);
+                    if ($room && $broker) {
+                        BrokerInvestment::query()->firstOrCreate([
+                            'broker_id' => $broker->id,
+                            'investment_id' => $room->investment_id,
+                        ]);
+                    }
+                    $regData['broker_id'] = $broker->id;
+
+                    $this->upsertEnProgress($regData);
                 }
 
-                ReactionPersonal::query()->create($regData);
-
-                // if (($regData['ru035'] ?? null) === '承認' && $room) {
-                //     $this->upsertInvestmentRoomResident($room, $regData);
-                // }
-
-                $broker = $this->upsertBroker($regData);
-                if ($room && $broker) {
-                    BrokerInvestment::query()->firstOrCreate([
-                        'broker_id' => $broker->id,
-                        'investment_id' => $room->investment_id,
-                    ]);
+                if ($this->errorCount == 0) {
+                    DB::commit();
+                } else {
+                    DB::rollBack();
                 }
-                $regData['broker_id'] = $broker->id;
-
-                $this->upsertEnProgress($regData);
-            }
-
-            if ($this->errorCount == 0) {
-                DB::commit();
-            } else {
+            } catch (\Throwable $e) {
                 DB::rollBack();
+                report($e);
+                $this->errorCount = ($this->errorCount ?? 0) + 1;
+                $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e . ')';
             }
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            report($e);
-            $this->errorCount = ($this->errorCount ?? 0) + 1;
-            $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e . ')';
-        }
 
-        $this->reset('individualTenancyApplicationFile');
+            $this->reset('individualTenancyApplicationFile');
+        } finally {
+            $this->dispatch('close-individual-tenancy-application-import-loading-modal');
+        }
     }
 
     /**
