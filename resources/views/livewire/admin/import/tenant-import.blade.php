@@ -1,4 +1,9 @@
-<div class="tw:p-[26px]">
+<div
+    class="tw:p-[26px]"
+    x-data
+    x-on:open-tenant-import-loading-modal.window="document.body.classList.add('tw:cursor-wait')"
+    x-on:close-tenant-import-loading-modal.window="document.body.classList.remove('tw:cursor-wait')"
+>
     <div class="tw:w-full">
         <div class="tw:mb-[21px]">
             <x-form.input-file name="tenant_file" wire:model="tenantFile" />
@@ -6,7 +11,15 @@
                 <x-form.error-message>{{ $message }}</x-form.error-message>
             @enderror
         </div>
-        <x-button.blue wire:click="import">取り込み</x-button.blue>
+        <x-button.blue
+            type="button"
+            wire:click="import"
+            wire:loading.attr="disabled"
+            wire:target="import"
+            x-on:click="window.dispatchEvent(new CustomEvent('open-tenant-import-loading-modal'))"
+        >
+            取り込み
+        </x-button.blue>
         <div class="tw:mt-[21px]">
             @if ($errorCount === 0)
                 <div class="tw:text-[#2e7d32]">
@@ -31,4 +44,10 @@
             </div>
         @endif
     </div>
+
+    <x-modal title="取込中です" event="tenant-import-loading-modal">
+        <div class="tw:text-[1.5rem] tw:leading-[1.8]">
+            取込中です。しばらくお待ちください。
+        </div>
+    </x-modal>
 </div>

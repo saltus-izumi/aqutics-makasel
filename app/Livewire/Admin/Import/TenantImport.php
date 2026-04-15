@@ -36,98 +36,102 @@ class TenantImport extends Component
 
     public function import(): void
     {
-        $this->validate([
-            'tenantFile' => ['required', 'file'],
-        ]);
-
-        $this->readCount = 0;
-        $this->insertRoomCount = 0;
-        $this->insertResidentCount = 0;
-        $this->updateResidentCount = 0;
-        $this->errorCount = 0;
-        $this->errorMessages = [];
-
-        DB::beginTransaction();
-
         try {
-            $csv = new \SplFileObject($this->tenantFile->getRealPath(), 'r');
-            // CP932で0x5Cを含む文字(例: 彌)の誤エスケープを防ぐため、escapeは無効化する
-            $csv->setCsvControl(',', '"', '');
-            $rowNo = 0;
+            $this->validate([
+                'tenantFile' => ['required', 'file'],
+            ]);
 
-            while (! $csv->eof()) {
-                $row = $csv->fgetcsv();
-                if ($row === false || $row === [null]) {
-                    continue;
+            $this->readCount = 0;
+            $this->insertRoomCount = 0;
+            $this->insertResidentCount = 0;
+            $this->updateResidentCount = 0;
+            $this->errorCount = 0;
+            $this->errorMessages = [];
+
+            DB::beginTransaction();
+
+            try {
+                $csv = new \SplFileObject($this->tenantFile->getRealPath(), 'r');
+                // CP932で0x5Cを含む文字(例: 彌)の誤エスケープを防ぐため、escapeは無効化する
+                $csv->setCsvControl(',', '"', '');
+                $rowNo = 0;
+
+                while (! $csv->eof()) {
+                    $row = $csv->fgetcsv();
+                    if ($row === false || $row === [null]) {
+                        continue;
+                    }
+
+                    $rowNo++;
+                    if ($rowNo === 1) {
+                        continue;
+                    }
+
+                    $record = $this->convertEncoding($row);
+                    if (($record[2] ?? '') === '' || ($record[0] ?? '') === '') {
+                        continue;
+                    }
+
+                    $this->readCount++;
+
+                    $investmentLabel = trim((string) ($record[1] ?? ''));
+                    $investmentId = (string) ($record[0] ?? '');
+                    $roomNumber = trim((string) ($record[2] ?? ''));
+
+                    $investment = $this->findInvestment($investmentId);
+                    if (!$investment) {
+                        $this->errorCount++;
+                        $this->errorMessages[] = sprintf(
+                            '%d行目: %s (%s) に該当する物件情報がありません。',
+                            $rowNo,
+                            $investmentLabel,
+                            $investmentId
+                        );
+                        continue;
+                    }
+
+                    $room = $this->findRoom($investment, $roomNumber);
+                    if (!$room) {
+                        $this->errorCount++;
+                        $this->errorMessages[] = sprintf(
+                            '%d行目: %s (%s) %s に該当する部屋情報がありません。',
+                            $rowNo,
+                            $investmentLabel,
+                            $investmentId,
+                            $roomNumber
+                        );
+                        continue;
+                    }
+
+                    try {
+                        $this->upsertRow($record, $room);
+                    } catch (\Throwable $e) {
+                        report($e);
+                        $this->errorCount++;
+                        $this->errorMessages[] = sprintf(
+                            '%d行目: 取り込みに失敗しました。(%s)',
+                            $rowNo,
+                            $e->getMessage()
+                        );
+                    }
                 }
 
-                $rowNo++;
-                if ($rowNo === 1) {
-                    continue;
+                if ($this->errorCount === 0) {
+                    DB::commit();
+                } else {
+                    DB::rollBack();
                 }
-
-                $record = $this->convertEncoding($row);
-                if (($record[2] ?? '') === '' || ($record[0] ?? '') === '') {
-                    continue;
-                }
-
-                $this->readCount++;
-
-                $investmentLabel = trim((string) ($record[1] ?? ''));
-                $investmentId = (string) ($record[0] ?? '');
-                $roomNumber = trim((string) ($record[2] ?? ''));
-
-                $investment = $this->findInvestment($investmentId);
-                if (!$investment) {
-                    $this->errorCount++;
-                    $this->errorMessages[] = sprintf(
-                        '%d行目: %s (%s) に該当する物件情報がありません。',
-                        $rowNo,
-                        $investmentLabel,
-                        $investmentId
-                    );
-                    continue;
-                }
-
-                $room = $this->findRoom($investment, $roomNumber);
-                if (!$room) {
-                    $this->errorCount++;
-                    $this->errorMessages[] = sprintf(
-                        '%d行目: %s (%s) %s に該当する部屋情報がありません。',
-                        $rowNo,
-                        $investmentLabel,
-                        $investmentId,
-                        $roomNumber
-                    );
-                    continue;
-                }
-
-                try {
-                    $this->upsertRow($record, $room);
-                } catch (\Throwable $e) {
-                    report($e);
-                    $this->errorCount++;
-                    $this->errorMessages[] = sprintf(
-                        '%d行目: 取り込みに失敗しました。(%s)',
-                        $rowNo,
-                        $e->getMessage()
-                    );
-                }
-            }
-
-            if ($this->errorCount === 0) {
-                DB::commit();
-            } else {
+            } catch (\Throwable $e) {
                 DB::rollBack();
+                report($e);
+                $this->errorCount++;
+                $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e->getMessage() . ')';
             }
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            report($e);
-            $this->errorCount++;
-            $this->errorMessages[] = '取り込み処理中にエラーが発生しました。(' . $e->getMessage() . ')';
-        }
 
-        $this->reset('tenantFile');
+            $this->reset('tenantFile');
+        } finally {
+            $this->dispatch('close-tenant-import-loading-modal');
+        }
     }
 
     public function render()
