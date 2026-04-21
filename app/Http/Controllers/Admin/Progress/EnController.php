@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Progress;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\EnProgress;
 use App\Models\GeProgressFile;
 
-class EnProgressController
+class EnController
 {
     public function index(Request $request)
     {

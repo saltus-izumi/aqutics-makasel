@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Progress;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -7,30 +7,40 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use App\Models\TeProgress;
-use App\Models\TeProgressFile;
+use App\Models\GeProgress;
+use App\Models\GeProgressFile;
 
-class TeProgressController
+class GeController
 {
     public function index(Request $request)
     {
-        return view('admin.progress.te.index');
+        return view('admin.progress.ge.index');
     }
 
-    public function detail(Request $request, $teProgressId)
+    public function detail(Request $request, $geProgressId)
     {
-        $teProgress = TeProgress::query()
+        $geProgress = GeProgress::query()
             ->with([
+                'step1Files',
+                'responsibleUser',
+                'executorUser',
+                'progress',
+                'progress.investment',
+                'progress.investment.restorationCompany',
+                'progress.investment.landlord.owner',
+                'progress.investmentRoom',
+                'progress.investmentRoomRedidentHistory',
+                'progress.investmentEmptyRoom',
             ])
-            ->find($teProgressId);
+            ->find($geProgressId);
 
-        if (!$teProgress) {
+        if (!$geProgress) {
             abort(404);
         }
 
-        return view('admin.progress.te.detail')
+        return view('admin.progress.ge.detail')
             ->with(compact(
-                'teProgress',
+                'geProgress',
             ));
     }
 
@@ -61,9 +71,9 @@ class TeProgressController
             ));
     }
 
-    public function preview(Request $request, $teProgressFileId)
+    public function preview(Request $request, $geProgressFileId)
     {
-        $file = TeProgressFile::query()->find($teProgressFileId);
+        $file = GeProgressFile::query()->find($geProgressFileId);
         if (!$file) {
             abort(404);
         }

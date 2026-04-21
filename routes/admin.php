@@ -3,10 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController as AdminAuth;
 use App\Http\Controllers\Admin\OperationController as AdminOperation;
-use App\Http\Controllers\Admin\GeProgressController as AdminGeProgress;
-use App\Http\Controllers\Admin\EnProgressController as AdminEnProgress;
-use App\Http\Controllers\Admin\TeProgressController as AdminTeProgress;
+use App\Http\Controllers\Admin\Progress\GeController as AdminGe;
+use App\Http\Controllers\Admin\Progress\EnController as AdminEn;
+use App\Http\Controllers\Admin\Progress\TeController as AdminTe;
 use App\Http\Controllers\Admin\ImportController as AdminImport;
+use App\Http\Controllers\Admin\Master\OwnerController as AdminMasterOwner;
+
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AdminAuth::class, 'index'])->middleware('guest:admin')->name('login');
@@ -28,28 +30,32 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::prefix('progress')->name('progress.')->group(function () {
             Route::prefix('ge')->name('ge.')->group(function () {
-                Route::get('/', [AdminGeProgress::class, 'index'])->name('index');
-                Route::get('/files/{geProgressFileId}', [AdminGeProgress::class, 'preview'])->name('preview');
-                Route::get('/{geProgressId}', [AdminGeProgress::class, 'detail'])->name('detail');
-                Route::get('/{geProgressId}/owner-settlement', [AdminGeProgress::class, 'ownerSettlement'])->name('owner-settlement');
+                Route::get('/', [AdminGe::class, 'index'])->name('index');
+                Route::get('/files/{geProgressFileId}', [AdminGe::class, 'preview'])->name('preview');
+                Route::get('/{geProgressId}', [AdminGe::class, 'detail'])->name('detail');
+                Route::get('/{geProgressId}/owner-settlement', [AdminGe::class, 'ownerSettlement'])->name('owner-settlement');
             });
             Route::prefix('en')->name('en.')->group(function () {
-                Route::get('/', [AdminEnProgress::class, 'index'])->name('index');
-                Route::get('/{enProgressId}', [AdminEnProgress::class, 'detail'])->name('detail');
-                Route::get('/{enProgressId}/approval', [AdminEnProgress::class, 'approval'])->name('approval');
+                Route::get('/', [AdminEn::class, 'index'])->name('index');
+                Route::get('/{enProgressId}', [AdminEn::class, 'detail'])->name('detail');
+                Route::get('/{enProgressId}/approval', [AdminEn::class, 'approval'])->name('approval');
             });
             Route::prefix('te')->name('te.')->group(function () {
-                Route::get('/', [AdminTeProgress::class, 'index'])->name('index');
-                Route::get('/files/{teProgressFileId}', [AdminTeProgress::class, 'preview'])->name('preview');
-                Route::get('/{teProgressId}', [AdminTeProgress::class, 'detail'])->name('detail');
+                Route::get('/', [AdminTe::class, 'index'])->name('index');
+                Route::get('/files/{teProgressFileId}', [AdminTe::class, 'preview'])->name('preview');
+                Route::get('/{teProgressId}', [AdminTe::class, 'detail'])->name('detail');
+            });
+        });
+
+        Route::prefix('master')->name('master.')->group(function () {
+            Route::prefix('owner')->name('owner.')->group(function () {
+                Route::get('/', [AdminMasterOwner::class, 'index'])->name('index');
             });
         });
 
         Route::prefix('import')->name('import.')->group(function () {
             Route::get('/import-procall', [AdminImport::class, 'importProcall'])->name('procall');
             Route::get('/import-procall-update', [AdminImport::class, 'importProcallUpdate'])->name('procall-update');
-        });
-        Route::prefix('import')->name('import.')->group(function () {
             Route::get('/import-individual-tenancy-application', [AdminImport::class, 'importIndividualTenancyApplication'])->name('individual-tenancy-application');
             Route::get('/import-corporate-tenancy-application', [AdminImport::class, 'importCorporateTenancyApplication'])->name('corporate-tenancy-application');
             Route::get('/import-tenant', [AdminImport::class, 'importTenant'])->name('tenant');

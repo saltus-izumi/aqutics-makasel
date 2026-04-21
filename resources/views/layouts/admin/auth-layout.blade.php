@@ -1,5 +1,6 @@
 @props([
     'title' => 'PM Log',
+    'showPageTitle' => true,
     'class' => '',
     'mode' => ''
 ])
@@ -126,9 +127,11 @@
                     $class
                 ])
             >
-                <div class="tw:h-[50px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[50px]" x-show="!float">
-                    {{ $title }}
-                </div>
+                @if ($showPageTitle)
+                    <div class="tw:h-[50px] tw:pl-[20px] tw:text-[1.8rem] tw:leading-[50px]" x-show="!float">
+                        {{ $title }}
+                    </div>
+                @endif
                 <div :class="float ? 'tw:h-full' : 'tw:h-[calc(100%-50px)]'">
                     {{ $slot }}
                 </div>
