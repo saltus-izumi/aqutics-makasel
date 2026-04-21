@@ -31,12 +31,32 @@
         </div>
         <div class="tw:h-[84px] tw:flex tw:flex-col tw:justify-center tw:gap-y-[10px]">
             <div class="tw:flex tw:gap-x-[26px]">
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">原契約統制</x-button.light-blue>
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">入居審査・与信証跡</x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-corporate-original-contract-control-modal'))"
+                >
+                    原契約統制
+                </x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-corporate-credit-screening-modal'))"
+                >
+                    入居審査・与信証跡
+                </x-button.light-blue>
             </div>
             <div class="tw:flex tw:gap-x-[26px]">
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">保証・リスク移転</x-button.light-blue>
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">物件引渡・状態証跡</x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-corporate-guarantee-risk-transfer-modal'))"
+                >
+                    保証・リスク移転
+                </x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-corporate-property-handover-status-modal'))"
+                >
+                    物件引渡・状態証跡
+                </x-button.light-blue>
             </div>
         </div>
     </div>
@@ -134,6 +154,22 @@
             <x-form.input name="contact_phone_number" :value="$enProgressCorporateApplicant?->contact_phone_number" class="tw:!h-[40px] tw:!text-center" :border="false" />
         </div>
     </div>
+
+    <x-modal title="原契約統制" event="en-corporate-original-contract-control-modal">
+        <div class="tw:text-[1.3rem]">原契約統制の内容を表示します。</div>
+    </x-modal>
+
+    <x-modal title="入居審査・与信証跡" event="en-corporate-credit-screening-modal">
+        <div class="tw:text-[1.3rem]">入居審査・与信証跡の内容を表示します。</div>
+    </x-modal>
+
+    <x-modal title="保証・リスク移転" event="en-corporate-guarantee-risk-transfer-modal">
+        <div class="tw:text-[1.3rem]">保証・リスク移転の内容を表示します。</div>
+    </x-modal>
+
+    <x-modal title="物件引渡・状態証跡" event="en-corporate-property-handover-status-modal">
+        <div class="tw:text-[1.3rem]">物件引渡・状態証跡の内容を表示します。</div>
+    </x-modal>
 </div>
 
 @push('scripts')

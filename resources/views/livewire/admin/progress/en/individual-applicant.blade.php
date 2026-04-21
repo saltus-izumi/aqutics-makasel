@@ -32,12 +32,32 @@
         </div>
         <div class="tw:h-[84px] tw:flex tw:flex-col tw:justify-center tw:gap-y-[10px]">
             <div class="tw:flex tw:gap-x-[26px]">
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">原契約統制</x-button.light-blue>
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">入居審査・与信証跡</x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-individual-original-contract-control-modal'))"
+                >
+                    原契約統制
+                </x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-individual-credit-screening-modal'))"
+                >
+                    入居審査・与信証跡
+                </x-button.light-blue>
             </div>
             <div class="tw:flex tw:gap-x-[26px]">
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">保証・リスク移転</x-button.light-blue>
-                <x-button.light-blue class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]">物件引渡・状態証跡</x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-individual-guarantee-risk-transfer-modal'))"
+                >
+                    保証・リスク移転
+                </x-button.light-blue>
+                <x-button.light-blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[150px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-individual-property-handover-status-modal'))"
+                >
+                    物件引渡・状態証跡
+                </x-button.light-blue>
             </div>
         </div>
     </div>
@@ -142,6 +162,67 @@
             <x-form.input-number name="annual_income" :value="$enProgressIndividualApplicant?->annual_income" class="tw:!h-[40px] tw:text-center" :border="false" />
         </div>
     </div>
+
+    <x-modal title="原契約統制" event="en-individual-original-contract-control-modal">
+        <div class="tw:flex tw:flex-col tw:justify-center tw:items-center tw:gap-y-[21px]">
+            <div class="tw:w-[754px] tw:flex tw:justify-end tw:gap-x-[26px]">
+                <x-button.blue
+                    class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[234px]"
+                    x-on:click="window.dispatchEvent(new CustomEvent('open-en-individual-original-contract-control-edit-modal'))"
+                >
+                    編集
+                </x-button.blue>
+            </div>
+            @foreach (array_chunk($originalContractFileKinds, 3, true) as $fileKindRow)
+                <div class="tw:w-[754px] tw:flex tw:gap-x-[26px]">
+                    @foreach ($fileKindRow as $fileKind => $fileLabel)
+                        @php
+                            $fileUrl = $fileUrls[$fileKind] ?? '';
+                        @endphp
+                        <x-button.light-blue
+                            class="tw:!h-[23px] tw:!px-[15px] tw:!rounded-lg tw:!w-[234px]"
+                            :disabled="blank($fileUrl)"
+                            x-on:click="const fileUrl = {{ \Illuminate\Support\Js::from($fileUrl) }}; if (fileUrl) { window.open(fileUrl, '_blank', 'noopener,noreferrer'); }"
+                        >
+                            {{ $fileLabel }}
+                        </x-button.light-blue>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+    </x-modal>
+
+    <x-modal title="原契約統制｜編集" event="en-individual-original-contract-control-edit-modal">
+        <div class="tw:w-[754px] tw:flex tw:flex-col tw:gap-y-[8px]">
+            @foreach ($originalContractFileKinds as $fileKind => $fileLabel)
+                <div class="tw:flex">
+                    <div class="tw:w-[338px] tw:h-[28px] tw:pl-[10px] tw:leading-[27px] tw:bg-[#f3f3f3] tw:border tw:border-[#cccccc]">
+                        {{ $fileLabel }}
+                    </div>
+                    <div class="tw:h-[28px] tw:flex-1 tw:text-center tw:border tw:border-[#cccccc] tw:border-l-0">
+                        <x-form.input
+                            :name="'file-url-' . $fileKind"
+                            wire:model.blur="fileUrls.{{ $fileKind }}"
+                            class="tw:!h-[26px]"
+                            :border="false"
+                        />
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </x-modal>
+
+    <x-modal title="入居審査・与信証跡" event="en-individual-credit-screening-modal">
+        <div class="tw:text-[1.3rem]">入居審査・与信証跡の内容を表示します。</div>
+    </x-modal>
+
+    <x-modal title="保証・リスク移転" event="en-individual-guarantee-risk-transfer-modal">
+        <div class="tw:text-[1.3rem]">保証・リスク移転の内容を表示します。</div>
+    </x-modal>
+
+    <x-modal title="物件引渡・状態証跡" event="en-individual-property-handover-status-modal">
+        <div class="tw:text-[1.3rem]">物件引渡・状態証跡の内容を表示します。</div>
+    </x-modal>
 </div>
 
 @push('scripts')

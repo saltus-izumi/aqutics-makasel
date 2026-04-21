@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Progress\En;
 
+use App\Models\EnProgressFile;
 use App\Models\EnProgress;
 use App\Models\EnProgressIndividualApplicant;
 use Illuminate\Support\Facades\Validator;
@@ -15,6 +16,8 @@ class IndividualApplicant extends Component
     public $enProgress = null;
     public $enProgressIndividualApplicant = null;
     public $latestGeProgress = null;
+    public array $originalContractFileKinds = [];
+    public array $fileUrls = [];
 
     protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
     protected array $contractTermFieldConfig = [
@@ -45,6 +48,8 @@ class IndividualApplicant extends Component
         $this->enProgress = $enProgress;
         $this->enProgressIndividualApplicant = $enProgress->enProgressIndividualApplicant;
         $this->latestGeProgress = $enProgress->progress?->latestGeProgress;
+        $this->originalContractFileKinds = $this->getOriginalContractFileKinds();
+        $this->loadOriginalContractFileUrls();
     }
 
     public function saveFieldByName(string $fieldName, $value): void
@@ -147,6 +152,85 @@ class IndividualApplicant extends Component
         return $trimmed === '' ? null : $trimmed;
     }
 
+    public function updatedFileUrls($value, $fileKind): void
+    {
+        if (!$this->enProgress || !array_key_exists((int) $fileKind, $this->originalContractFileKinds)) {
+            return;
+        }
+
+        $validator = Validator::make(
+            ['file_url' => $value],
+            ['file_url' => ['nullable', 'string', 'max:2048']]
+        );
+        if ($validator->fails()) {
+            return;
+        }
+
+        $normalizedUrl = $this->normalizeString($value);
+        $fileKind = (int) $fileKind;
+
+        $file = EnProgressFile::query()
+            ->where('en_progress_id', $this->enProgress->id)
+            ->where('file_kind', $fileKind)
+            ->first();
+
+        if (!$file && $normalizedUrl === null) {
+            $this->fileUrls[$fileKind] = '';
+            return;
+        }
+
+        if (!$file) {
+            $file = new EnProgressFile();
+            $file->en_progress_id = $this->enProgress->id;
+            $file->file_kind = $fileKind;
+        }
+
+        $file->file_url = $normalizedUrl;
+        $file->save();
+
+        $this->fileUrls[$fileKind] = $normalizedUrl ?? '';
+        $this->dispatch('enProgressUpdated', enProgressId: $this->enProgress->id);
+    }
+
+    protected function getOriginalContractFileKinds(): array
+    {
+        return [
+            EnProgressFile::FILE_KIND_REGISTRY_CERTIFICATE => '登記簿謄本(土地建物)',
+            EnProgressFile::FILE_KIND_COST_BREAKDOWN => '諸費用明細書',
+            EnProgressFile::FILE_KIND_RENTAL_CONTRACT => '賃貸借契約書（定期借家契約書）',
+            EnProgressFile::FILE_KIND_IMPORTANT_EXPLANATION => '重要事項説明書',
+            EnProgressFile::FILE_KIND_ELECTRONIC_CONTRACT_CONSENT => '電子契約承諾証明書',
+            EnProgressFile::FILE_KIND_PARENTAL_CONSENT => '親権者同意書',
+            EnProgressFile::FILE_KIND_GUARANTOR_PLEDGE => '連帯保証人確約書',
+            EnProgressFile::FILE_KIND_DISPUTE_PREVENTION_ORDINANCE => '紛争防止条例',
+            EnProgressFile::FILE_KIND_PRIVACY_POLICY => '個人情報取り扱い',
+            EnProgressFile::FILE_KIND_MEMORANDUM => '覚書',
+            EnProgressFile::FILE_KIND_SETTLEMENT_AGREEMENT => '示談書',
+        ];
+    }
+
+    protected function loadOriginalContractFileUrls(): void
+    {
+        if (!$this->enProgress) {
+            $this->fileUrls = [];
+            return;
+        }
+
+        $fileKinds = array_map('intval', array_keys($this->originalContractFileKinds));
+        $files = EnProgressFile::query()
+            ->where('en_progress_id', $this->enProgress->id)
+            ->whereIn('file_kind', $fileKinds)
+            ->get()
+            ->keyBy('file_kind');
+
+        $fileUrls = [];
+        foreach ($fileKinds as $fileKind) {
+            $fileUrls[$fileKind] = (string) ($files->get($fileKind)?->file_url ?? '');
+        }
+
+        $this->fileUrls = $fileUrls;
+    }
+
     public function updateMoveOutReportDate(): void
     {
         if ($this->enProgress->move_out_report_date) {
@@ -171,6 +255,7 @@ class IndividualApplicant extends Component
             ->with('enProgressIndividualApplicant')
             ->find($this->enProgress->id);
         $this->enProgressIndividualApplicant = $this->enProgress?->enProgressIndividualApplicant;
+        $this->loadOriginalContractFileUrls();
     }
 
 
