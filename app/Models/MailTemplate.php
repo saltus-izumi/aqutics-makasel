@@ -12,6 +12,10 @@ class MailTemplate extends Model
     use RecordsUserStamps;
     use SoftDeletes;
 
+    protected $guarded = [
+        'id'
+    ];
+
     const MAIL_KIND_GE_PROGRESS_REQUEST_VISIT = 1;     // 原復プロセスー立会依頼
     const MAIL_KIND_GE_PROGRESS_VISIT_DONE = 2;        // 原復プロセスー立会完了
     const MAIL_KIND_GE_PROGRESS_CONSTRUCTION_DONE = 3; // 原復プロセスー工事完了

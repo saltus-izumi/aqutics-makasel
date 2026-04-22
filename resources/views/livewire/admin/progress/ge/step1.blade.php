@@ -4,6 +4,9 @@
     @multi-file-upload2:selected.window="handleSelect($event)"
     @multi-file-upload2:removed.window="handleRemove($event)"
 >
+    @php
+        $isMoveOutReportSent = filled($geProgress->move_out_report_date);
+    @endphp
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP１（退去立会依頼）
     </div>
@@ -115,14 +118,24 @@
                 </x-form.checkbox>
             </div>
             <div>
-                <x-button.blue
-                    class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
-                    :disabled="!$isStep1Confirmed"
-                    type="button"
-                    x-on:click="if (!confirm('立会依頼送信します。よろしいですか。')) { return; } $wire.updateMoveOutReportDate();"
-                >
-                    立会依頼送信
-                </x-button.blue>
+                @if ($isMoveOutReportSent)
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        :disabled="true"
+                        type="button"
+                    >
+                        立会依頼送信済
+                    </x-button.blue>
+                @else
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        :disabled="!$isStep1Confirmed"
+                        type="button"
+                        x-on:click="if (!confirm('立会依頼送信します。よろしいですか。')) { return; } $wire.updateMoveOutReportDate();"
+                    >
+                        立会依頼送信
+                    </x-button.blue>
+                @endif
             </div>
         </div>
     </div>

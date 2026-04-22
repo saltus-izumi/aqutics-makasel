@@ -21,7 +21,7 @@ class Step3 extends Component
 
     protected $listeners = ['geProgressUpdated' => 'reloadProgress'];
     protected array $geProgressMap = [
-        'completionMessage' => 'completion_message',
+        'completionMessage' => 'construction_ccompletion_message',
     ];
     protected function rules(): array
     {
@@ -39,7 +39,7 @@ class Step3 extends Component
     public function mount($geProgress)
     {
         $this->geProgress = $geProgress;
-        $this->completionMessage = $geProgress?->completion_message;
+        $this->completionMessage = $geProgress?->construction_ccompletion_message;
         $this->componentId = $this->getId();
         $this->loadCompletionPhotoFiles();
     }
