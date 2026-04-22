@@ -14,4 +14,5 @@
         $attributes->get('class'),
         'tw:bg-red-100' => $errors->has($name),
     ])
+    {{ $attributes->except('class') }}
     placeholder="{{ $palceholder }}">{{ $slot }}</textarea>
