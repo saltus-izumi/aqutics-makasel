@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Progress\En;
 
+use App\Models\EnProgressFile;
 use App\Models\EnProgress;
 use App\Models\EnProgressCorporateApplicant;
 use Illuminate\Support\Facades\Validator;
@@ -15,6 +16,11 @@ class CorporateApplicant extends Component
     public $enProgress = null;
     public $enProgressCorporateApplicant = null;
     public $latestGeProgress = null;
+    public array $originalContractFileKinds = [];
+    public array $creditScreeningFileSections = [];
+    public array $guaranteeRiskTransferFileSections = [];
+    public array $propertyHandoverFileKinds = [];
+    public array $fileUrls = [];
 
     protected $listeners = ['enProgressUpdated' => 'reloadProgress'];
     protected array $contractTermFieldConfig = [
@@ -44,6 +50,11 @@ class CorporateApplicant extends Component
         $this->enProgress = $enProgress;
         $this->enProgressCorporateApplicant = $enProgress->enProgressCorporateApplicant;
         $this->latestGeProgress = $enProgress->progress?->latestGeProgress;
+        $this->originalContractFileKinds = $this->getOriginalContractFileKinds();
+        $this->creditScreeningFileSections = $this->getCreditScreeningFileSections();
+        $this->guaranteeRiskTransferFileSections = $this->getGuaranteeRiskTransferFileSections();
+        $this->propertyHandoverFileKinds = $this->getPropertyHandoverFileKinds();
+        $this->loadManagedFileUrls();
     }
 
     public function saveFieldByName(string $fieldName, $value): void
@@ -146,6 +157,186 @@ class CorporateApplicant extends Component
         return $trimmed === '' ? null : $trimmed;
     }
 
+    public function updatedFileUrls($value, $fileKind): void
+    {
+        if (!$this->enProgress || !array_key_exists((int) $fileKind, $this->getManagedFileKinds())) {
+            return;
+        }
+
+        $validator = Validator::make(
+            ['file_url' => $value],
+            ['file_url' => ['nullable', 'string', 'max:2048', 'regex:/^https?:\/\/.+$/i']]
+        );
+        if ($validator->fails()) {
+            return;
+        }
+
+        $normalizedUrl = $this->normalizeString($value);
+        $fileKind = (int) $fileKind;
+
+        $file = EnProgressFile::query()
+            ->where('en_progress_id', $this->enProgress->id)
+            ->where('file_kind', $fileKind)
+            ->first();
+
+        if (!$file && $normalizedUrl === null) {
+            $this->fileUrls[$fileKind] = '';
+            return;
+        }
+
+        if (!$file) {
+            $file = new EnProgressFile();
+            $file->en_progress_id = $this->enProgress->id;
+            $file->file_kind = $fileKind;
+        }
+
+        $file->file_url = $normalizedUrl;
+        $file->save();
+
+        $this->fileUrls[$fileKind] = $normalizedUrl ?? '';
+        $this->dispatch('enProgressUpdated', enProgressId: $this->enProgress->id);
+    }
+
+    protected function getOriginalContractFileKinds(): array
+    {
+        return [
+            EnProgressFile::FILE_KIND_REGISTRY_CERTIFICATE => '登記簿謄本(土地建物)',
+            EnProgressFile::FILE_KIND_COST_BREAKDOWN => '諸費用明細書',
+            EnProgressFile::FILE_KIND_RENTAL_CONTRACT => '賃貸借契約書（定期借家契約書）',
+            EnProgressFile::FILE_KIND_IMPORTANT_EXPLANATION => '重要事項説明書',
+            EnProgressFile::FILE_KIND_ELECTRONIC_CONTRACT_CONSENT => '電子契約承諾証明書',
+            EnProgressFile::FILE_KIND_PARENTAL_CONSENT => '親権者同意書',
+            EnProgressFile::FILE_KIND_GUARANTOR_PLEDGE => '連帯保証人確約書',
+            EnProgressFile::FILE_KIND_DISPUTE_PREVENTION_ORDINANCE => '紛争防止条例',
+            EnProgressFile::FILE_KIND_PRIVACY_POLICY => '個人情報取り扱い',
+            EnProgressFile::FILE_KIND_MEMORANDUM => '覚書',
+            EnProgressFile::FILE_KIND_SETTLEMENT_AGREEMENT => '示談書',
+        ];
+    }
+
+    protected function getCreditScreeningFileSections(): array
+    {
+        return [
+            [
+                'title' => '■標準',
+                'items' => [
+                    EnProgressFile::FILE_KIND_APPLICATION_FORM => '入居申込書',
+                    EnProgressFile::FILE_KIND_RESIDENT_RECORD => '住民票（入居者全員）',
+                    EnProgressFile::FILE_KIND_IDENTITY_DOCUMENT => '身分証明書',
+                    EnProgressFile::FILE_KIND_PROFILE_PHOTO => '顔写真',
+                    EnProgressFile::FILE_KIND_SALARY_STATEMENT => '給与明細（収入証明）',
+                ],
+            ],
+            [
+                'title' => '■外国籍',
+                'items' => [
+                    EnProgressFile::FILE_KIND_PASSPORT_COPY => 'パスポート写し',
+                    EnProgressFile::FILE_KIND_RESIDENCE_CARD_COPY => '在留カード写し',
+                ],
+            ],
+            [
+                'title' => '■法人',
+                'items' => [
+                    EnProgressFile::FILE_KIND_COMPANY_REGISTRY => '法人全部事項証明書',
+                    EnProgressFile::FILE_KIND_COMPANY_SEAL_CERTIFICATE => '法人印鑑証明書',
+                    EnProgressFile::FILE_KIND_FINANCIAL_STATEMENTS => '決算報告書（3期分）',
+                    EnProgressFile::FILE_KIND_TAX_CERTIFICATE => '納税証明書（その1、その2）',
+                    EnProgressFile::FILE_KIND_EMPLOYEE_CERTIFICATE => '従業者証明書',
+                    EnProgressFile::FILE_KIND_COMPANY_PROFILE => '会社概要',
+                ],
+            ],
+            [
+                'title' => '■連帯保証人',
+                'items' => [
+                    EnProgressFile::FILE_KIND_GUARANTOR_INCOME_PROOF => '収入証明書',
+                    EnProgressFile::FILE_KIND_GUARANTOR_RESIDENT_RECORD => '住民票（入居者全員）',
+                    EnProgressFile::FILE_KIND_GUARANTOR_IDENTITY_DOCUMENT => '身分証明書',
+                ],
+            ],
+        ];
+    }
+
+    protected function getCreditScreeningFileKinds(): array
+    {
+        $fileKinds = [];
+
+        foreach ($this->creditScreeningFileSections as $section) {
+            $fileKinds += $section['items'] ?? [];
+        }
+
+        return $fileKinds;
+    }
+
+    protected function getManagedFileKinds(): array
+    {
+        return $this->originalContractFileKinds
+            + $this->getCreditScreeningFileKinds()
+            + $this->getGuaranteeRiskTransferFileKinds()
+            + $this->propertyHandoverFileKinds;
+    }
+
+    protected function getGuaranteeRiskTransferFileSections(): array
+    {
+        return [
+            [
+                'title' => '■保証会社',
+                'items' => [
+                    EnProgressFile::FILE_KIND_APPROVAL_NOTICE => '承認通知書',
+                    EnProgressFile::FILE_KIND_GUARANTEE_CONTRACT => '保証委託契約書',
+                ],
+            ],
+            [
+                'title' => '■火災保険',
+                'items' => [
+                    EnProgressFile::FILE_KIND_FIRE_INSURANCE_GUIDE => '火災保険のご案内',
+                    EnProgressFile::FILE_KIND_CONTRACT_CONFIRMATION => '契約内容確認書',
+                ],
+            ],
+        ];
+    }
+
+    protected function getGuaranteeRiskTransferFileKinds(): array
+    {
+        $fileKinds = [];
+
+        foreach ($this->guaranteeRiskTransferFileSections as $section) {
+            $fileKinds += $section['items'] ?? [];
+        }
+
+        return $fileKinds;
+    }
+
+    protected function getPropertyHandoverFileKinds(): array
+    {
+        return [
+            EnProgressFile::FILE_KIND_KEY_RECEIPT => '鍵預かり書',
+            EnProgressFile::FILE_KIND_MOVE_IN_CHECKLIST => '入居時チェックシート',
+            EnProgressFile::FILE_KIND_RESTORE_MEMO => '原復メモ',
+        ];
+    }
+
+    protected function loadManagedFileUrls(): void
+    {
+        if (!$this->enProgress) {
+            $this->fileUrls = [];
+            return;
+        }
+
+        $fileKinds = array_map('intval', array_keys($this->getManagedFileKinds()));
+        $files = EnProgressFile::query()
+            ->where('en_progress_id', $this->enProgress->id)
+            ->whereIn('file_kind', $fileKinds)
+            ->get()
+            ->keyBy('file_kind');
+
+        $fileUrls = [];
+        foreach ($fileKinds as $fileKind) {
+            $fileUrls[$fileKind] = (string) ($files->get($fileKind)?->file_url ?? '');
+        }
+
+        $this->fileUrls = $fileUrls;
+    }
+
     public function updateMoveOutReportDate(): void
     {
         if ($this->enProgress->move_out_report_date) {
@@ -170,6 +361,7 @@ class CorporateApplicant extends Component
             ->with('enProgressCorporateApplicant')
             ->find($this->enProgress->id);
         $this->enProgressCorporateApplicant = $this->enProgress?->enProgressCorporateApplicant;
+        $this->loadManagedFileUrls();
     }
 
 
