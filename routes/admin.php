@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\Progress\EnController as AdminEn;
 use App\Http\Controllers\Admin\Progress\TeController as AdminTe;
 use App\Http\Controllers\Admin\ImportController as AdminImport;
 use App\Http\Controllers\Admin\Master\OwnerController as AdminMasterOwner;
+use App\Http\Controllers\Admin\Master\MailTemplateController as AdminMailTemplate;
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -51,6 +52,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('owner')->name('owner.')->group(function () {
                 Route::get('/', [AdminMasterOwner::class, 'index'])->name('index');
             });
+            Route::prefix('mail-template')->name('mail-template.')->group(function () {
+                Route::get('/', [AdminMailTemplate::class, 'index'])->name('index');
+            });
+
+
         });
 
         Route::prefix('import')->name('import.')->group(function () {

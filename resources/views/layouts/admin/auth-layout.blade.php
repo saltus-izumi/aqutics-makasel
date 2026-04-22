@@ -73,12 +73,13 @@
                         <x-layout.side-menu-item title="ステークホルダー"></x-layout.side-menu-item>
                         <x-layout.side-menu-item title="FAQ"></x-layout.side-menu-item>
                         <x-layout.side-menu-item title="チャット設定"></x-layout.side-menu-item>
-                        <x-layout.side-menu-item title="マスタ登録"></x-layout.side-menu-item>
+                        <x-layout.side-menu-item title="マスタ登録">
+                            <ul>
+                                <li><a href="{{ route('admin.master.mail-template.index') }}">メールテンプレート</a></li>
+                            </ul>
+                        </x-layout.side-menu-item>
                         <x-layout.side-menu-item title="アカウント管理"></x-layout.side-menu-item>
                         <x-layout.side-menu-item title="Master">
-                            <ul>
-                                <li class="tw:leading-[30px]"><a href="/app/admin/CsvImports/10">物件情報</a></li>
-                            </ul>
                         </x-layout.side-menu-item>
                     </ul>
                 </div>
