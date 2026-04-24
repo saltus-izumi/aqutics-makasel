@@ -4,6 +4,9 @@
     @multi-file-upload2:selected.window="handleSelect($event)"
     @multi-file-upload2:removed.window="handleRemove($event)"
 >
+    @php
+        $isInspectionCompletedSent = filled($geProgress->inspection_completed_date);
+    @endphp
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP２（退去立会報告）
     </div>
@@ -179,7 +182,23 @@
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
-                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">立会完了送信</x-button.blue>
+                @if ($isInspectionCompletedSent)
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        :disabled="true"
+                        type="button"
+                    >
+                        立会完了送信済
+                    </x-button.blue>
+                @else
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        type="button"
+                        x-on:click="if (!confirm('立会完了送信します。よろしいですか。')) { return; } $wire.sendInspectionCompletedMail();"
+                    >
+                        立会完了送信
+                    </x-button.blue>
+                @endif
             </div>
         </div>
     </div>

@@ -115,4 +115,6 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'ge_progress_aqutics_mail_address' => env('GE_PROGRESS_AQUTICS_MAIL_ADDRESS', ''),
+
 ];

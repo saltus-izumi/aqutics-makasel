@@ -93,6 +93,8 @@ class GeProgress extends Model
             'completed_date' => 'date',
             'kaiyaku_cancellation_date' => 'date',
             'move_out_report_date' => 'date',
+            'inspection_completed_date' => 'date',
+            'construction_completion_date' => 'date',
             'transfer_due_date' => 'date:Y/m/d',
         ];
     }

@@ -4,6 +4,9 @@
     @multi-file-upload2:selected.window="handleSelect($event)"
     @multi-file-upload2:removed.window="handleRemove($event)"
 >
+    @php
+        $isConstructionCompletionSent = filled($geProgress->construction_completion_date);
+    @endphp
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP３（工事完了報告）
     </div>
@@ -49,7 +52,23 @@
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
-                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">工事完工送信</x-button.blue>
+                @if ($isConstructionCompletionSent)
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        :disabled="true"
+                        type="button"
+                    >
+                        工事完工送信済
+                    </x-button.blue>
+                @else
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        type="button"
+                        x-on:click="if (!confirm('工事完工送信します。よろしいですか。')) { return; } $wire.sendConstructionCompletionMail();"
+                    >
+                        工事完工送信
+                    </x-button.blue>
+                @endif
             </div>
         </div>
     </div>

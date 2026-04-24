@@ -2,8 +2,13 @@
 
 namespace App\Livewire\Admin\Progress\Ge;
 
+use App\Livewire\Admin\Progress\Ge\Concerns\BuildsGeProgressMailReplacements;
 use App\Models\GeProgress;
 use App\Models\GeProgressFile;
+use App\Models\MailTemplate;
+use App\Models\TradingCompany;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -11,6 +16,7 @@ use Livewire\WithFileUploads;
 class Step3 extends Component
 {
     use WithFileUploads;
+    use BuildsGeProgressMailReplacements;
 
     public $geProgress = null;
     public $completionMessage;
@@ -87,6 +93,71 @@ class Step3 extends Component
 
         $this->completionPhotoUploads = [];
         $this->loadCompletionPhotoFiles();
+    }
+
+    public function sendConstructionCompletionMail(): void
+    {
+        $geProgress = GeProgress::query()
+            ->with([
+                'progress',
+                'progress.investment',
+                'progress.investmentRoom',
+            ])
+            ->find($this->geProgress->id);
+
+        if (!$geProgress) {
+            return;
+        }
+
+        $this->geProgress = $geProgress;
+
+        if ($geProgress->construction_completion_date) {
+            return;
+        }
+
+        $mailTemplate = MailTemplate::query()
+            ->where('mail_kind', MailTemplate::MAIL_KIND_GE_PROGRESS_CONSTRUCTION_DONE)
+            ->first();
+
+        if (!$mailTemplate || (!$mailTemplate->subject && !$mailTemplate->body)) {
+            Log::warning('工事完工メールテンプレートが存在しないため送信を中止しました。', [
+                'ge_progress_id' => $this->geProgress->id,
+                'mail_kind' => MailTemplate::MAIL_KIND_GE_PROGRESS_CONSTRUCTION_DONE,
+            ]);
+            return;
+        }
+
+        $tradingCompany = TradingCompany::query()
+            ->find($geProgress->trading_company_id);
+
+        $to = collect(
+            preg_split('/[,\s;]+/', (string) config('mail.ge_progress_aqutics_mail_address', ''), -1, PREG_SPLIT_NO_EMPTY) ?: []
+        )
+            ->filter(fn ($mail) => is_string($mail) && filter_var(trim($mail), FILTER_VALIDATE_EMAIL))
+            ->map(fn ($mail) => trim((string) $mail))
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($to)) {
+            Log::warning('GE_PROGRESS_AQUTICS_MAIL_ADDRESS に有効な送信先メールアドレスが存在しないため送信を中止しました。', [
+                'ge_progress_id' => $this->geProgress->id,
+            ]);
+            return;
+        }
+
+        $replacements = $this->buildGeProgressMailReplacements($geProgress, $tradingCompany);
+        $subject = strtr((string) ($mailTemplate->subject ?? ''), $replacements);
+        $body = strtr((string) ($mailTemplate->body ?? ''), $replacements);
+
+        Mail::raw($body, function ($message) use ($to, $subject) {
+            $message->to($to)->subject($subject);
+        });
+
+        $this->geProgress->construction_completion_date = today();
+        $this->geProgress->save();
+
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
     public function removeCompletionPhotoFile($fileId): void
