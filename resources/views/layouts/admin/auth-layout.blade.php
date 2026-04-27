@@ -76,6 +76,7 @@
                         <x-layout.side-menu-item title="マスタ登録">
                             <ul>
                                 <li><a href="{{ route('admin.master.mail-template.index') }}">メールテンプレート</a></li>
+                                <li><a href="{{ route('admin.master.equipment-category1-master.index') }}">設備カテゴリ</a></li>
                             </ul>
                         </x-layout.side-menu-item>
                         <x-layout.side-menu-item title="アカウント管理"></x-layout.side-menu-item>

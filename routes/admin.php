@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\Progress\TeController as AdminTe;
 use App\Http\Controllers\Admin\ImportController as AdminImport;
 use App\Http\Controllers\Admin\Master\OwnerController as AdminMasterOwner;
 use App\Http\Controllers\Admin\Master\MailTemplateController as AdminMailTemplate;
+use App\Http\Controllers\Admin\Master\EquipmentCategory1MasterController as AdminEquipmentCategory1Master;
+use App\Http\Controllers\Admin\Master\EquipmentCategory2MasterController as AdminEquipmentCategory2Master;
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -52,10 +54,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('owner')->name('owner.')->group(function () {
                 Route::get('/', [AdminMasterOwner::class, 'index'])->name('index');
             });
+
             Route::prefix('mail-template')->name('mail-template.')->group(function () {
                 Route::get('/', [AdminMailTemplate::class, 'index'])->name('index');
             });
 
+            Route::prefix('equipment-category1-master')->name('equipment-category1-master.')->group(function () {
+                Route::get('/', [AdminEquipmentCategory1Master::class, 'index'])->name('index');
+            });
+
+            Route::prefix('equipment-category2-master')->name('equipment-category2-master.')->group(function () {
+                Route::get('/', [AdminEquipmentCategory2Master::class, 'index'])->name('index');
+            });
 
         });
 
