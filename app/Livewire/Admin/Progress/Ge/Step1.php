@@ -166,6 +166,7 @@ class Step1 extends Component
         });
 
         $this->geProgress->move_out_report_date = now();
+        $this->geProgress->inspection_request_date = now();
         $this->geProgress->save();
 
         $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);

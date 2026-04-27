@@ -154,7 +154,8 @@ class Step3 extends Component
             $message->to($to)->subject($subject);
         });
 
-        $this->geProgress->construction_completion_date = today();
+        $this->geProgress->completion_received_date = today();
+        $this->geProgress->completion_received_date_state = 1;
         $this->geProgress->save();
 
         $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);

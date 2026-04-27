@@ -1,4 +1,7 @@
 <div class="tw:w-[832px]">
+    @php
+        $isOwnerEligibilityDecisionCompleted = filled($geProgress->owner_eligibility_decision_date);
+    @endphp
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP５（責任者＿引き算確認）
     </div>
@@ -31,7 +34,23 @@
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
-                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">所有者適正判断完了</x-button.blue>
+                @if ($isOwnerEligibilityDecisionCompleted)
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        :disabled="true"
+                        type="button"
+                    >
+                        所有者適正判断完了済
+                    </x-button.blue>
+                @else
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        type="button"
+                        x-on:click="if (!confirm('所有者適正判断完了にします。よろしいですか。')) { return; } $wire.completeOwnerEligibilityDecision();"
+                    >
+                        所有者適正判断完了
+                    </x-button.blue>
+                @endif
             </div>
         </div>
     </div>

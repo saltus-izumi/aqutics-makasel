@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ge_progresses', function (Blueprint $table) {
-            $table->date('inspection_completed_date')->nullable()->comment('立会完了日')->after('inspection_completed_message');
-            $table->date('construction_completion_date')->nullable()->comment('工事完工日')->after('construction_ccompletion_message');
+            $table->date('inspection_request_date')->nullable()->comment('立会依頼日')->after('move_out_report_date');
+            $table->date('inspection_completed_date')->nullable()->comment('実行担当判断日')->after('inspection_completed_message');
+            $table->date('cost_registration_completed_date')->nullable()->comment('上下代登録完了日')->after('executor_to_responsible_message');
+            $table->date('owner_eligibility_decision_date')->nullable()->comment('上下代登録完了日')->after('estimate_note_message');
             //
         });
     }
@@ -24,8 +26,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ge_progresses', function (Blueprint $table) {
+            $table->dropColumn('inspection_request_date');
             $table->dropColumn('inspection_completed_date');
-            $table->dropColumn('construction_completion_date');
+            $table->dropColumn('cost_registration_completed_date');
+            $table->dropColumn('owner_eligibility_decision_date');
         });
     }
 };

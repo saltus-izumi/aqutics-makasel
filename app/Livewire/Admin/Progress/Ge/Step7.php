@@ -2,8 +2,13 @@
 
 namespace App\Livewire\Admin\Progress\Ge;
 
+use App\Livewire\Admin\Progress\Ge\Concerns\BuildsGeProgressMailReplacements;
+use App\Models\GeProgress;
 use App\Models\GeProgressFile;
-use App\Models\Progress;
+use App\Models\MailTemplate;
+use App\Models\TradingCompany;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -11,6 +16,7 @@ use Livewire\WithFileUploads;
 class Step7 extends Component
 {
     use WithFileUploads;
+    use BuildsGeProgressMailReplacements;
 
     public $geProgress = null;
     public $executorToRestorationCompanyMessage;
@@ -61,6 +67,73 @@ class Step7 extends Component
 
         $column = $this->geProgressMap[$propertyName];
         $this->geProgress->{$column} = $value;
+        $this->geProgress->save();
+
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+    }
+
+    public function placeOrderToRestorationCompany(): void
+    {
+        $geProgress = GeProgress::query()
+            ->with([
+                'progress',
+                'progress.investment',
+                'progress.investmentRoom',
+            ])
+            ->find($this->geProgress->id);
+
+        if (!$geProgress) {
+            return;
+        }
+
+        $this->geProgress = $geProgress;
+
+        if ($geProgress->ordered_date) {
+            return;
+        }
+
+        $mailTemplate = MailTemplate::query()
+            ->where('mail_kind', MailTemplate::MAIL_KIND_GE_PROGRESS_ORDER_PLACED)
+            ->first();
+
+        if (!$mailTemplate || (!$mailTemplate->subject && !$mailTemplate->body)) {
+            Log::warning('原復会社発注メールテンプレートが存在しないため送信を中止しました。', [
+                'ge_progress_id' => $this->geProgress->id,
+                'mail_kind' => MailTemplate::MAIL_KIND_GE_PROGRESS_ORDER_PLACED,
+            ]);
+            return;
+        }
+
+        $tradingCompany = TradingCompany::query()
+            ->find($geProgress->trading_company_id);
+
+        $to = collect([
+            $tradingCompany?->mail,
+        ])
+            ->filter(fn ($mail) => is_string($mail) && filter_var(trim($mail), FILTER_VALIDATE_EMAIL))
+            ->map(fn ($mail) => trim((string) $mail))
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($to)) {
+            Log::warning('原復業者の送信先メールアドレスが存在しないため送信を中止しました。', [
+                'ge_progress_id' => $this->geProgress->id,
+                'trading_company_id' => $geProgress->trading_company_id,
+            ]);
+            return;
+        }
+
+        $replacements = $this->buildGeProgressMailReplacements($geProgress, $tradingCompany);
+        $subject = strtr((string) ($mailTemplate->subject ?? ''), $replacements);
+        $body = strtr((string) ($mailTemplate->body ?? ''), $replacements);
+
+        Mail::raw($body, function ($message) use ($to, $subject) {
+            $message->to($to)->subject($subject);
+        });
+
+        $this->geProgress->ordered_date = today();
+        $this->geProgress->ordered_date_state = 1;
         $this->geProgress->save();
 
         $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
@@ -123,7 +196,7 @@ class Step7 extends Component
             return;
         }
 
-        $this->geProgress = Progress::query()
+        $this->geProgress = GeProgress::query()
             ->find($this->geProgress->id);
     }
 
