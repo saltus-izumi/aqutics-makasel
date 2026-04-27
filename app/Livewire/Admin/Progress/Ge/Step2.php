@@ -126,6 +126,8 @@ class Step2 extends Component
 
     public function sendInspectionCompletedMail(): void
     {
+        $this->resetErrorBag('mailSend');
+
         $geProgress = GeProgress::query()
             ->with([
                 'progress',
@@ -149,10 +151,12 @@ class Step2 extends Component
             ->first();
 
         if (!$mailTemplate || (!$mailTemplate->subject && !$mailTemplate->body)) {
-            Log::warning('立会完了メールテンプレートが存在しないため送信を中止しました。', [
+            $warningMessage = '立会完了メールテンプレートが存在しないため送信を中止しました。';
+            Log::warning($warningMessage, [
                 'ge_progress_id' => $this->geProgress->id,
                 'mail_kind' => MailTemplate::MAIL_KIND_GE_PROGRESS_VISIT_DONE,
             ]);
+            $this->addError('mailSend', $warningMessage);
             return;
         }
 
@@ -169,9 +173,11 @@ class Step2 extends Component
             ->all();
 
         if (empty($to)) {
-            Log::warning('GE_PROGRESS_AQUTICS_MAIL_ADDRESS に有効な送信先メールアドレスが存在しないため送信を中止しました。', [
+            $warningMessage = 'GE_PROGRESS_AQUTICS_MAIL_ADDRESS に有効な送信先メールアドレスが存在しないため送信を中止しました。';
+            Log::warning($warningMessage, [
                 'ge_progress_id' => $this->geProgress->id,
             ]);
+            $this->addError('mailSend', $warningMessage);
             return;
         }
 

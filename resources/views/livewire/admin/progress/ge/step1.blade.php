@@ -106,6 +106,9 @@
             立会依頼メッセージ<br>
             <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="inspectionRequestMessage"></x-form.textarea>
         </div>
+        @error('mailSend')
+            <x-form.error-message>{{ $message }}</x-form.error-message>
+        @enderror
         <div class="tw:h-[42px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
                 <x-form.checkbox

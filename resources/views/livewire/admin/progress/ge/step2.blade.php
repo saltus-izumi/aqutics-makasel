@@ -180,6 +180,9 @@
             立会完了メッセージ<br>
             <x-form.textarea class="tw:!h-[105px]" placeholder="引継ぎコメント" wire:model.live="inspectionCompletedMessage"></x-form.textarea>
         </div>
+        @error('mailSend')
+            <x-form.error-message>{{ $message }}</x-form.error-message>
+        @enderror
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
                 @if ($isInspectionCompletedSent)
