@@ -121,6 +121,7 @@
                         route('admin.progress.te.index') => 'TEプロセス管理',
                     ]"
                 />
+                <x-layout.top-menu-item title="修繕MAP" :url="route('admin.repair-map.index')" />
 
             </div>
             <div

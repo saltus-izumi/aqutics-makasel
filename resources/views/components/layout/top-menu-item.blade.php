@@ -1,5 +1,6 @@
 @props([
     'title' => '',
+    'url' => '',
     'subItems' => [],
 ])
 <div class="tw:relative tw:h-full tw:flex tw:flex-col" x-data="{ open: false }"
@@ -8,7 +9,11 @@
 >
     <div class="tw:flex tw:items-center tw:h-full">
         <div class="tw:text-[1.1rem] tw:px-[26px] tw:font-bold">
-            {{ $title }}
+            @if ($url)
+                <a href="{{ $url }}">{{ $title }}</a>
+            @else
+                {{ $title }}
+            @endif
         </div>
     </div>
     @if($subItems)
