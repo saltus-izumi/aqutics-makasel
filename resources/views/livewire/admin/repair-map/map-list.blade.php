@@ -2,7 +2,11 @@
     <div class="tw:h-[367px] tw:w-full tw:sticky tw:top-0 tw:bg-white tw:z-[40]">
         <div class="tw:h-[80px] tw:sticky tw:top-0 tw:bg-white tw:z-[40]">
             <div class="tw:font-bold tw:text-[1.3rem]">物件選択</div>
-            <x-form.input class="tw:!w-[220px]" placeholder="物件名（ID）、オーナー名" />
+            <x-form.input
+                class="tw:!w-[220px]"
+                placeholder="物件名（ID）、オーナー名"
+                wire:model.live.debounce.300ms="investmentSearchKeyword"
+            />
         </div>
         <div class="tw:h-[120px] tw:sticky tw:top-[80px] tw:bg-white tw:z-[30]">
             <div class="tw:font-bold tw:text-[1.3rem] tw:!w-[840px] tw:border-b">専有部</div>
@@ -90,150 +94,21 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
-                <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                    <td class="tw:text-center">ID</td>
-                    <td>社名</td>
-                    <td>対応｜中カテゴリ</td>
-                    <td>対応｜小カテゴ</td>
-                    <td>電話</td>
-                    <td>メール</td>
-                    <td>所在</td>
-                </tr>
+                @forelse ($tradingCompanyRanks as $tradingCompanyRank)
+                    <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
+                        <td class="tw:text-center">{{ $tradingCompanyRank->id }}</td>
+                        <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->name ?? '' }}</td>
+                        <td class="tw:truncate">{{ $tradingCompanyRank->category2Master?->item_name ?? $tradingCompanyRank->equipmentCategory1Master?->item_name ?? '' }}</td>
+                        <td class="tw:truncate">{{ $tradingCompanyRank->category3Master?->item_name ?? $tradingCompanyRank->equipmentCategory2Master?->item_name ?? '' }}</td>
+                        <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->tel ?? '' }}</td>
+                        <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->mail ?? '' }}</td>
+                        <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->address ?? '' }}</td>
+                    </tr>
+                @empty
+                    <tr class="tw:h-[40px] tw:border-b tw:border-b-[#cccccc]">
+                        <td colspan="7" class="tw:text-center tw:text-[#666666]">該当データがありません</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

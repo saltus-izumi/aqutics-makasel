@@ -7,6 +7,7 @@ use App\Models\Category2Master;
 use App\Models\Category3Master;
 use App\Models\EquipmentCategory1Master;
 use App\Models\EquipmentCategory2Master;
+use App\Models\TradingCompanyRank;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -23,6 +24,8 @@ class MapList extends Component
     public $commonCategory2MasterOptions = [];
     public $selectedCommonCategory1MasterId = '';
     public $selectedCommonCategory2MasterId = '';
+    public $investmentSearchKeyword = '';
+    public $tradingCompanyRanks = null;
     public $editingId = null;
     public $editingItemName = '';
 
@@ -49,6 +52,7 @@ class MapList extends Component
         $this->loadPcCategory3MasterOptions();
         $this->loadCommonCategory1MasterOptions();
         $this->loadCommonCategory2MasterOptions();
+        $this->loadTradingCompanyRanks();
     }
 
     public function updatedSelectedPcCategory1MasterId()
@@ -65,6 +69,7 @@ class MapList extends Component
 
         $this->dispatchPcCategory2MasterOptions();
         $this->dispatchPcCategory3MasterOptions();
+        $this->loadTradingCompanyRanks();
     }
 
     public function updatedSelectedPcCategory2MasterId()
@@ -75,6 +80,12 @@ class MapList extends Component
         }
 
         $this->dispatchPcCategory3MasterOptions();
+        $this->loadTradingCompanyRanks();
+    }
+
+    public function updatedSelectedPcCategory3MasterId()
+    {
+        $this->loadTradingCompanyRanks();
     }
 
     public function updatedSelectedCommonCategory1MasterId()
@@ -85,6 +96,17 @@ class MapList extends Component
         }
 
         $this->dispatchCommonCategory2MasterOptions();
+        $this->loadTradingCompanyRanks();
+    }
+
+    public function updatedSelectedCommonCategory2MasterId()
+    {
+        $this->loadTradingCompanyRanks();
+    }
+
+    public function updatedInvestmentSearchKeyword()
+    {
+        $this->loadTradingCompanyRanks();
     }
 
     public function openEditDialog($id)
@@ -309,6 +331,78 @@ class MapList extends Component
             options: $this->commonCategory2MasterOptions,
             value: $this->selectedCommonCategory2MasterId === null ? '' : (string) $this->selectedCommonCategory2MasterId,
         );
+    }
+
+    private function loadTradingCompanyRanks(): void
+    {
+        $searchKeyword = trim((string) $this->investmentSearchKeyword);
+        $hasCategoryFilter =
+            ($this->selectedPcCategory1MasterId !== '' && $this->selectedPcCategory1MasterId !== null) ||
+            ($this->selectedPcCategory2MasterId !== '' && $this->selectedPcCategory2MasterId !== null) ||
+            ($this->selectedPcCategory3MasterId !== '' && $this->selectedPcCategory3MasterId !== null) ||
+            ($this->selectedCommonCategory1MasterId !== '' && $this->selectedCommonCategory1MasterId !== null) ||
+            ($this->selectedCommonCategory2MasterId !== '' && $this->selectedCommonCategory2MasterId !== null);
+        $hasSearchFilter = $searchKeyword !== '';
+
+        if (!$hasCategoryFilter && !$hasSearchFilter) {
+            $this->tradingCompanyRanks = collect();
+            return;
+        }
+
+        $query = TradingCompanyRank::query()
+            ->with([
+                'tradingCompany',
+                'category2Master',
+                'category3Master',
+                'equipmentCategory1Master',
+                'equipmentCategory2Master',
+            ])
+            ->where('deleted', 0);
+
+        if ($this->selectedPcCategory1MasterId !== '' && $this->selectedPcCategory1MasterId !== null) {
+            $query->where('category1_master_id', $this->selectedPcCategory1MasterId);
+        }
+        if ($this->selectedPcCategory2MasterId !== '' && $this->selectedPcCategory2MasterId !== null) {
+            $query->where('category2_master_id', $this->selectedPcCategory2MasterId);
+        }
+        if ($this->selectedPcCategory3MasterId !== '' && $this->selectedPcCategory3MasterId !== null) {
+            $query->where('category3_master_id', $this->selectedPcCategory3MasterId);
+        }
+        if ($this->selectedCommonCategory1MasterId !== '' && $this->selectedCommonCategory1MasterId !== null) {
+            $query->where('equipment_category1_master_id', $this->selectedCommonCategory1MasterId);
+        }
+        if ($this->selectedCommonCategory2MasterId !== '' && $this->selectedCommonCategory2MasterId !== null) {
+            $query->where('equipment_category2_master_id', $this->selectedCommonCategory2MasterId);
+        }
+
+        if ($hasSearchFilter) {
+            $escaped = addcslashes($searchKeyword, '\\%_');
+            $searchLike = '%' . $escaped . '%';
+            $isNumericKeyword = preg_match('/^\d+$/', $searchKeyword) === 1;
+            $exactId = $isNumericKeyword ? (int) $searchKeyword : null;
+
+            $query->whereHas('tradingCompany.investments', function ($investmentQuery) use ($searchLike, $isNumericKeyword, $exactId) {
+                $investmentQuery->where(function ($q) use ($searchLike, $isNumericKeyword, $exactId) {
+                    $q->where('investments.investment_name', 'like', $searchLike)
+                        ->orWhereHas('landlord.owner', function ($ownerQuery) use ($searchLike, $isNumericKeyword, $exactId) {
+                            $ownerQuery->where('name', 'like', $searchLike);
+
+                            if ($isNumericKeyword) {
+                                $ownerQuery->orWhere('id', $exactId);
+                            }
+                        });
+
+                    if ($isNumericKeyword) {
+                        $q->orWhere('investments.id', $exactId);
+                    }
+                });
+            });
+        }
+
+        $this->tradingCompanyRanks = $query
+            ->orderByRaw('rank IS NULL, rank ASC')
+            ->orderBy('id', 'asc')
+            ->get();
     }
 
     public function render()

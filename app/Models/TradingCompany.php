@@ -35,4 +35,23 @@ class TradingCompany extends Model
     protected $guarded = [
         'id'
     ];
+
+    public function tradingCompanyAreas()
+    {
+        return $this->hasMany(TradingCompanyArea::class, 'trading_company_id', 'id');
+    }
+
+    public function investments()
+    {
+        return $this->belongsToMany(
+            Investment::class,
+            'trading_company_areas',
+            'trading_company_id',
+            'address_area_id',
+            'id',
+            'address_area_id'
+        )
+            ->whereNull('trading_company_areas.deleted_at')
+            ->distinct();
+    }
 }

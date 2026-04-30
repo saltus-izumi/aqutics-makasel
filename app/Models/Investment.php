@@ -32,6 +32,20 @@ class Investment extends Model
         return $this->belongsTo(TradingCompany::class);
     }
 
+    public function tradingCompanies()
+    {
+        return $this->belongsToMany(
+            TradingCompany::class,
+            'trading_company_areas',
+            'address_area_id',
+            'trading_company_id',
+            'address_area_id',
+            'id'
+        )
+            ->whereNull('trading_company_areas.deleted_at')
+            ->distinct();
+    }
+
 
     /**
      * オーナーに紐づく物件のオプションを取得（Owner→Landlord→Investment）
