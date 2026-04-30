@@ -97,6 +97,22 @@ class Step4 extends Component
         $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
+    public function completeCostRegistration(): void
+    {
+        if (!$this->geProgress) {
+            return;
+        }
+
+        if ($this->geProgress->cost_registration_completed_date) {
+            return;
+        }
+
+        $this->geProgress->cost_registration_completed_date = today();
+        $this->geProgress->save();
+
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+    }
+
     public function saveRetailEstimateUploads(): void
     {
         if (!$this->geProgress) {

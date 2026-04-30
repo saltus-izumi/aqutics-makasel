@@ -75,6 +75,22 @@ class Step5 extends Component
         $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
     }
 
+    public function completeOwnerEligibilityDecision(): void
+    {
+        if (!$this->geProgress) {
+            return;
+        }
+
+        if ($this->geProgress->owner_eligibility_decision_date) {
+            return;
+        }
+
+        $this->geProgress->owner_eligibility_decision_date = today();
+        $this->geProgress->save();
+
+        $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);
+    }
+
     public function reloadProgress($geProgressId = null)
     {
         if (!$this->geProgress) {

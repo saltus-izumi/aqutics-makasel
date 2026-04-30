@@ -106,6 +106,8 @@ class Step1 extends Component
 
     public function updateMoveOutReportDate(): void
     {
+        $this->resetErrorBag('mailSend');
+
         $geProgress = GeProgress::query()
             ->with([
                 'progress',
@@ -129,10 +131,12 @@ class Step1 extends Component
             ->first();
 
         if (!$mailTemplate || (!$mailTemplate->subject && !$mailTemplate->body)) {
-            Log::warning('立会依頼メールテンプレートが存在しないため送信を中止しました。', [
+            $warningMessage = '立会依頼メールテンプレートが存在しないため送信を中止しました。';
+            Log::warning($warningMessage, [
                 'ge_progress_id' => $this->geProgress->id,
                 'mail_kind' => MailTemplate::MAIL_KIND_GE_PROGRESS_REQUEST_VISIT,
             ]);
+            $this->addError('mailSend', $warningMessage);
             return;
         }
 
@@ -149,10 +153,12 @@ class Step1 extends Component
             ->all();
 
         if (empty($to)) {
-            Log::warning('原復業者の送信先メールアドレスが存在しないため送信を中止しました。', [
+            $warningMessage = '原復業者の送信先メールアドレスが存在しないため送信を中止しました。';
+            Log::warning($warningMessage, [
                 'ge_progress_id' => $this->geProgress->id,
                 'trading_company_id' => $geProgress->trading_company_id,
             ]);
+            $this->addError('mailSend', $warningMessage);
             return;
         }
 
@@ -166,6 +172,7 @@ class Step1 extends Component
         });
 
         $this->geProgress->move_out_report_date = now();
+        $this->geProgress->inspection_request_date = now();
         $this->geProgress->save();
 
         $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);

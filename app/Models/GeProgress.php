@@ -95,6 +95,8 @@ class GeProgress extends Model
             'move_out_report_date' => 'date',
             'inspection_completed_date' => 'date',
             'construction_completion_date' => 'date',
+            'cost_registration_completed_date' => 'date',
+            'owner_eligibility_decision_date' => 'date',
             'transfer_due_date' => 'date:Y/m/d',
         ];
     }

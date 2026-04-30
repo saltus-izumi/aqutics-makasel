@@ -13,7 +13,7 @@
             @else
                 <a href="{{ route('admin.operation.create.ge', [
                     'geProgressId' => $geProgress?->id,
-                    'geProgressStep' => 'owner_proposal',
+                    'progressStep' => 'owner_proposal',
                 ]) }}">
                     <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">オペレーション作成</x-button.blue>
                 </a>

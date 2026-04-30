@@ -97,6 +97,8 @@ class Step3 extends Component
 
     public function sendConstructionCompletionMail(): void
     {
+        $this->resetErrorBag('mailSend');
+
         $geProgress = GeProgress::query()
             ->with([
                 'progress',
@@ -120,10 +122,12 @@ class Step3 extends Component
             ->first();
 
         if (!$mailTemplate || (!$mailTemplate->subject && !$mailTemplate->body)) {
-            Log::warning('工事完工メールテンプレートが存在しないため送信を中止しました。', [
+            $warningMessage = '工事完工メールテンプレートが存在しないため送信を中止しました。';
+            Log::warning($warningMessage, [
                 'ge_progress_id' => $this->geProgress->id,
                 'mail_kind' => MailTemplate::MAIL_KIND_GE_PROGRESS_CONSTRUCTION_DONE,
             ]);
+            $this->addError('mailSend', $warningMessage);
             return;
         }
 
@@ -140,9 +144,11 @@ class Step3 extends Component
             ->all();
 
         if (empty($to)) {
-            Log::warning('GE_PROGRESS_AQUTICS_MAIL_ADDRESS に有効な送信先メールアドレスが存在しないため送信を中止しました。', [
+            $warningMessage = 'GE_PROGRESS_AQUTICS_MAIL_ADDRESS に有効な送信先メールアドレスが存在しないため送信を中止しました。';
+            Log::warning($warningMessage, [
                 'ge_progress_id' => $this->geProgress->id,
             ]);
+            $this->addError('mailSend', $warningMessage);
             return;
         }
 
@@ -154,7 +160,8 @@ class Step3 extends Component
             $message->to($to)->subject($subject);
         });
 
-        $this->geProgress->construction_completion_date = today();
+        $this->geProgress->completion_received_date = today();
+        $this->geProgress->completion_received_date_state = 1;
         $this->geProgress->save();
 
         $this->dispatch('geProgressUpdated', geProgressId: $this->geProgress->id);

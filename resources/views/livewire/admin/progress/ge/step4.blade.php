@@ -4,6 +4,9 @@
     @multi-file-upload2:selected.window="handleSelect($event)"
     @multi-file-upload2:removed.window="handleRemove($event)"
 >
+    @php
+        $isCostRegistrationCompleted = filled($geProgress->cost_registration_completed_date);
+    @endphp
     <div class="tw:w-full tw:pl-1 tw:bg-[#f3f3f3] tw:text-[1.1rem]">
         STEP４（実行担当＿提案準備）
     </div>
@@ -153,7 +156,23 @@
         </div>
         <div class="tw:h-[42px] tw:mt-[26px] tw:flex tw:justify-end tw:items-center tw:gap-x-[26px]">
             <div>
-                <x-button.blue class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]">実行担当判断完了</x-button.blue>
+                @if ($isCostRegistrationCompleted)
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        :disabled="true"
+                        type="button"
+                    >
+                        上下代登録完了済
+                    </x-button.blue>
+                @else
+                    <x-button.blue
+                        class="tw:!h-[31px] tw:!rounded-lg tw:text-[1.2rem]"
+                        type="button"
+                        x-on:click="if (!confirm('上下代登録完了にします。よろしいですか。')) { return; } $wire.completeCostRegistration();"
+                    >
+                        上下代登録完了
+                    </x-button.blue>
+                @endif
             </div>
         </div>
     </div>
