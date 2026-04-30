@@ -62,6 +62,7 @@
         'tw:w-full' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:w-'),
         $attributes->get('class'),
     ])
+    x-bind:class="isOpen ? 'tw:z-[1000]' : ''"
     {{ $attributes->except('class')->whereDoesntStartWith('wire:') }}
 >
     <input
@@ -104,7 +105,7 @@
         x-transition:leave="tw:transition tw:ease-in tw:duration-75"
         x-transition:leave-start="tw:opacity-100 tw:scale-100"
         x-transition:leave-end="tw:opacity-0 tw:scale-95"
-        class="tw:absolute tw:z-50 tw:mt-1 tw:w-full tw:bg-white tw:border tw:border-gray-300 tw:rounded tw:shadow-lg tw:z-600"
+        class="tw:absolute tw:z-[1010] tw:mt-1 tw:w-full tw:bg-white tw:border tw:border-gray-300 tw:rounded tw:shadow-lg"
         x-cloak
     >
         <div class="tw:p-2 tw:border-b tw:border-gray-200">
@@ -183,7 +184,6 @@
 
                     handleOptionsUpdate(event) {
                         const detail = event?.detail ?? {};
-console.log(detail);
                         if (detail.name && this.name && detail.name !== this.name) {
                             return;
                         }
@@ -297,7 +297,6 @@ console.log(detail);
 
                     clearSelection(event) {
                         const detail = event?.detail ?? {};
-console.log(detail);
                         if (detail.name && this.name && detail.name !== this.name) {
                             return;
                         }

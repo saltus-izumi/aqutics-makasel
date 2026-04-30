@@ -2,13 +2,27 @@
 
 namespace App\Livewire\Admin\RepairMap;
 
+use App\Models\Category1Master;
+use App\Models\Category2Master;
+use App\Models\Category3Master;
 use App\Models\EquipmentCategory1Master;
+use App\Models\EquipmentCategory2Master;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class MapList extends Component
 {
     public $equipmentCategory1Masters = null;
+    public $pcCategory1MasterOptions = [];
+    public $pcCategory2MasterOptions = [];
+    public $pcCategory3MasterOptions = [];
+    public $selectedPcCategory1MasterId = '';
+    public $selectedPcCategory2MasterId = '';
+    public $selectedPcCategory3MasterId = '';
+    public $commonCategory1MasterOptions = [];
+    public $commonCategory2MasterOptions = [];
+    public $selectedCommonCategory1MasterId = '';
+    public $selectedCommonCategory2MasterId = '';
     public $editingId = null;
     public $editingItemName = '';
 
@@ -30,6 +44,47 @@ class MapList extends Component
     public function mount()
     {
         $this->loadEquipmentCategory1Masters();
+        $this->loadPcCategory1MasterOptions();
+        $this->loadPcCategory2MasterOptions();
+        $this->loadPcCategory3MasterOptions();
+        $this->loadCommonCategory1MasterOptions();
+        $this->loadCommonCategory2MasterOptions();
+    }
+
+    public function updatedSelectedPcCategory1MasterId()
+    {
+        $this->loadPcCategory2MasterOptions();
+        if (!$this->optionContainsValue($this->selectedPcCategory2MasterId, $this->pcCategory2MasterOptions)) {
+            $this->selectedPcCategory2MasterId = '';
+        }
+
+        $this->loadPcCategory3MasterOptions();
+        if (!$this->optionContainsValue($this->selectedPcCategory3MasterId, $this->pcCategory3MasterOptions)) {
+            $this->selectedPcCategory3MasterId = '';
+        }
+
+        $this->dispatchPcCategory2MasterOptions();
+        $this->dispatchPcCategory3MasterOptions();
+    }
+
+    public function updatedSelectedPcCategory2MasterId()
+    {
+        $this->loadPcCategory3MasterOptions();
+        if (!$this->optionContainsValue($this->selectedPcCategory3MasterId, $this->pcCategory3MasterOptions)) {
+            $this->selectedPcCategory3MasterId = '';
+        }
+
+        $this->dispatchPcCategory3MasterOptions();
+    }
+
+    public function updatedSelectedCommonCategory1MasterId()
+    {
+        $this->loadCommonCategory2MasterOptions();
+        if (!$this->optionContainsValue($this->selectedCommonCategory2MasterId, $this->commonCategory2MasterOptions)) {
+            $this->selectedCommonCategory2MasterId = '';
+        }
+
+        $this->dispatchCommonCategory2MasterOptions();
     }
 
     public function openEditDialog($id)
@@ -148,6 +203,112 @@ class MapList extends Component
         $this->equipmentCategory1Masters = EquipmentCategory1Master::query()
             ->orderBy('disp_rank', 'asc')
             ->get();
+    }
+
+    private function loadPcCategory1MasterOptions(): void
+    {
+        $this->pcCategory1MasterOptions = Category1Master::query()
+            ->orderBy('id')
+            ->pluck('item_name', 'id')
+            ->toArray();
+    }
+
+    private function loadPcCategory2MasterOptions(): void
+    {
+        if ($this->selectedPcCategory1MasterId === '' || $this->selectedPcCategory1MasterId === null) {
+            $this->pcCategory2MasterOptions = [];
+            return;
+        }
+
+        $this->pcCategory2MasterOptions = Category2Master::query()
+            ->where('category1_master_id', $this->selectedPcCategory1MasterId)
+            ->orderBy('id')
+            ->pluck('item_name', 'id')
+            ->toArray();
+    }
+
+    private function loadPcCategory3MasterOptions(): void
+    {
+        if ($this->selectedPcCategory2MasterId === '' || $this->selectedPcCategory2MasterId === null) {
+            $this->pcCategory3MasterOptions = [];
+            return;
+        }
+
+        $this->pcCategory3MasterOptions = Category3Master::query()
+            ->where('category2_master_id', $this->selectedPcCategory2MasterId)
+            ->orderBy('id')
+            ->pluck('item_name', 'id')
+            ->toArray();
+    }
+
+    private function loadCommonCategory1MasterOptions(): void
+    {
+        $this->commonCategory1MasterOptions = EquipmentCategory1Master::query()
+            ->orderBy('disp_rank', 'asc')
+            ->orderBy('id', 'asc')
+            ->pluck('item_name', 'id')
+            ->toArray();
+    }
+
+    private function loadCommonCategory2MasterOptions(): void
+    {
+        if ($this->selectedCommonCategory1MasterId === '' || $this->selectedCommonCategory1MasterId === null) {
+            $this->commonCategory2MasterOptions = [];
+            return;
+        }
+
+        $this->commonCategory2MasterOptions = EquipmentCategory2Master::query()
+            ->where('equipment_category1_master_id', $this->selectedCommonCategory1MasterId)
+            ->orderBy('disp_rank', 'asc')
+            ->orderBy('id', 'asc')
+            ->pluck('item_name', 'id')
+            ->toArray();
+    }
+
+    private function optionContainsValue($value, array $options): bool
+    {
+        if ($value === null || $value === '') {
+            return false;
+        }
+
+        $target = (string) $value;
+        foreach (array_keys($options) as $optionKey) {
+            if ((string) $optionKey === $target) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function dispatchPcCategory2MasterOptions(): void
+    {
+        $this->dispatch(
+            'select-search-options',
+            name: 'pc_category2_master_id',
+            options: $this->pcCategory2MasterOptions,
+            value: $this->selectedPcCategory2MasterId === null ? '' : (string) $this->selectedPcCategory2MasterId,
+        );
+    }
+
+    private function dispatchPcCategory3MasterOptions(): void
+    {
+        $this->dispatch(
+            'select-search-options',
+            name: 'pc_category3_master_id',
+            options: $this->pcCategory3MasterOptions,
+            value: $this->selectedPcCategory3MasterId === null ? '' : (string) $this->selectedPcCategory3MasterId,
+        );
+    }
+
+    private function dispatchCommonCategory2MasterOptions(): void
+    {
+        $this->dispatch(
+            'select-search-options',
+            name: 'common_category2_master_id',
+            options: $this->commonCategory2MasterOptions,
+            value: $this->selectedCommonCategory2MasterId === null ? '' : (string) $this->selectedCommonCategory2MasterId,
+        );
     }
 
     public function render()
