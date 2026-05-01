@@ -96,10 +96,18 @@
             <tbody>
                 @forelse ($tradingCompanyRanks as $tradingCompanyRank)
                     <tr class="tw:h-[25px] tw:border-b tw:border-b-[#cccccc]">
-                        <td class="tw:text-center">{{ $tradingCompanyRank->id }}</td>
+                        <td class="tw:text-center">{{ $tradingCompanyRank->trading_company_id }}</td>
                         <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->name ?? '' }}</td>
-                        <td class="tw:truncate">{{ $tradingCompanyRank->category2Master?->item_name ?? $tradingCompanyRank->equipmentCategory1Master?->item_name ?? '' }}</td>
-                        <td class="tw:truncate">{{ $tradingCompanyRank->category3Master?->item_name ?? $tradingCompanyRank->equipmentCategory2Master?->item_name ?? '' }}</td>
+                        <td class="tw:truncate">
+                            @foreach ($tradingCompanyRank->category2_names as $category2Name)
+                                <span class="tw:inline-block tw:mr-1 tw:mb-1 tw:px-2 tw:py-[1px] tw:rounded tw:bg-[#f3f4f6]">{{ $category2Name }}</span>
+                            @endforeach
+                        </td>
+                        <td class="tw:truncate">
+                            @foreach ($tradingCompanyRank->category3_names as $category3Name)
+                                <span class="tw:inline-block tw:mr-1 tw:mb-1 tw:px-2 tw:py-[1px] tw:rounded tw:bg-[#f3f4f6]">{{ $category3Name }}</span>
+                            @endforeach
+                        </td>
                         <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->tel ?? '' }}</td>
                         <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->mail ?? '' }}</td>
                         <td class="tw:truncate">{{ $tradingCompanyRank->tradingCompany?->address ?? '' }}</td>

@@ -8,7 +8,6 @@ use App\Models\Category3Master;
 use App\Models\EquipmentCategory1Master;
 use App\Models\EquipmentCategory2Master;
 use App\Models\TradingCompanyRank;
-use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class MapList extends Component
@@ -399,10 +398,40 @@ class MapList extends Component
             });
         }
 
-        $this->tradingCompanyRanks = $query
+        $tradingCompanyRanks = $query
             ->orderByRaw('rank IS NULL, rank ASC')
             ->orderBy('id', 'asc')
             ->get();
+
+        $this->tradingCompanyRanks = $tradingCompanyRanks
+            ->groupBy('trading_company_id')
+            ->map(function ($ranks) {
+                $firstRank = $ranks->first();
+
+                $category2Names = $ranks
+                    ->map(function ($rank) {
+                        return $rank->category2Master?->item_name ?? $rank->equipmentCategory1Master?->item_name;
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $category3Names = $ranks
+                    ->map(function ($rank) {
+                        return $rank->category3Master?->item_name ?? $rank->equipmentCategory2Master?->item_name;
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                return (object) [
+                    'trading_company_id' => $firstRank->trading_company_id,
+                    'tradingCompany' => $firstRank->tradingCompany,
+                    'category2_names' => $category2Names,
+                    'category3_names' => $category3Names,
+                ];
+            })
+            ->values();
     }
 
     public function render()
