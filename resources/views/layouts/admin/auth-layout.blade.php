@@ -89,7 +89,7 @@
         <div class="tw:fixed tw:top-0 tw:left-[300px] tw:w-[calc(100vw-300px)] tw:min-h-screen tw:transition-all tw:duration-600"
             :class="float ? 'tw:!left-0 tw:!w-screen' : ''"
         >
-            <div class="tw:bg-black tw:h-[48px] tw:w-full tw:flex tw:items-center tw:text-white"
+            <div class="tw:relative tw:z-[1000] tw:bg-black tw:h-[48px] tw:w-full tw:flex tw:items-center tw:text-white"
                 @mouseenter="sidebarHover = true"
                 @mouseleave="sidebarHover = false"
             >
@@ -111,7 +111,7 @@
                         route('admin.operation.create') => 'オペレーション作成',
                     ]"
                 />
-                <x-layout.top-menu-item title="物件管理" />
+                <x-layout.top-menu-item title="物件管理" :url="route('admin.investment.index')" />
                 <x-layout.top-menu-item title="物件詳細" />
                 <x-layout.top-menu-item title="空室物件" />
                 <x-layout.top-menu-item title="プロセス管理"
@@ -135,7 +135,7 @@
                         {{ $title }}
                     </div>
                 @endif
-                <div :class="float ? 'tw:h-full' : 'tw:h-[calc(100%-50px)]'">
+                <div :class="float ? 'tw:h-full' : '{{ $showPageTitle ? 'tw:h-[calc(100%-50px)]' : 'tw:h-full' }}'">
                     {{ $slot }}
                 </div>
             </div>

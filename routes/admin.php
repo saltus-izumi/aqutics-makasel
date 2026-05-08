@@ -11,7 +11,8 @@ use App\Http\Controllers\Admin\Master\OwnerController as AdminMasterOwner;
 use App\Http\Controllers\Admin\Master\MailTemplateController as AdminMailTemplate;
 use App\Http\Controllers\Admin\Master\EquipmentCategory1MasterController as AdminEquipmentCategory1Master;
 use App\Http\Controllers\Admin\Master\EquipmentCategory2MasterController as AdminEquipmentCategory2Master;
-use App\Http\Controllers\Admin\RepairMapController as AdminRepairMapController;
+use App\Http\Controllers\Admin\InvestmentController as AdminInvestment;
+use App\Http\Controllers\Admin\RepairMapController as AdminRepairMap;
 
 
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -21,6 +22,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('auth:admin')->group(function () {
         Route::get('/', fn () => view('admin.dashboard'))->name('dashboard');
+
+        Route::prefix('investment')->name('investment.')->group(function () {
+            Route::get('/', [AdminInvestment::class, 'index'])->name('index');
+        });
 
         Route::prefix('operation')->name('operation.')->group(function () {
             Route::get('/', [AdminOperation::class, 'index'])->name('index');
@@ -79,7 +84,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         Route::prefix('repair-map')->name('repair-map.')->group(function () {
-            Route::get('/', [AdminRepairMapController::class, 'index'])->name('index');
+            Route::get('/', [AdminRepairMap::class, 'index'])->name('index');
         });
 
     });
