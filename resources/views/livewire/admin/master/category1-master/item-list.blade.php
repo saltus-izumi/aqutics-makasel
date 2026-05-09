@@ -1,7 +1,8 @@
 <div class="tw:h-full tw:w-full tw:overflow-auto">
     <div class="tw:h-[45px] tw:w-[calc(100%-40px)] tw:ml-[26px] tw:flex tw:items-end tw:border-b tw:mb-[21px]">
         <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#d9d9d9] tw:border-b tw:border-b-3 tw:border-b-pm_blue_001">大カテゴリ</div>
-        <a href="{{ route('admin.master.equipment-category2-master.index') }}"><div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">中カテゴリ</div></a>
+        <a href="{{ route('admin.master.category2-master.index') }}"><div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">中カテゴリ</div></a>
+        <a href="{{ route('admin.master.category3-master.index') }}"><div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">小カテゴリ</div></a>
     </div>
     <div class="tw:h-[calc(100%-165px)]">
         <div class="tw:px-[26px]">
@@ -22,28 +23,28 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($equipmentCategory1Masters as $equipmentCategory1Master)
+                        @foreach ($category1Masters as $category1Master)
                             <tr class="tw:h-[42px] tw:border-b tw:border-b-[#cccccc]">
-                                <td class="tw:text-center">{{ $equipmentCategory1Master->id }}</td>
-                                <td>{{ $equipmentCategory1Master->item_name }}</td>
-                                <td class="tw:text-center">{{ $equipmentCategory1Master->disp_rank }}</td>
+                                <td class="tw:text-center">{{ $category1Master->id }}</td>
+                                <td>{{ $category1Master->item_name }}</td>
+                                <td class="tw:text-center">{{ $category1Master->disp_rank }}</td>
                                 <td class="tw:h-[41px] tw:flex tw:gap-x-[26px] tw:items-center">
                                     <x-button.blue
                                         class="tw:!h-[21px] tw:!min-w-[72px]"
-                                        wire:click="openEditDialog({{ $equipmentCategory1Master->id }})"
+                                        wire:click="openEditDialog({{ $category1Master->id }})"
                                     >
                                         編集
                                     </x-button.blue>
                                     <div class="tw:flex tw:gap-x-[5px]">
                                         <x-button.gray
                                             class="tw:!h-[21px] tw:!min-w-[26px] tw:!px-[0]"
-                                            wire:click="moveUp({{ $equipmentCategory1Master->id }})"
+                                            wire:click="moveUp({{ $category1Master->id }})"
                                         >
                                             <i class="fas fa-angle-double-up"></i>
                                         </x-button.gray>
                                         <x-button.gray
                                             class="tw:!h-[21px] tw:!min-w-[26px] tw:!px-[0]"
-                                            wire:click="moveDown({{ $equipmentCategory1Master->id }})"
+                                            wire:click="moveDown({{ $category1Master->id }})"
                                         >
                                             <i class="fas fa-angle-double-down"></i>
                                         </x-button.gray>

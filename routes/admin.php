@@ -2,16 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController as AdminAuth;
+use App\Http\Controllers\Admin\ImportController as AdminImport;
+use App\Http\Controllers\Admin\InvestmentController as AdminInvestment;
+use App\Http\Controllers\Admin\Master\OwnerController as AdminMasterOwner;
+use App\Http\Controllers\Admin\Master\MailTemplateController as AdminMailTemplate;
+use App\Http\Controllers\Admin\Master\Category1MasterController as AdminCategory1Master;
+use App\Http\Controllers\Admin\Master\Category2MasterController as AdminCategory2Master;
+use App\Http\Controllers\Admin\Master\Category3MasterController as AdminCategory3Master;
 use App\Http\Controllers\Admin\OperationController as AdminOperation;
 use App\Http\Controllers\Admin\Progress\GeController as AdminGe;
 use App\Http\Controllers\Admin\Progress\EnController as AdminEn;
 use App\Http\Controllers\Admin\Progress\TeController as AdminTe;
-use App\Http\Controllers\Admin\ImportController as AdminImport;
-use App\Http\Controllers\Admin\Master\OwnerController as AdminMasterOwner;
-use App\Http\Controllers\Admin\Master\MailTemplateController as AdminMailTemplate;
-use App\Http\Controllers\Admin\Master\EquipmentCategory1MasterController as AdminEquipmentCategory1Master;
-use App\Http\Controllers\Admin\Master\EquipmentCategory2MasterController as AdminEquipmentCategory2Master;
-use App\Http\Controllers\Admin\InvestmentController as AdminInvestment;
 use App\Http\Controllers\Admin\RepairMapController as AdminRepairMap;
 
 
@@ -65,12 +66,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::get('/', [AdminMailTemplate::class, 'index'])->name('index');
             });
 
-            Route::prefix('equipment-category1-master')->name('equipment-category1-master.')->group(function () {
-                Route::get('/', [AdminEquipmentCategory1Master::class, 'index'])->name('index');
+            Route::prefix('category1-master')->name('category1-master.')->group(function () {
+                Route::get('/', [AdminCategory1Master::class, 'index'])->name('index');
             });
 
-            Route::prefix('equipment-category2-master')->name('equipment-category2-master.')->group(function () {
-                Route::get('/', [AdminEquipmentCategory2Master::class, 'index'])->name('index');
+            Route::prefix('category2-master')->name('category2-master.')->group(function () {
+                Route::get('/', [AdminCategory2Master::class, 'index'])->name('index');
+            });
+
+            Route::prefix('category3-master')->name('category3-master.')->group(function () {
+                Route::get('/', [AdminCategory3Master::class, 'index'])->name('index');
             });
 
         });

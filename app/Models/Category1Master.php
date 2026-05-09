@@ -18,6 +18,7 @@ class Category1Master extends Model
     public const CLAIM_HARD = '4';
     public const CLAIM_SOFT = '5';
     public const OTHER = '6';
+    public const EQUIPTMENT = '7';
 
     public const SHORT_NAME = [
         self::CLAIM_HARD => 'H',

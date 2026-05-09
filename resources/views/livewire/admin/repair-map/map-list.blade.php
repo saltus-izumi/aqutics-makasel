@@ -49,20 +49,20 @@
                 <div class="tw:!w-[220px]">
                     共用｜中カテゴリ<br>
                     <x-form.select-search
-                        name="common_category1_master_id"
-                        wire:model.live="selectedCommonCategory1MasterId"
-                        :options="$commonCategory1MasterOptions"
-                        :value="$selectedCommonCategory1MasterId"
+                        name="common_category2_master_id"
+                        wire:model.live="selectedCommonCategory2MasterId"
+                        :options="$commonCategory2MasterOptions"
+                        :value="$selectedCommonCategory2MasterId"
                         empty=" "
                     />
                 </div>
                 <div class="tw:!w-[220px]">
                     共用｜小カテゴリ<br>
                     <x-form.select-search
-                        name="common_category2_master_id"
-                        wire:model.live="selectedCommonCategory2MasterId"
-                        :options="$commonCategory2MasterOptions"
-                        :value="$selectedCommonCategory2MasterId"
+                        name="common_category3_master_id"
+                        wire:model.live="selectedCommonCategory3MasterId"
+                        :options="$commonCategory3MasterOptions"
+                        :value="$selectedCommonCategory3MasterId"
                         empty=" "
                     />
                 </div>

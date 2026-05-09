@@ -78,51 +78,45 @@ class initEquipmentCategoryMastersSeeder extends Seeder
         ];
 
         DB::transaction(function () use ($categories) {
-            DB::table('equipment_category2_masters')->delete();
-            DB::table('equipment_category1_masters')->delete();
+            $category1MasterId = 7;
 
             $now = now();
-            $category1Rows = [];
-            $category1DispRank = 1;
 
-            foreach (array_keys($categories) as $category1Name) {
-                $category1Rows[] = [
-                    'item_name' => $category1Name,
-                    'disp_rank' => $category1DispRank,
+            $category2MasterIds = DB::table('category2_masters')
+                ->where('category1_master_id', $category1MasterId)
+                ->pluck('id');
+
+            DB::table('category3_masters')
+                ->whereIn('category2_master_id', $category2MasterIds)
+                ->delete();
+
+            DB::table('category2_masters')
+                ->where('category1_master_id', $category1MasterId)
+                ->delete();
+
+            $category2DispRank = 1;
+            foreach ($categories as $category2Name => $children) {
+                $category2MasterId = DB::table('category2_masters')->insertGetId([
+                    'category1_master_id' => $category1MasterId,
+                    'item_name' => $category2Name,
+                    'disp_rank' => $category2DispRank,
                     'created_at' => $now,
                     'updated_at' => $now,
-                ];
-                $category1DispRank++;
-            }
+                ]);
 
-            DB::table('equipment_category1_masters')->insert($category1Rows);
-
-            $category1IdMap = DB::table('equipment_category1_masters')
-                ->pluck('id', 'item_name')
-                ->toArray();
-
-            $category2Rows = [];
-            foreach ($categories as $category1Name => $children) {
-                $category1Id = $category1IdMap[$category1Name] ?? null;
-                if (!$category1Id) {
-                    continue;
-                }
-
-                $category2DispRank = 1;
+                $category3DispRank = 1;
                 foreach ($children as $childName) {
-                    $category2Rows[] = [
-                        'equipment_category1_master_id' => $category1Id,
+                    DB::table('category3_masters')->insert([
+                        'category2_master_id' => $category2MasterId,
                         'item_name' => $childName,
-                        'disp_rank' => $category2DispRank,
+                        'disp_rank' => $category3DispRank,
                         'created_at' => $now,
                         'updated_at' => $now,
-                    ];
-                    $category2DispRank++;
+                    ]);
+                    $category3DispRank++;
                 }
-            }
 
-            if (!empty($category2Rows)) {
-                DB::table('equipment_category2_masters')->insert($category2Rows);
+                $category2DispRank++;
             }
         });
     }
