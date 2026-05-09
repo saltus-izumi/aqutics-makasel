@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Livewire\Admin\Master\EquipmentCategory1Master;
+namespace App\Livewire\Admin\Master\Category1Master;
 
-use App\Models\EquipmentCategory1Master;
+use App\Models\Category1Master;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ItemList extends Component
 {
-    public $equipmentCategory1Masters = null;
+    public $category1Masters = null;
     public $editingId = null;
     public $editingItemName = '';
 
@@ -29,19 +29,21 @@ class ItemList extends Component
 
     public function mount()
     {
-        $this->loadEquipmentCategory1Masters();
+        $this->loadCategory1Masters();
     }
 
     public function openEditDialog($id)
     {
-        $equipmentCategory1Master = EquipmentCategory1Master::query()->find($id);
-        if (!$equipmentCategory1Master) {
+        $category1Master = Category1Master::query()
+            ->where('id', '!=', Category1Master::EQUIPTMENT)
+            ->find($id);
+        if (!$category1Master) {
             return;
         }
 
         $this->resetValidation();
-        $this->editingId = $equipmentCategory1Master->id;
-        $this->editingItemName = (string) $equipmentCategory1Master->item_name;
+        $this->editingId = $category1Master->id;
+        $this->editingItemName = (string) $category1Master->item_name;
 
         $this->dispatch('open-equipment-category1-edit-modal');
     }
@@ -64,28 +66,33 @@ class ItemList extends Component
         $validated = $this->validate();
 
         DB::transaction(function () use ($validated) {
-            $equipmentCategory1Master = EquipmentCategory1Master::query()->find($this->editingId);
-            if (!$equipmentCategory1Master) {
+            $category1Master = Category1Master::query()
+                ->where('id', '!=', Category1Master::EQUIPTMENT)
+                ->find($this->editingId);
+            if (!$category1Master) {
                 return;
             }
 
-            $equipmentCategory1Master->item_name = $validated['editingItemName'];
-            $equipmentCategory1Master->save();
+            $category1Master->item_name = $validated['editingItemName'];
+            $category1Master->save();
         });
 
-        $this->loadEquipmentCategory1Masters();
+        $this->loadCategory1Masters();
         $this->closeEditDialog();
     }
 
     public function moveUp($id)
     {
-        $current = EquipmentCategory1Master::query()->find($id);
+        $current = Category1Master::query()
+            ->where('id', '!=', Category1Master::EQUIPTMENT)
+            ->find($id);
         if (!$current || $current->disp_rank === null) {
             return;
         }
 
-        $target = EquipmentCategory1Master::query()
+        $target = Category1Master::query()
             ->where('id', '!=', $current->id)
+            ->where('id', '!=', Category1Master::EQUIPTMENT)
             ->whereNotNull('disp_rank')
             ->where('disp_rank', '<', $current->disp_rank)
             ->orderBy('disp_rank', 'desc')
@@ -107,18 +114,21 @@ class ItemList extends Component
             $target->save();
         });
 
-        $this->loadEquipmentCategory1Masters();
+        $this->loadCategory1Masters();
     }
 
     public function moveDown($id)
     {
-        $current = EquipmentCategory1Master::query()->find($id);
+        $current = Category1Master::query()
+            ->where('id', '!=', Category1Master::EQUIPTMENT)
+            ->find($id);
         if (!$current || $current->disp_rank === null) {
             return;
         }
 
-        $target = EquipmentCategory1Master::query()
+        $target = Category1Master::query()
             ->where('id', '!=', $current->id)
+            ->where('id', '!=', Category1Master::EQUIPTMENT)
             ->whereNotNull('disp_rank')
             ->where('disp_rank', '>', $current->disp_rank)
             ->orderBy('disp_rank', 'asc')
@@ -140,18 +150,19 @@ class ItemList extends Component
             $target->save();
         });
 
-        $this->loadEquipmentCategory1Masters();
+        $this->loadCategory1Masters();
     }
 
-    private function loadEquipmentCategory1Masters()
+    private function loadCategory1Masters()
     {
-        $this->equipmentCategory1Masters = EquipmentCategory1Master::query()
+        $this->category1Masters = Category1Master::query()
+            ->where('id', '!=', Category1Master::EQUIPTMENT)
             ->orderBy('disp_rank', 'asc')
             ->get();
     }
 
     public function render()
     {
-        return view('livewire.admin.master.equipment-category1-master.item-list');
+        return view('livewire.admin.master.category1-master.item-list');
     }
 }
