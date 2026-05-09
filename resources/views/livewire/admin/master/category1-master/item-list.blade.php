@@ -2,6 +2,7 @@
     <div class="tw:h-[45px] tw:w-[calc(100%-40px)] tw:ml-[26px] tw:flex tw:items-end tw:border-b tw:mb-[21px]">
         <div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#d9d9d9] tw:border-b tw:border-b-3 tw:border-b-pm_blue_001">大カテゴリ</div>
         <a href="{{ route('admin.master.category2-master.index') }}"><div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">中カテゴリ</div></a>
+        <a href="{{ route('admin.master.category3-master.index') }}"><div class="tw:w-[130px] tw:h-[42px] tw:leading-[42px] tw:text-[1.4rem] tw:font-bold tw:text-center tw:bg-[#efefef]">小カテゴリ</div></a>
     </div>
     <div class="tw:h-[calc(100%-165px)]">
         <div class="tw:px-[26px]">
