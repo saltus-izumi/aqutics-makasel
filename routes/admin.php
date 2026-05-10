@@ -26,6 +26,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::prefix('investment')->name('investment.')->group(function () {
             Route::get('/', [AdminInvestment::class, 'index'])->name('index');
+            Route::get('{investmentId}', [AdminInvestment::class, 'detail'])->name('detail');
         });
 
         Route::prefix('operation')->name('operation.')->group(function () {

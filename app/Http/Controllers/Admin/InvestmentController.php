@@ -15,4 +15,12 @@ class InvestmentController
     {
         return view('admin.investment.index');
     }
+
+    public function detail(Request $request, $investmentId)
+    {
+        return view('admin.investment.detail')
+            ->with(compact(
+                'investmentId'
+            ));
+    }
 }
