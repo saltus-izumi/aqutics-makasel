@@ -26,7 +26,7 @@
             <x-form.select2 name="approval_method" :value="$enProgress?->approval_method" :options="App\Models\EnProgress::APPROVAL_METHOD" empty=" " class="tw:!w-[110px]" />
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">
-            <x-form.input-date name="approval_acquired_date" :value="$enProgress?->approval_acquired_date" class="tw:!h-[40px] tw:!text-center" />
+            <x-form.input-date name="approval_acquired_date" :value="$enProgress?->approval_acquired_date" class="tw:!h-[40px] tw:!text-center" :border="false" />
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:leading-[40px]">
             <x-form.select2 name="approval_condition" :value="$enProgress?->approval_condition" :options="['1'=>'あり', '0'=>'なし']" class="tw:!w-[110px]" />

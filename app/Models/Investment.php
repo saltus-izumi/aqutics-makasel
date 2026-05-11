@@ -27,6 +27,30 @@ class Investment extends Model
         return $this->hasMany(InvestmentRoom::class);
     }
 
+    /**
+     * この物件が持つ最寄り駅を取得
+     */
+    public function investmentNearestStations()
+    {
+        return $this->hasMany(InvestmentNearestStation::class);
+    }
+
+    /**
+     * この物件が持つ最寄りバス停を取得
+     */
+    public function investmentNearestBusStops()
+    {
+        return $this->hasMany(InvestmentNearestBusStop::class);
+    }
+
+    /**
+     * この物件が持つ間取りを取得
+     */
+    public function investmentFloorPlans()
+    {
+        return $this->hasMany(InvestmentFloorPlan::class);
+    }
+
     public function restorationCompany()
     {
         return $this->belongsTo(TradingCompany::class);

@@ -46,7 +46,7 @@
             <x-form.select name="gender" :value="$enProgressEmergencyContact?->gender" :options="App\Models\EnProgressEmergencyContact::GENDER" class="tw:!h-[40px]" />
         </div>
         <div class="tw:w-[182px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:flex">
-            <x-form.input-date name="birth_date" :value="$enProgressEmergencyContact?->birth_date" class="tw:!h-[40px] tw:!text-center" />
+            <x-form.input-date name="birth_date" :value="$enProgressEmergencyContact?->birth_date" class="tw:!h-[40px] tw:!text-center" :border="false" />
             <div class="tw:!h-[40px] tw:leading-[40px] tw:pr-5">({{ $enProgressEmergencyContact?->birth_date?->age }})</div>
         </div>
         <div class="tw:w-[78px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">

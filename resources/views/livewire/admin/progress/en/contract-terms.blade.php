@@ -57,9 +57,9 @@
             {{ $enProgress->contract_type }}
         </div>
         <div class="tw:w-[286px] tw:h-[21px] tw:text-left tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:pl-3 tw:text-[#ff0000]">
-            <x-form.input-date name="fr_start_date" :value="$enProgress?->fr_start_date" class="tw:!h-[19px] tw:!w-[90px] tw:text-[#ff0000]" />
+            <x-form.input-date name="fr_start_date" :value="$enProgress?->fr_start_date" class="tw:!h-[19px] tw:!w-[90px] tw:text-[#ff0000]" :border="false" />
             〜
-            <x-form.input-date name="fr_end_date" :value="$enProgress?->fr_end_date" class="tw:!h-[19px] tw:!w-[90px] tw:text-[#ff0000]" />
+            <x-form.input-date name="fr_end_date" :value="$enProgress?->fr_end_date" class="tw:!h-[19px] tw:!w-[90px] tw:text-[#ff0000]" :border="false" />
             (<span x-text="getPeriodText('fr_start_date', 'fr_end_date')">-</span>)
         </div>
     </div>
@@ -72,18 +72,18 @@
     </div>
     <div class="tw:flex">
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0">
-            <x-form.input-date name="desired_contract_date" :value="$enProgress?->desired_contract_date" class="tw:!h-[40px] tw:!text-center" />
+            <x-form.input-date name="desired_contract_date" :value="$enProgress?->desired_contract_date" class="tw:!h-[40px] tw:!text-center" :border="false" />
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-l-0 tw:border-t-0">
-            <x-form.input-date name="planned_payment_date" :value="$enProgress?->planned_payment_date" class="tw:!h-[40px] tw:!text-center" />
+            <x-form.input-date name="planned_payment_date" :value="$enProgress?->planned_payment_date" class="tw:!h-[40px] tw:!text-center" :border="false" />
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">
-            <x-form.input-date name="desired_move_in_date" :value="$enProgress?->desired_move_in_date" class="tw:!h-[40px] tw:!text-center" />
+            <x-form.input-date name="desired_move_in_date" :value="$enProgress?->desired_move_in_date" class="tw:!h-[40px] tw:!text-center" :border="false" />
         </div>
         <div class="tw:w-[286px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:leading-[40px]">
-            <x-form.input-date name="contract_start_date" :value="$enProgress?->contract_start_date" class="tw:!h-[40px] tw:!w-[90px]" />
+            <x-form.input-date name="contract_start_date" :value="$enProgress?->contract_start_date" class="tw:!h-[40px] tw:!w-[90px]" :border="false" />
             〜
-            <x-form.input-date name="contract_end_date" :value="$enProgress?->contract_end_date" class="tw:!h-[40px] tw:!w-[90px]" />
+            <x-form.input-date name="contract_end_date" :value="$enProgress?->contract_end_date" class="tw:!h-[40px] tw:!w-[90px]" :border="false" />
             (<span x-text="getPeriodText('contract_start_date', 'contract_end_date')">-</span>)
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">

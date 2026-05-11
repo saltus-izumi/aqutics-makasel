@@ -3,6 +3,7 @@
     'value' => '',
     'placeholder' => '',
     'is_error' => false,
+    'border' => true,
 ])
 
 <input
@@ -11,5 +12,12 @@
     type="text"
     name="{{ $name }}"
     placeholder="{{ $placeholder }}"
-    {{ $attributes->merge(['class' => 'tw:input tw:input-bordered tw:h-[1.8em] tw:px-[4px] tw:w-full tw:bg-white ' . ($is_error ? ' !tw:bg-red-100 ' : '')]) }}
+    @class([
+        'tw:border tw:border-gray-300' => $border,
+        'tw:placeholder:text-gray-400 tw:py-2 tw:px-3  tw:w-full tw:rounded-md',
+        'tw:bg-white' => !$attributes->has('class') || !str_contains($attributes->get('class'), 'tw:bg-'),
+        $attributes->get('class'),
+        'tw:bg-red-100' => $is_error,
+    ])
+    {{ $attributes->except('class') }}
 >

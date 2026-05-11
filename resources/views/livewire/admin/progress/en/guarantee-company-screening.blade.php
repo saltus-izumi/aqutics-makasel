@@ -32,7 +32,7 @@
             <x-form.select name="guarantee_company_id" :value="$enProgress?->guarantee_company_id" :options="$guaranteeCompanyOptions" class="tw:!w-full tw:!h-[40px]" />
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0">
-            <x-form.input-date name="screening_application_date" :value="$enProgress?->screening_application_date" class="tw:!h-[40px] tw:!text-center" />
+            <x-form.input-date name="screening_application_date" :value="$enProgress?->screening_application_date" class="tw:!h-[40px] tw:!text-center" :border="false" />
         </div>
         <div class="tw:w-[130px] tw:h-[42px] tw:text-center tw:border tw:border-[#cccccc] tw:border-t-0 tw:border-l-0 tw:leading-[40px]">
             <x-form.select2 name="screening_result" :value="$enProgress?->screening_result" :options="App\Models\EnProgress::SCREENING_RESULT" empty=" " class="tw:!w-[110px]" />
