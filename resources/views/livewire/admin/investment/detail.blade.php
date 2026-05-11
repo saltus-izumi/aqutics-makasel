@@ -105,98 +105,163 @@
             </div>
         </div>
         <div class="tw:mt-[20px]">
-            <div class="tw:w-[858px] tw:mt-[20px] tw:mx-[26px] tw:border-b tw:border-[#d9d9d9]">
-                交通
+            <div class="tw:w-[858px] tw:mt-[20px] tw:mx-[26px] tw:flex tw:justify-between tw:border-b tw:border-[#d9d9d9]">
+                <div>交通</div>
             </div>
-            <div class="tw:mt-[20px] tw:flex">
-                <div class="tw:w-[26px]">
-                    <div class="tw:h-[26px]">　</div>
-                    <div class="tw:h-[35px] tw:leading-[35px] tw:text-center tw:text-[1.2rem]">
-                        ①
-                    </div>
-                </div>
-                <div class="tw:flex tw:gap-x-[26px]">
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">鉄道名</div>
-                        <x-form.input name="investment_id" value="123" class="tw:!w-[234px]" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">路線名</div>
-                        <x-form.input name="investment_id" value="123" class="tw:!w-[234px]" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">最寄り駅</div>
-                        <x-form.input name="investment_id" value="123" class="tw:!w-[182px]" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">徒歩（分）</div>
-                        <x-form.input-number name="investment_id" value="123" class="tw:!w-[104px] tw:text-right" />
-                    </div>
+            @php
+                $nearestStationNumbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+            @endphp
+            @foreach ($nearestStations as $index => $nearestStation)
+                <div class="{{ $index === 0 ? 'tw:mt-[20px]' : 'tw:mt-[10px]' }} tw:flex" wire:key="{{ $nearestStation['_key'] }}">
                     <div class="tw:w-[26px]">
-                        <div class="tw:h-[26px]">　</div>
-                        <div class="tw:h-[35px] tw:leading-[35px] tw:text-[1.2rem] tw:text-[#ff0000]">
-                            <i class="fas fa-minus-circle"></i>
+                        @if ($index === 0)
+                            <div class="tw:h-[26px]">　</div>
+                        @endif
+                        <div class="tw:h-[35px] tw:leading-[35px] tw:text-center tw:text-[1.2rem]">
+                            {{ $nearestStationNumbers[$index] ?? $index + 1 }}
+                        </div>
+                    </div>
+                    <div class="tw:flex tw:gap-x-[26px]">
+                        <div>
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">鉄道名</div>
+                            @endif
+                            <x-form.input name="investment_nearest_stations[{{ $index }}][railway_name]" wire:model="nearestStations.{{ $index }}.railway_name" class="tw:!w-[234px]" />
+                        </div>
+                        <div>
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">路線名</div>
+                            @endif
+                            <x-form.input name="investment_nearest_stations[{{ $index }}][line_name]" wire:model="nearestStations.{{ $index }}.line_name" class="tw:!w-[234px]" />
+                        </div>
+                        <div>
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">最寄り駅</div>
+                            @endif
+                            <x-form.input name="investment_nearest_stations[{{ $index }}][station_name]" wire:model="nearestStations.{{ $index }}.station_name" class="tw:!w-[182px]" />
+                        </div>
+                        <div>
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">徒歩（分）</div>
+                            @endif
+                            <x-form.input-number name="investment_nearest_stations[{{ $index }}][walking_minutes]" wire:model="nearestStations.{{ $index }}.walking_minutes" class="tw:!w-[104px] tw:text-right" />
+                        </div>
+                        <div class="tw:w-[26px]">
+                            @if ($index === 0)
+                                <button type="button" class="tw:h-[26px] tw:text-[1.2rem] tw:border-0 tw:bg-transparent tw:p-0" wire:click="addNearestStation">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                            @endif
+                            <button type="button" class="tw:h-[35px] tw:leading-[35px] tw:text-[1.2rem] tw:text-[#ff0000] tw:border-0 tw:bg-transparent tw:p-0" wire:click="removeNearestStation({{ $index }})">
+                                <i class="fas fa-minus-circle"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="tw:mt-[20px] tw:flex">
-                <div class="tw:w-[26px]">
-                    <div class="tw:h-[26px]">　</div>
-                    <div class="tw:h-[35px] tw:leading-[35px] tw:text-center tw:text-[1.2rem]">
-                        ①
+            @endforeach
+            @foreach ($nearestBusStops as $index => $nearestBusStop)
+                <div class="{{ $index === 0 ? 'tw:mt-[20px]' : 'tw:mt-[10px]' }} tw:flex" wire:key="{{ $nearestBusStop['_key'] }}">
+                    <div class="tw:w-[26px]">
+                        @if ($index === 0)
+                            <div class="tw:h-[26px]">　</div>
+                        @endif
+                        <div class="tw:h-[35px] tw:leading-[35px] tw:text-center tw:text-[1.2rem]">
+                            {{ $nearestStationNumbers[$index] ?? $index + 1 }}
+                        </div>
+                    </div>
+                    <div class="tw:flex tw:gap-x-[26px]">
+                        <div class="tw:w-[234px]">
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">バス停留所名</div>
+                            @endif
+                            <x-form.input name="investment_nearest_bus_stops[{{ $index }}][bus_stop_name]" wire:model="nearestBusStops.{{ $index }}.bus_stop_name" class="tw:!w-[234px]" />
+                        </div>
+                        <div class="{{ $index === 0 ? 'tw:w-[208px]' : 'tw:w-[104px]' }}">
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">徒歩（分）</div>
+                            @endif
+                            <x-form.input-number name="investment_nearest_bus_stops[{{ $index }}][walking_minutes]" wire:model="nearestBusStops.{{ $index }}.walking_minutes" class="tw:!w-[104px] tw:text-right" />
+                        </div>
+                        <div class="tw:w-[234px]">
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">最寄り沿線名</div>
+                            @endif
+                            <x-form.input name="investment_nearest_bus_stops[{{ $index }}][nearest_line_name]" wire:model="nearestBusStops.{{ $index }}.nearest_line_name" class="tw:!w-[234px]" />
+                        </div>
+                        <div class="tw:w-[182px]">
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">最寄り駅</div>
+                            @endif
+                            <x-form.input name="investment_nearest_bus_stops[{{ $index }}][nearest_station_name]" wire:model="nearestBusStops.{{ $index }}.nearest_station_name" class="tw:!w-[182px]" />
+                        </div>
+                        <div>
+                            @if ($index === 0)
+                                <div class="tw:flex tw:gap-x-[26px]">
+                                    <div class="tw:h-[26px] tw:leading-[26px] tw:relative">
+                                        バス所要時間（バス停～駅
+                                    </div>
+                                    <button type="button" class="tw:h-[26px] tw:text-[1.2rem] tw:border-0 tw:bg-transparent tw:p-0" wire:click="addNearestBusStop">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </button>
+                                </div>
+                            @endif
+                            <div class="tw:flex tw:gap-x-[26px]">
+                                <x-form.input-number name="investment_nearest_bus_stops[{{ $index }}][bus_minutes_to_station]" wire:model="nearestBusStops.{{ $index }}.bus_minutes_to_station" class="tw:!w-[104px] tw:text-right" />
+                                <button type="button" class="tw:h-[35px] tw:leading-[35px] tw:text-[1.2rem] tw:text-[#ff0000] tw:border-0 tw:bg-transparent tw:p-0" wire:click="removeNearestBusStop({{ $index }})">
+                                    <i class="fas fa-minus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="tw:flex tw:gap-x-[26px]">
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">バス停留所名</div>
-                        <x-form.input name="investment_id" value="123" class="tw:!w-[234px]" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">徒歩（分）</div>
-                        <x-form.input-number name="investment_id" value="123" class="tw:!w-[104px] tw:text-right" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">最寄り沿線名</div>
-                        <x-form.input name="investment_id" value="123" class="tw:!w-[234px]" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">最寄り駅</div>
-                        <x-form.input name="investment_id" value="123" class="tw:!w-[182px]" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">バス所要時間（バス停～駅）</div>
-                        <x-form.input-number name="investment_id" value="123" class="tw:!w-[104px] tw:text-right" />
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
         <div class="tw:mt-[20px]">
             <div class="tw:w-[858px] tw:mt-[20px] tw:mx-[26px] tw:border-b tw:border-[#d9d9d9]">
                 タイプ
             </div>
-            <div class="tw:mt-[20px] tw:flex">
-                <div class="tw:w-[26px]">
-                    <div class="tw:h-[26px]">　</div>
-                    <div class="tw:h-[35px] tw:leading-[35px] tw:text-center tw:text-[1.2rem]">
-                        ①
+            @foreach ($floorPlans as $index => $floorPlan)
+                <div class="{{ $index === 0 ? 'tw:mt-[20px]' : 'tw:mt-[10px]' }} tw:flex" wire:key="{{ $floorPlan['_key'] }}">
+                    <div class="tw:w-[26px]">
+                        @if ($index === 0)
+                            <div class="tw:h-[26px]">　</div>
+                        @endif
+                        <div class="tw:h-[35px] tw:leading-[35px] tw:text-center tw:text-[1.2rem]">
+                            {{ $nearestStationNumbers[$index] ?? $index + 1 }}
+                        </div>
+                    </div>
+                    <div class="tw:flex tw:gap-x-[26px]">
+                        <div class="tw:w-[234px]">
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">間取り</div>
+                            @endif
+                            <x-form.input name="investment_floor_plans[{{ $index }}][floor_plan]" wire:model="floorPlans.{{ $index }}.floor_plan" class="tw:!w-[234px]" />
+                        </div>
+                        <div class="tw:w-[104px]">
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">+S</div>
+                            @endif
+                            <x-form.input-number name="investment_floor_plans[{{ $index }}][has_service_room]" wire:model="floorPlans.{{ $index }}.has_service_room" class="tw:!w-[104px] tw:text-right" />
+                        </div>
+                        <div class="tw:w-[104px]">
+                            @if ($index === 0)
+                                <div class="tw:h-[26px] tw:leading-[26px]">平米数</div>
+                            @endif
+                            <x-form.input-number name="investment_floor_plans[{{ $index }}][area_sqm]" wire:model="floorPlans.{{ $index }}.area_sqm" class="tw:!w-[104px] tw:text-right" />
+                        </div>
+                        <div class="tw:w-[26px]">
+                            @if ($index === 0)
+                                <button type="button" class="tw:h-[26px] tw:text-[1.2rem] tw:border-0 tw:bg-transparent tw:p-0" wire:click="addFloorPlan">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                            @endif
+                            <button type="button" class="tw:h-[35px] tw:leading-[35px] tw:text-[1.2rem] tw:text-[#ff0000] tw:border-0 tw:bg-transparent tw:p-0" wire:click="removeFloorPlan({{ $index }})">
+                                <i class="fas fa-minus-circle"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="tw:flex tw:gap-x-[26px]">
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">間取り</div>
-                        <x-form.input name="investment_id" value="123" class="tw:!w-[234px]" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">+S</div>
-                        <x-form.input-number name="investment_id" value="123" class="tw:!w-[104px] tw:text-right" />
-                    </div>
-                    <div>
-                        <div class="tw:h-[26px] tw:leading-[26px]">平米数</div>
-                        <x-form.input-number name="investment_id" value="123" class="tw:!w-[104px] tw:text-right" />
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
         
