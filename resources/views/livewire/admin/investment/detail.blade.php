@@ -1,6 +1,6 @@
-<div class="tw:w-full">
-    <div class="tw:h-[40px] tw:w-[calc(100%-26px)] tw:bg-[#f5f5f5] tw:text-[1.2rem] tw:font-bold tw:leading-[40px] tw:px-[10px]">物件マスター</div>
-    <div class="tw:pt-[26px]">
+<div class="tw:h-full tw:w-full tw:flex tw:flex-col tw:overflow-hidden">
+    <div class="tw:h-[40px] tw:flex-none tw:w-[calc(100%-26px)] tw:bg-[#f5f5f5] tw:text-[1.2rem] tw:font-bold tw:leading-[40px] tw:px-[10px]">物件マスター</div>
+    <div class="tw:flex-1 tw:overflow-y-auto tw:pt-[26px] tw:pb-[21px]">
         <div class="tw:px-[26px]">
             <div class="tw:flex">
                 <div class="tw:w-[780px]">
@@ -235,13 +235,13 @@
                             @if ($index === 0)
                                 <div class="tw:h-[26px] tw:leading-[26px]">間取り</div>
                             @endif
-                            <x-form.input name="investment_floor_plans[{{ $index }}][floor_plan]" wire:model="floorPlans.{{ $index }}.floor_plan" class="tw:!w-[234px]" />
+                            <x-form.select-search name="investment_floor_plans[{{ $index }}][floor_plan]" :value="$floorPlan['floor_plan']" :options="$floorPlanOptions" wire:model="floorPlans.{{ $index }}.floor_plan" class="tw:!w-[234px]" />
                         </div>
                         <div class="tw:w-[104px]">
                             @if ($index === 0)
                                 <div class="tw:h-[26px] tw:leading-[26px]">+S</div>
                             @endif
-                            <x-form.input-number name="investment_floor_plans[{{ $index }}][has_service_room]" wire:model="floorPlans.{{ $index }}.has_service_room" class="tw:!w-[104px] tw:text-right" />
+                            <x-form.select-search name="investment_floor_plans[{{ $index }}][has_service_room]" :value="$floorPlan['has_service_room']" :options="$hasServiceRoomOptions" wire:model="floorPlans.{{ $index }}.has_service_room" class="tw:!w-[104px]" />
                         </div>
                         <div class="tw:w-[104px]">
                             @if ($index === 0)

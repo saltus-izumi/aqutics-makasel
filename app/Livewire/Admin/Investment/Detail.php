@@ -17,6 +17,21 @@ class Detail extends Component
     public array $nearestStations = [];
     public array $nearestBusStops = [];
     public array $floorPlans = [];
+    public array $hasServiceRoomOptions = [
+        'false' => '　',
+        'true' => '+S',
+    ];
+    public array $floorPlanOptions = [
+        '1R' => '1R',
+        '1K' => '1K',
+        '1DK' => '1DK',
+        '1LDK' => '1LDK',
+        '2K' => '2K',
+        '2DK' => '2DK',
+        '2LDK' => '2LDK',
+        '3LDK' => '3LDK',
+        '4LDK' => '4LDK',
+    ];
     public $investmentId = null;
 
     public function mount($investmentId = null)
@@ -161,7 +176,7 @@ class Detail extends Component
             'id' => null,
             '_key' => uniqid('floor_plan_'),
             'floor_plan' => '',
-            'has_service_room' => '',
+            'has_service_room' => 'false',
             'area_sqm' => '',
         ];
     }
@@ -182,7 +197,7 @@ class Detail extends Component
                 'id' => $floorPlan->id,
                 '_key' => 'floor_plan_' . $floorPlan->id,
                 'floor_plan' => $floorPlan->floor_plan ?? '',
-                'has_service_room' => $floorPlan->has_service_room ?? '',
+                'has_service_room' => $floorPlan->has_service_room ? 'true' : 'false',
                 'area_sqm' => $floorPlan->area_sqm ?? '',
             ])
             ->values()
