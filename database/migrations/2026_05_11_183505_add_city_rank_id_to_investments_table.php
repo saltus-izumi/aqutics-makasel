@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('investments', function (Blueprint $table) {
-            $table->integer('city_rank_id')->nullable()->comment('都市格')->after('is_management_active');
+            $table->string('management_agreement_url')->nullable()->comment('管理契約書URL')->after('is_management_active');
+            $table->integer('city_rank_id')->nullable()->comment('都市格')->after('management_agreement_url');
             $table->string('structure_floors')->nullable()->comment('構造（階数）')->after('city_rank_id');
             $table->integer('management_plan_id')->nullable()->comment('管理プラン')->after('structure_floors');
             $table->integer('management_fee_rate')->nullable()->comment('管理料')->after('management_plan_id');
@@ -35,6 +36,7 @@ return new class extends Migration
     {
         Schema::table('investments', function (Blueprint $table) {
             $table->dropColumn([
+                'management_agreement_url',
                 'city_rank_id',
                 'structure_floors',
                 'management_plan_id',
