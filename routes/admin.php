@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\Master\MailTemplateController as AdminMailTemplat
 use App\Http\Controllers\Admin\Master\Category1MasterController as AdminCategory1Master;
 use App\Http\Controllers\Admin\Master\Category2MasterController as AdminCategory2Master;
 use App\Http\Controllers\Admin\Master\Category3MasterController as AdminCategory3Master;
+use App\Http\Controllers\Admin\Master\ImageCategoryMasterController as AdminImageCategoryMaster;
 use App\Http\Controllers\Admin\OperationController as AdminOperation;
 use App\Http\Controllers\Admin\Progress\GeController as AdminGe;
 use App\Http\Controllers\Admin\Progress\EnController as AdminEn;
@@ -77,6 +78,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             Route::prefix('category3-master')->name('category3-master.')->group(function () {
                 Route::get('/', [AdminCategory3Master::class, 'index'])->name('index');
+            });
+
+            Route::prefix('image-category-master/{categoryKind?}')->name('image-category-master.')->group(function () {
+                Route::get('/', [AdminImageCategoryMaster::class, 'index'])->name('index');
             });
 
         });
