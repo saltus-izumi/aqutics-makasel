@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $this->renameExistingTable('jobs');
+        $this->renameExistingTable('job_batches');
+        $this->renameExistingTable('failed_jobs');
+
         Schema::create('jobs', function (Blueprint $table) {
             $table->id();
             $table->string('queue')->index();
@@ -53,5 +57,19 @@ return new class extends Migration
         Schema::dropIfExists('jobs');
         Schema::dropIfExists('job_batches');
         Schema::dropIfExists('failed_jobs');
+    }
+
+    private function renameExistingTable(string $table): void
+    {
+        if (!Schema::hasTable($table)) {
+            return;
+        }
+
+        $oldTable = "{$table}_" . date('YmdHis');
+        if (Schema::hasTable($oldTable)) {
+            throw new RuntimeException("{$oldTable} table already exists.");
+        }
+
+        Schema::rename($table, $oldTable);
     }
 };

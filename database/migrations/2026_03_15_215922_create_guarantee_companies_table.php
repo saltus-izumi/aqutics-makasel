@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('guarantee_companies')) {
+            $backupTable = 'guarantee_companies_' . date('YmdHis');
+            if (Schema::hasTable($backupTable)) {
+                throw new RuntimeException("{$backupTable} table already exists.");
+            }
+
+            Schema::rename('guarantee_companies', $backupTable);
+        }
+
         Schema::create('guarantee_companies', function (Blueprint $table) {
             $table->id();
 

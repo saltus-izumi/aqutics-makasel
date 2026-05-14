@@ -21,6 +21,9 @@ return new class extends Migration
         //     $table->timestamps();
         // });
 
+        $this->renameExistingTable('password_reset_tokens');
+        $this->renameExistingTable('sessions');
+
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -45,5 +48,19 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+    }
+
+    private function renameExistingTable(string $table): void
+    {
+        if (!Schema::hasTable($table)) {
+            return;
+        }
+
+        $oldTable = "{$table}_" . date('YmdHis');
+        if (Schema::hasTable($oldTable)) {
+            throw new RuntimeException("{$oldTable} table already exists.");
+        }
+
+        Schema::rename($table, $oldTable);
     }
 };

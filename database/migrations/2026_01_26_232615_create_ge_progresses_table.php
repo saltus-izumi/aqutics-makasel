@@ -13,6 +13,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('ge_progresses')) {
+            $backupTable = 'ge_progresses_' . date('YmdHis');
+            if (Schema::hasTable($backupTable)) {
+                throw new RuntimeException("{$backupTable} table already exists.");
+            }
+
+            Schema::rename('ge_progresses', $backupTable);
+        }
+
         Schema::create('ge_progresses', function (Blueprint $table) {
             $table->id();
 

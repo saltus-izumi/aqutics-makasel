@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('individual_tenancy_application_logs')) {
+            $backupTable = 'individual_tenancy_application_logs_' . date('YmdHis');
+            if (Schema::hasTable($backupTable)) {
+                throw new RuntimeException("{$backupTable} table already exists.");
+            }
+
+            Schema::rename('individual_tenancy_application_logs', $backupTable);
+        }
+
         Schema::create('individual_tenancy_application_logs', function (Blueprint $table) {
             $table->bigIncrements('id')->comment('ID');
 

@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('operation_files')) {
+            $backupTable = 'operation_files_' . date('YmdHis');
+            if (Schema::hasTable($backupTable)) {
+                throw new RuntimeException("{$backupTable} table already exists.");
+            }
+
+            Schema::rename('operation_files', $backupTable);
+        }
+
         Schema::create('operation_files', function (Blueprint $table) {
             $table->id()->comment('アクティビティファイルID');
             $table->integer('operation_id')->comment('オペレーションID');

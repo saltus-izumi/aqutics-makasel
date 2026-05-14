@@ -14,33 +14,93 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('te_progresses', function (Blueprint $table) {
-            $table->integer('next_action')->nullable()->after('contractor_no')->comment('ネクストアクション');
-            $table->integer('executor_user_id')->nullable()->after('responsible_id')->comment('実行者');
-            $table->integer('trading_company_2_id')->nullable()->after('genpuku_gyousha_id')->comment('指定業者2');
-            $table->integer('trading_company_3_id')->nullable()->after('trading_company_2_id')->comment('指定業者3');
-            $table->integer('nyuuden_date_state')->default(0)->after('nyuuden_date')->comment('入電日ステータス');
-            $table->integer('gencho_date_state')->default(0)->after('gencho_date')->comment('現調日ステータス');
-            $table->date('cost_received_date')->nullable()->after('mitsumori_date')->comment('下代受信日');
-            $table->integer('cost_received_date_state')->default(0)->after('cost_received_date')->comment('下代受信日ステータス');
-            $table->integer('cost_amount')->default(0)->after('cost_received_date_state')->comment('下代');
-            $table->date('charge_received_date')->nullable()->after('cost_amount')->comment('上代受信日');
-            $table->integer('charge_received_date_state')->default(0)->after('charge_received_date')->comment('上代受信日ステータス');
-            $table->integer('charge_amount')->default(0)->after('charge_received_date_state')->comment('上代');
-            $table->integer('own_suggestion_date_state')->default(0)->after('own_suggestion_date')->comment('OWN修繕提案ステータス');
-            $table->integer('own_consent_date_state')->default(0)->after('own_consent_date')->comment('OWN修繕承諾ステータス');
-            $table->integer('pc_hachu_date_state')->default(0)->after('pc_hachu_date')->comment('PC修繕発注ステータス');
-            $table->integer('pc_kanko_receive_date_state')->default(0)->after('pc_kanko_receive_date')->comment('PC完工受信ステータス');
-            $table->integer('pc_kanko_report_date_state')->default(0)->after('pc_kanko_report_date')->comment('PC完工報告ステータス');
-            $table->integer('kakumei_koujo_date_state')->default(0)->after('kakumei_koujo_date')->comment('革命控除ステータス');
-            $table->integer('kanko_yotei_date_state')->default(0)->after('kanko_yotei_date')->comment('完工予定日ステータス');
-            $table->integer('complete_date_state')->default(0)->after('complete_date')->comment('完了日ステータス');
-            $table->text('executor_to_responsible_message')->nullable()->after('kakumei_memo')->comment('実行担当 ⇒ 責任担当');
-            $table->integer('is_proper_work_burden')->nullable()->after('executor_to_responsible_message')->comment('適正工事（負担）');
-            $table->integer('is_proper_price')->nullable()->after('is_proper_work_burden')->comment('適正価格');
-            $table->text('correction_instruction_message')->nullable()->after('is_proper_price')->comment('実行担当へ修正指示');
-            $table->text('estimate_note_message')->nullable()->after('correction_instruction_message')->comment('見積書備考入力内容');
-            $table->integer('owner_proposal_operation_id')->nullable()->after('operation_id')->comment('オーナー提案オペレーションID');
-            $table->integer('completion_report_operation_id')->nullable()->after('owner_proposal_operation_id')->comment('完了報告オペレーションID');
+            if (!Schema::hasColumn('te_progresses', 'operation_thread_id')) {
+                $table->integer('operation_thread_id')->nullable()->comment('オペレーションスレッドID');
+            }
+            if (!Schema::hasColumn('te_progresses', 'operation_id')) {
+                $table->integer('operation_id')->nullable()->comment('オペレーションID');
+            }
+            if (!Schema::hasColumn('te_progresses', 'next_action')) {
+                $table->integer('next_action')->nullable()->comment('ネクストアクション');
+            }
+            if (!Schema::hasColumn('te_progresses', 'executor_user_id')) {
+                $table->integer('executor_user_id')->nullable()->comment('実行者');
+            }
+            if (!Schema::hasColumn('te_progresses', 'trading_company_2_id')) {
+                $table->integer('trading_company_2_id')->nullable()->comment('指定業者2');
+            }
+            if (!Schema::hasColumn('te_progresses', 'trading_company_3_id')) {
+                $table->integer('trading_company_3_id')->nullable()->comment('指定業者3');
+            }
+            if (!Schema::hasColumn('te_progresses', 'nyuuden_date_state')) {
+                $table->integer('nyuuden_date_state')->default(0)->comment('入電日ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'gencho_date_state')) {
+                $table->integer('gencho_date_state')->default(0)->comment('現調日ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'cost_received_date')) {
+                $table->date('cost_received_date')->nullable()->comment('下代受信日');
+            }
+            if (!Schema::hasColumn('te_progresses', 'cost_received_date_state')) {
+                $table->integer('cost_received_date_state')->default(0)->comment('下代受信日ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'cost_amount')) {
+                $table->integer('cost_amount')->default(0)->comment('下代');
+            }
+            if (!Schema::hasColumn('te_progresses', 'charge_received_date')) {
+                $table->date('charge_received_date')->nullable()->comment('上代受信日');
+            }
+            if (!Schema::hasColumn('te_progresses', 'charge_received_date_state')) {
+                $table->integer('charge_received_date_state')->default(0)->comment('上代受信日ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'charge_amount')) {
+                $table->integer('charge_amount')->default(0)->comment('上代');
+            }
+            if (!Schema::hasColumn('te_progresses', 'own_suggestion_date_state')) {
+                $table->integer('own_suggestion_date_state')->default(0)->comment('OWN修繕提案ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'own_consent_date_state')) {
+                $table->integer('own_consent_date_state')->default(0)->comment('OWN修繕承諾ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'pc_hachu_date_state')) {
+                $table->integer('pc_hachu_date_state')->default(0)->comment('PC修繕発注ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'pc_kanko_receive_date_state')) {
+                $table->integer('pc_kanko_receive_date_state')->default(0)->comment('PC完工受信ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'pc_kanko_report_date_state')) {
+                $table->integer('pc_kanko_report_date_state')->default(0)->comment('PC完工報告ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'kakumei_koujo_date_state')) {
+                $table->integer('kakumei_koujo_date_state')->default(0)->comment('革命控除ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'kanko_yotei_date_state')) {
+                $table->integer('kanko_yotei_date_state')->default(0)->comment('完工予定日ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'complete_date_state')) {
+                $table->integer('complete_date_state')->default(0)->comment('完了日ステータス');
+            }
+            if (!Schema::hasColumn('te_progresses', 'executor_to_responsible_message')) {
+                $table->text('executor_to_responsible_message')->nullable()->comment('実行担当 ⇒ 責任担当');
+            }
+            if (!Schema::hasColumn('te_progresses', 'is_proper_work_burden')) {
+                $table->integer('is_proper_work_burden')->nullable()->comment('適正工事（負担）');
+            }
+            if (!Schema::hasColumn('te_progresses', 'is_proper_price')) {
+                $table->integer('is_proper_price')->nullable()->comment('適正価格');
+            }
+            if (!Schema::hasColumn('te_progresses', 'correction_instruction_message')) {
+                $table->text('correction_instruction_message')->nullable()->comment('実行担当へ修正指示');
+            }
+            if (!Schema::hasColumn('te_progresses', 'estimate_note_message')) {
+                $table->text('estimate_note_message')->nullable()->comment('見積書備考入力内容');
+            }
+            if (!Schema::hasColumn('te_progresses', 'owner_proposal_operation_id')) {
+                $table->integer('owner_proposal_operation_id')->nullable()->comment('オーナー提案オペレーションID');
+            }
+            if (!Schema::hasColumn('te_progresses', 'completion_report_operation_id')) {
+                $table->integer('completion_report_operation_id')->nullable()->comment('完了報告オペレーションID');
+            }
         });
 
         DB::transaction(function() {

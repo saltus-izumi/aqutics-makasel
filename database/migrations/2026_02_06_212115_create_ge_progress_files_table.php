@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('ge_progress_files')) {
+            $backupTable = 'ge_progress_files_' . date('YmdHis');
+            if (Schema::hasTable($backupTable)) {
+                throw new RuntimeException("{$backupTable} table already exists.");
+            }
+
+            Schema::rename('ge_progress_files', $backupTable);
+        }
+
         Schema::create('ge_progress_files', function (Blueprint $table) {
             $table->id();
             $table->integer('ge_progress_id')->comment('原復プロセスID');

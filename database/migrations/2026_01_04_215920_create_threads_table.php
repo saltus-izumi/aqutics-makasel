@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('threads')) {
+            $backupTable = 'threads_' . date('YmdHis');
+            if (Schema::hasTable($backupTable)) {
+                throw new RuntimeException("{$backupTable} table already exists.");
+            }
+
+            Schema::rename('threads', $backupTable);
+        }
+
         Schema::create('threads', function (Blueprint $table) {
             $table->id()->comment('スレッドID');
             $table->integer('thread_type')->comment('スレッド種別');
